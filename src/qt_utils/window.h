@@ -63,6 +63,7 @@ class QLabel;
 class QSpinBox;
 class QStackedWidget;
 QT_END_NAMESPACE
+class Slider;
 class SlidersGroup;
 
 //! [0]
@@ -75,30 +76,25 @@ public:
 
     void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
 
+    void createTabs();
+
 private:
 
-    QGroupBox* createControls(const QString& title);
+    //QMap<QString,QStackedWidget*> stacked_widget_;
+    //QMap<QString,Slider*> sliders_;
+    //QMap<QString,QGroupBox*> groups_;
 
-    QStackedWidget* stacked_widget_;
-    QMap<QString,SlidersGroup*> sliders_;
-    QMap<QString,QGroupBox*> groups_;
+    QMap<QString,SlidersGroup* > sliders_;
 
-    QHBoxLayout* layout_;
-
-    SlidersGroup *horizontalSliders;
-    SlidersGroup *verticalSliders;
+    QTabWidget* tabs_;
 
 
-    QGroupBox *controlsGroup;
-    QLabel *minimumLabel;
-    QLabel *maximumLabel;
-    QLabel *valueLabel;
-    QCheckBox *invertedAppearance;
-    QCheckBox *invertedKeyBindings;
-    QSpinBox *minimumSpinBox;
-    QSpinBox *maximumSpinBox;
-    QSpinBox *valueSpinBox;
-    QComboBox *orientationCombo;
+    QVBoxLayout* main_layout_;
+
+    QGroupBox* sliders_layout_;
+
+
+
 };
 //! [0]
 

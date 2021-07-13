@@ -1,38 +1,54 @@
-#include <QtWidgets>
-
 #include "slidersgroup.h"
 
-SlidersGroup::SlidersGroup(const QString &title, const double& min, const double& max,
-                           QWidget *parent)
-    : QGroupBox(title, parent)
+Slider::Slider(const QString &title, const double& min, const double& max,
+               QWidget *parent)
+  : QGroupBox(title, parent)
 {
-    slider_ = new QwtSlider(Qt::Horizontal);
-    slider_->setFocusPolicy(Qt::StrongFocus);
-    slider_->setScale(min,max);
-    slider_->setScalePosition(QwtSlider::ScalePosition::LeadingScale);
+  slider_ = new QwtSlider(Qt::Horizontal);
+  slider_->setFocusPolicy(Qt::StrongFocus);
+  slider_->setScale(min,max);
+  slider_->setScalePosition(QwtSlider::ScalePosition::LeadingScale);
 
-    current_ = new QLineEdit();
-    QDoubleValidator* validator = new QDoubleValidator(min,max,10,current_);
-    validator->setNotation(QDoubleValidator::StandardNotation);
-    current_->setValidator(validator);
+  current_ = new QLineEdit();
+  QDoubleValidator* validator = new QDoubleValidator(min,max,10,current_);
+  validator->setNotation(QDoubleValidator::StandardNotation);
+  current_->setValidator(validator);
 
-    connect(slider_, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
-    connect(current_, SIGNAL(textChanged(QString)), this, SLOT(setValue(QString)));
+  max_ = new QLabel(QString::number(max));
+  min_ = new QLabel(QString::number(min));
 
-    QBoxLayout *slidersLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-    slidersLayout->addWidget(slider_);
-    slidersLayout->addWidget(current_);
-    setLayout(slidersLayout);
+  connect(slider_, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
+  connect(current_, SIGNAL(textChanged(QString)), this, SLOT(setValue(QString)));
+
+  QBoxLayout *widgets_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+  widgets_layout->addWidget(min_);
+  widgets_layout->addWidget(slider_);
+  widgets_layout->addWidget(max_);
+  widgets_layout->addWidget(current_);
+  setLayout(widgets_layout);
 }
 
-void SlidersGroup::setValue(double value)
+void Slider::setValue(double value)
 {
   value_ = value;
   current_->setText(QString::number(value_));
 }
 
-void SlidersGroup::setValue(QString value)
+void Slider::setValue(QString value)
 {
   value_ = value.toDouble();
   slider_->setValue(value_);
+}
+
+SlidersGroup::SlidersGroup(const QString &title,
+                           QWidget *parent)
+  : QGroupBox(title, parent)
+{
+  sliders_layout_ = new QBoxLayout(QBoxLayout::TopToBottom);
+}
+
+void SlidersGroup::addSlider(Slider *slider)
+{
+  sliders_layout_->addWidget(slider);
+  setLayout(sliders_layout_);
 }
