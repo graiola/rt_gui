@@ -1,4 +1,4 @@
-#include "slidersgroup.h"
+#include "qt_utils/slidersgroup.h"
 
 Slider::Slider(const QString &title, const double& min, const double& max,
                QWidget *parent)

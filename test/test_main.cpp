@@ -1,8 +1,7 @@
 #include <QApplication>
 #include <QString>
 
-#include "window.h"
-#include "rt_gui/rt_gui.h"
+#include "qt_utils/window.h"
 
 int main(int argc, char *argv[])
 {

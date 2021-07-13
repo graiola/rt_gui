@@ -28,8 +28,7 @@ find_package(Qt5UiTools ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
-find_package(catkin REQUIRED)
-
+find_package(catkin REQUIRED roscpp)
 
 catkin_package(
   INCLUDE_DIRS include
@@ -46,3 +45,18 @@ include(src/qt_utils/qt_utils.cmake)
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+## Compile test
+add_executable(test_main test/test_main.cpp)
+target_link_libraries(test_main PRIVATE qt_utils)
+set_target_properties(test_main PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+add_executable(test_class test/test_class.cpp)
+target_link_libraries(test_class PRIVATE qt_utils ${catkin_LIBRARIES})
+set_target_properties(test_class PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+install(TARGETS test_main test_class
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

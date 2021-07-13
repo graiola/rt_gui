@@ -1,6 +1,5 @@
-#include "slidersgroup.h"
-#include "window.h"
-
+#include "qt_utils/slidersgroup.h"
+#include "qt_utils/window.h"
 
 Window::Window()
 {

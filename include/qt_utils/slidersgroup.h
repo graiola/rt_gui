@@ -1,5 +1,5 @@
-#ifndef SLIDERSGROUP_H
-#define SLIDERSGROUP_H
+#ifndef QT_UTILS_SLIDERSGROUP_H
+#define QT_UTILS_SLIDERSGROUP_H
 
 #include <QtWidgets>
 #include <QGroupBox>
