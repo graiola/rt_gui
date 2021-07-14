@@ -23,6 +23,8 @@
 #include <ros/ros.h>
 
 #include <memory>
+#include <atomic>
+#include <thread>
 
 namespace rt_gui
 {
@@ -37,43 +39,49 @@ public:
     return gui;
   }
 
-  template <typename data_t>
-  void addSlider(const std::string& group_name, const std::string& data_name, const data_t& data, const double& min, const double& max)
+  void addSlider(const std::string& group_name, const std::string& data_name, double& data, const double& min, const double& max)
   {
-    window_->addSlider(QString::fromStdString(group_name),QString::fromStdString(data_name),min,max);
+    std::pair<double*,double*> p;
+    p.second = window_->addSlider(QString::fromStdString(group_name),QString::fromStdString(data_name),min,max);
+    p.first = &data;
+    slider_values_.push_back(p);
   }
 
   void sync()
   {
-
+    // FIXME no thread safe
+    for(unsigned int i=0;i<slider_values_.size();i++)
+      *slider_values_[i].first = *slider_values_[i].second;
   }
 
-  void sync(const std::string& data_name)
+  void run()
   {
-
+    window_->createTabs();
+    window_->show();
+    stopped_ = false;
+    loop_thread_.reset(new std::thread(&RtGui::loop,this));
+    //loop();
   }
 
-  int run()
+  void stop()
   {
-    if(init_)
-    {
-      ros::Rate r(100);
-      window_->createTabs();
-      window_->show();
-      while(ros::ok())
-      {
-        app_->processEvents();
-        ros::spinOnce();
-        r.sleep();
-      }
-    }
-    else
-      return 1;
-
-    return 0;
+    stopped_ = true;
+    loop_thread_->join();
+    //ros_spinner_->stop();
   }
 
 private:
+
+  void loop()
+  {
+    while(!stopped_)
+    {
+      app_->processEvents();
+
+      //QApplication::instance()->processEvents();
+      std::this_thread::sleep_for( std::chrono::milliseconds(4) ); //ms
+    }
+  }
 
   RtGui()
   {
@@ -93,16 +101,27 @@ private:
     }
 
     init_ = true;
+    stopped_ = false;
 
     app_ = std::make_shared<QApplication>(argc_, argv_);
     window_ = std::make_shared<Window>();
 
+    //ros_spinner_.reset(new ros::AsyncSpinner(1));
+    //ros_spinner_->start();
+
   }
+
+  //run_in_gui_thread(new RunEventImpl([](){
+  //        QMainWindow* window=new QMainWindow();
+  //        window->show();
+  //    }));
 
   ~RtGui()
   {
     free (argv_[0]);
   }
+
+
 
   RtGui(const RtGui&)= delete;
   RtGui& operator=(const RtGui&)= delete;
@@ -115,6 +134,12 @@ private:
 
   int argc_;
   char* argv_[2];
+
+  std::vector<std::pair<double*,double*> > slider_values_;
+  std::shared_ptr<std::thread> loop_thread_;
+
+  std::atomic<bool> stopped_;
+  //std::shared_ptr<ros::AsyncSpinner> ros_spinner_;
 
 };
 

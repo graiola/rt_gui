@@ -18,7 +18,7 @@ class Window : public QWidget
 public:
     Window();
 
-    void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
+    double* addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
 
     void createTabs();
 

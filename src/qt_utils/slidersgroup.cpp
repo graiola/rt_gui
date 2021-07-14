@@ -28,6 +28,11 @@ Slider::Slider(const QString &title, const double& min, const double& max,
   setLayout(widgets_layout);
 }
 
+double *Slider::getValue()
+{
+  return &value_;
+}
+
 void Slider::setValue(double value)
 {
   value_ = value;

@@ -19,6 +19,8 @@ public:
   Slider(const QString &title, const double& min, const double& max,
          QWidget *parent = 0);
 
+  double* getValue();
+
 signals:
   void valueChanged(int value);
 

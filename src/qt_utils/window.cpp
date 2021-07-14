@@ -11,7 +11,7 @@ Window::Window()
   setWindowTitle(tr("rt_gui"));
 }
 
-void Window::addSlider(const QString& group_name, const QString& data_name,
+double* Window::addSlider(const QString& group_name, const QString& data_name,
                        const double& min, const double& max)
 {
   if(sliders_.count(group_name) == 0)
@@ -19,6 +19,8 @@ void Window::addSlider(const QString& group_name, const QString& data_name,
 
   Slider* slider = new Slider(data_name,min,max);
   sliders_[group_name]->addSlider(slider);
+
+  return slider->getValue();
 }
 
 void Window::createTabs()
