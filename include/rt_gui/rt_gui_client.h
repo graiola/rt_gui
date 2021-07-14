@@ -38,9 +38,26 @@ public:
     return istance;
   }
 
-  void addSlider(const std::string& group_name, const std::string& data_name, double& data, const double& min, const double& max)
+  void addSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max)
   {
-    // Call the ros service
+    rt_gui::addSlider srv;
+
+    srv.request.min = min;
+    srv.request.max = max;
+    srv.request.init = 0; // FIXME
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+
+    if(add_slider_.exists())
+    {
+      add_slider_.call(srv);
+      if(srv.response.resp == false)
+        throw std::runtime_error("RtGuiServer::addSlider::resp is false!");
+    }
+    else
+    {
+      throw std::runtime_error("RtGuiServer::addSlider service is not available!");
+    }
   }
 
   bool sync(sync::Request &req,
@@ -54,42 +71,37 @@ public:
 
   void run()
   {
-    window_->createTabs();
-    window_->show();
-    stopped_ = false;
-    ros_spinner_->start();
+    //window_->createTabs();
+    //window_->show();
+    //stopped_ = false;
+    //ros_spinner_->start();
     //loop_thread_.reset(new std::thread(&RtGui::loop,this));
     //loop();
   }
 
   void stop()
   {
-    stopped_ = true;
-    ros_spinner_->stop();
+
   }
 
 private:
 
   void loop()
   {
-    while(!stopped_)
-    {
-      //QApplication::instance()->processEvents();
-      std::this_thread::sleep_for( std::chrono::milliseconds(4) ); //ms
-    }
+    //while(!stopped_)
+    //{
+    //  //QApplication::instance()->processEvents();
+    //  std::this_thread::sleep_for( std::chrono::milliseconds(4) ); //ms
+    //}
   }
 
   RtGuiClient()
   {
-    stopped_ = false;
-    ros_spinner_.reset(new ros::AsyncSpinner(1));
-    sync_ = ros_nh_ptr_->advertiseService("sync", &RtGui::sync, this);
+    std::string ros_node_name = RT_GUI_CLIENT_NAME;
+    ros_node_.reset(new RosNode(ros_node_name));
+    add_slider_ = ros_node_->getNode().serviceClient<rt_gui::addSlider>("/"RT_GUI_SERVER_NAME"/add_slider");
   }
 
-  //run_in_gui_thread(new RunEventImpl([](){
-  //        QMainWindow* window=new QMainWindow();
-  //        window->show();
-  //    }));
 
   ~RtGuiClient()
   {
@@ -99,13 +111,9 @@ private:
   RtGuiClient& operator=(const RtGuiClient&)= delete;
 
   std::unique_ptr<RosNode> ros_node_;
-
-  std::vector<std::pair<double*,double*> > slider_values_;
-  std::atomic<bool> stopped_;
-
-  std::shared_ptr<ros::AsyncSpinner> ros_spinner_;
   ros::ServiceServer sync_;
 
+  ros::ServiceClient add_slider_;
 };
 
 

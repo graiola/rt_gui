@@ -62,7 +62,11 @@ add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
 target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
 set_target_properties(test_server PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-install(TARGETS test_qt test_server
+add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
+target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
+set_target_properties(test_client PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+install(TARGETS test_qt test_server test_client
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

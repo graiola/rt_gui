@@ -59,15 +59,13 @@ public:
 
   int run(int argc, char *argv[])
   {
-
-    std::string ros_node_name = "rt_gui_server";
-
+    std::string ros_node_name = RT_GUI_SERVER_NAME;
     ros_node_.reset(new RosNode(ros_node_name));
 
     app_ = std::make_shared<QApplication>(argc,argv);
     window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
 
-    add_slider_ = ros_node_->getNode().advertiseService("addSlider", &RtGuiServer::addSlider, this);
+    add_slider_ = ros_node_->getNode().advertiseService("add_slider", &RtGuiServer::addSlider, this);
 
     QObject::connect(this,        SIGNAL(addSlider(const QString&, const QString&, const double&, const double&)),
                      window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&)));
@@ -75,7 +73,7 @@ public:
     return app_->exec();
   }
 
-signals: // const QString& group_name, const QString& data_name, const double& min, const double& max
+signals:
   void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
 
 private:

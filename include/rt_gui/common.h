@@ -10,6 +10,9 @@
 namespace rt_gui
 {
 
+#define RT_GUI_SERVER_NAME "rt_gui_server"
+#define RT_GUI_CLIENT_NAME "rt_gui_client"
+
 class RosNode
 {
 public:
