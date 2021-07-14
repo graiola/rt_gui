@@ -6,7 +6,6 @@ add_compile_options(-std=c++14)
 option(QT_VERSION_GREATER_THAN_5_5 "Set to true if Qt5 > 5.5 is installed" FALSE)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 
 if(${QT_VERSION_GREATER_THAN_5_5})
     set(MINIMUM_QT_VERSION 5.9)
@@ -28,7 +27,15 @@ find_package(Qt5UiTools ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
-find_package(catkin REQUIRED roscpp)
+find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
+
+add_service_files(
+  FILES
+  addSlider.srv
+  sync.srv
+)
+
+generate_messages()
 
 catkin_package(
   INCLUDE_DIRS include
@@ -47,15 +54,15 @@ install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 ## Compile test
-add_executable(test_main test/test_main.cpp)
-target_link_libraries(test_main PRIVATE qt_utils)
-set_target_properties(test_main PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_executable(test_qt test/test_qt.cpp)
+target_link_libraries(test_qt PRIVATE qt_utils)
+set_target_properties(test_qt PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_executable(test_class test/test_class.cpp)
-target_link_libraries(test_class PRIVATE qt_utils ${catkin_LIBRARIES})
-set_target_properties(test_class PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
+target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
+set_target_properties(test_server PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-install(TARGETS test_main test_class
+install(TARGETS test_qt test_server
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

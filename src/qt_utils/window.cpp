@@ -1,17 +1,17 @@
 #include "qt_utils/slidersgroup.h"
 #include "qt_utils/window.h"
 
-Window::Window()
+Window::Window(const QString& title)
 {
   main_layout_ = new QVBoxLayout;
   tabs_ = new QTabWidget;
 
   setLayout(main_layout_);
 
-  setWindowTitle(tr("rt_gui"));
+  setWindowTitle(title);
 }
 
-double* Window::addSlider(const QString& group_name, const QString& data_name,
+void Window::addSlider(const QString& group_name, const QString& data_name,
                        const double& min, const double& max)
 {
   if(sliders_.count(group_name) == 0)
@@ -20,7 +20,7 @@ double* Window::addSlider(const QString& group_name, const QString& data_name,
   Slider* slider = new Slider(data_name,min,max);
   sliders_[group_name]->addSlider(slider);
 
-  return slider->getValue();
+  createTabs();
 }
 
 void Window::createTabs()
@@ -31,4 +31,5 @@ void Window::createTabs()
     tabs_->addTab(tmp.second,tmp.first);
   }
   main_layout_->addWidget(tabs_);
+  show();
 }

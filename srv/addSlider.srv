@@ -1,0 +1,7 @@
+float64 min
+float64 max
+float64 init
+string group_name
+string data_name
+---
+bool resp

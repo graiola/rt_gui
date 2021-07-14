@@ -6,11 +6,11 @@
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
-  Window window;
+  Window window(QString("rt_gui"));
   window.addSlider(QString("forces"),QString("Fx"),-10.5,10.5);
   window.addSlider(QString("forces"),QString("Fy"),-10.5,10.5);
   window.addSlider(QString("velocities"),QString("Vx"),-12.5,16.5);
-  window.createTabs();
-  window.show();
+  //window.createTabs();
+  //window.show();
   return app.exec();
 }

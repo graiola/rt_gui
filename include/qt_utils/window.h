@@ -16,13 +16,15 @@ class Window : public QWidget
     Q_OBJECT
 
 public:
-    Window();
+    Window(const QString& title);
 
-    double* addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
+public slots:
+    void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
 
-    void createTabs();
 
 private:
+    void createTabs();
+
     QMap<QString,SlidersGroup* > sliders_;
     QTabWidget* tabs_;
     QVBoxLayout* main_layout_;
