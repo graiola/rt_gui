@@ -16,7 +16,7 @@ class Slider : public QGroupBox
   Q_OBJECT
 
 public:
-  Slider(const QString &group_name, const QString &data_name, const double& min, const double& max,
+  Slider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
          QWidget *parent = 0);
 
   double getValue();

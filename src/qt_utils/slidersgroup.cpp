@@ -1,6 +1,6 @@
 #include "qt_utils/slidersgroup.h"
 
-Slider::Slider(const QString &group_name, const QString &data_name, const double& min, const double& max,
+Slider::Slider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
                QWidget *parent)
   : QGroupBox(data_name, parent)
 {
@@ -11,11 +11,13 @@ Slider::Slider(const QString &group_name, const QString &data_name, const double
   slider_->setFocusPolicy(Qt::StrongFocus);
   slider_->setScale(min,max);
   slider_->setScalePosition(QwtSlider::ScalePosition::LeadingScale);
+  slider_->setValue(init);
 
   current_ = new QLineEdit();
   QDoubleValidator* validator = new QDoubleValidator(min,max,10,current_);
   validator->setNotation(QDoubleValidator::StandardNotation);
   current_->setValidator(validator);
+  current_->setText(QString::number(init));
 
   max_ = new QLabel(QString::number(max));
   min_ = new QLabel(QString::number(min));

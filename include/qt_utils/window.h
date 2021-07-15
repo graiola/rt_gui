@@ -19,7 +19,7 @@ public:
     Window(const QString& title);
 
 public slots:
-    void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
+    void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
 
     void valueChanged(double value);
 

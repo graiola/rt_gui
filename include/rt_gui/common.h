@@ -6,6 +6,7 @@
 #include <memory>
 #include <atomic>
 #include <thread>
+#include <mutex>
 
 namespace rt_gui
 {

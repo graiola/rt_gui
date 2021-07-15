@@ -12,14 +12,14 @@ Window::Window(const QString& title)
 }
 
 void Window::addSlider(const QString& group_name, const QString& data_name,
-                       const double& min, const double& max)
+                       const double& min, const double& max, const double& init)
 {
 
   // FIXME add checks to ensure that there is only one 'data_name' per 'group_name'
   if(sliders_.count(group_name) == 0)
     sliders_[group_name] = new SlidersGroup(group_name);
 
-  Slider* slider = new Slider(group_name,data_name,min,max);
+  Slider* slider = new Slider(group_name,data_name,min,max,init);
   sliders_[group_name]->addSlider(slider);
 
   QObject::connect(slider, SIGNAL(valueChanged(double)),

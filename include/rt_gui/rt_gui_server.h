@@ -44,7 +44,7 @@ public:
   bool addSlider(addSlider::Request  &req, addSlider::Response &res)
   {
 
-    emit addSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max);
+    emit addSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
 
     // FIXME add a proper error handling
     res.resp = true;
@@ -61,10 +61,10 @@ public:
     window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
 
     add_slider_ = ros_node_->getNode().advertiseService("add_slider", &RtGuiServer::addSlider, this);
-    update_client_ = ros_node_->getNode().serviceClient<rt_gui::updateClient>("/"RT_GUI_CLIENT_NAME"/update_client");
+    update_client_ = ros_node_->getNode().serviceClient<rt_gui::updateClient>("/" RT_GUI_CLIENT_NAME "/update_client");
 
-    QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&)),
-                     window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&)));
+    QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
+                     window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
 
     QObject::connect(window_.get(), SIGNAL(updateServer(QString, QString, double)),
                      this,          SLOT(updateServer(QString, QString, double)));
@@ -73,7 +73,7 @@ public:
   }
 
 signals:
-  void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
+  void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
 
 public slots:
   bool updateServer(QString group_name, QString data_name, double value)
