@@ -40,8 +40,7 @@ public:
     }
     else
     {
-      std::string err("roscore not found... Did you start the server?");
-      throw std::runtime_error(err);
+      throw std::runtime_error("roscore not found... Did you start the server?");
     }
 
     spinner_.reset(new ros::AsyncSpinner(1)); // Use one thread to keep the ros magic alive
@@ -64,10 +63,7 @@ public:
     if(init_ == true)
       return *ros_nh_.get();
     else
-    {
-      std::string err("RosNode not initialized");
-      throw std::runtime_error(err);
-    }
+      throw std::runtime_error("RosNode not initialized");
   }
 
   bool reset()
@@ -81,8 +77,7 @@ public:
     }
     else
     {
-      std::string err("RosNode not initialized");
-      throw std::runtime_error(err);
+      throw std::runtime_error("RosNode not initialized");
       return false;
     }
   }
