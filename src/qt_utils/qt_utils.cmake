@@ -7,7 +7,6 @@ add_library(qt_utils SHARED
 
 target_link_libraries(qt_utils PUBLIC
                       Qt5::Widgets
-                      Qt5::UiTools
                       ${QWT_LIBRARIES})
 
 set_target_properties(qt_utils PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
