@@ -23,7 +23,7 @@
 
 #include <qt_utils/window.h>
 #include <rt_gui/addSlider.h>
-#include <rt_gui/sync.h>
+#include <rt_gui/updateClient.h>
 
 namespace rt_gui
 {
@@ -52,11 +52,6 @@ public:
     return res.resp;
   }
 
-  bool sync()
-  {
-    // Call the client ros service
-  }
-
   int run(int argc, char *argv[])
   {
     std::string ros_node_name = RT_GUI_SERVER_NAME;
@@ -66,15 +61,42 @@ public:
     window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
 
     add_slider_ = ros_node_->getNode().advertiseService("add_slider", &RtGuiServer::addSlider, this);
+    update_client_ = ros_node_->getNode().serviceClient<rt_gui::updateClient>("/"RT_GUI_CLIENT_NAME"/update_client");
 
-    QObject::connect(this,        SIGNAL(addSlider(const QString&, const QString&, const double&, const double&)),
+    QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&)),
                      window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&)));
+
+    QObject::connect(window_.get(), SIGNAL(updateServer(QString, QString, double)),
+                     this,          SLOT(updateServer(QString, QString, double)));
 
     return app_->exec();
   }
 
 signals:
   void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
+
+public slots:
+  bool updateServer(QString group_name, QString data_name, double value)
+  {
+    ROS_DEBUG_STREAM("updateServer: " << group_name.toStdString() << " " << data_name.toStdString() << " " << value << std::endl);
+
+    rt_gui::updateClient srv;
+    srv.request.data_name  = data_name.toStdString();
+    srv.request.group_name = group_name.toStdString();
+    srv.request.value = value;
+
+    if(update_client_.exists())
+    {
+      update_client_.call(srv);
+      if(srv.response.resp == false)
+        throw std::runtime_error("RtGuiClient::updateClient::resp is false!");
+    }
+    else
+    {
+      throw std::runtime_error("RtGuiClient::updateClient service is not available!");
+    }
+    return true;
+  }
 
 private:
 
@@ -97,6 +119,8 @@ private:
   //std::vector<std::pair<double*,double*> > slider_values_;
 
   ros::ServiceServer add_slider_;
+  ros::ServiceClient update_client_;
+
 };
 
 

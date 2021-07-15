@@ -23,7 +23,7 @@
 
 #include <qt_utils/window.h>
 #include <rt_gui/addSlider.h>
-#include <rt_gui/sync.h>
+#include <rt_gui/updateClient.h>
 
 namespace rt_gui
 {
@@ -60,59 +60,49 @@ public:
     }
   }
 
-  bool sync(sync::Request &req,
-            sync::Response &res)
+  bool updateClient(updateClient::Request &req,
+                    updateClient::Response &res)
   {
-    // FIXME no thread safe
-    //for(unsigned int i=0;i<slider_values_.size();i++)
-    //  *slider_values_[i].first = *slider_values_[i].second;
+     ROS_INFO_STREAM("updateClient: " << req.group_name << " " << req.data_name << " " << req.value << std::endl);
 
+     // FIXME add a proper error handling
+     res.resp = true;
+
+     return res.resp;
   }
 
-  void run()
+  int run() // FIXME to be threaded away.........
   {
-    //window_->createTabs();
-    //window_->show();
-    //stopped_ = false;
-    //ros_spinner_->start();
-    //loop_thread_.reset(new std::thread(&RtGui::loop,this));
-    //loop();
-  }
-
-  void stop()
-  {
-
+    ros::Rate r(50);
+    while(ros::ok())
+    {
+      r.sleep();
+    }
+    return 0;
   }
 
 private:
-
-  void loop()
-  {
-    //while(!stopped_)
-    //{
-    //  //QApplication::instance()->processEvents();
-    //  std::this_thread::sleep_for( std::chrono::milliseconds(4) ); //ms
-    //}
-  }
 
   RtGuiClient()
   {
     std::string ros_node_name = RT_GUI_CLIENT_NAME;
     ros_node_.reset(new RosNode(ros_node_name));
+
     add_slider_ = ros_node_->getNode().serviceClient<rt_gui::addSlider>("/"RT_GUI_SERVER_NAME"/add_slider");
+    update_client_ = ros_node_->getNode().advertiseService("update_client", &RtGuiClient::updateClient, this);
+
   }
 
-
-  ~RtGuiClient()
-  {
-  }
+  //~RtGuiClient()
+  //{
+  //}
 
   RtGuiClient(const RtGuiClient&)= delete;
   RtGuiClient& operator=(const RtGuiClient&)= delete;
 
   std::unique_ptr<RosNode> ros_node_;
-  ros::ServiceServer sync_;
 
+  ros::ServiceServer update_client_;
   ros::ServiceClient add_slider_;
 };
 

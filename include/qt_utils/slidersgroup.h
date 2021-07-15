@@ -16,13 +16,15 @@ class Slider : public QGroupBox
   Q_OBJECT
 
 public:
-  Slider(const QString &title, const double& min, const double& max,
+  Slider(const QString &group_name, const QString &data_name, const double& min, const double& max,
          QWidget *parent = 0);
 
-  double* getValue();
+  double getValue();
+  const QString& getDataName() const;
+  const QString& getGroupName() const;
 
 signals:
-  void valueChanged(int value);
+  void valueChanged(double value);
 
 public slots:
   void setValue(QString value);
@@ -34,6 +36,9 @@ private:
   double          value_;
   QLabel*         max_;
   QLabel*         min_;
+
+  QString         data_name_;
+  QString         group_name_;
 };
 
 class SlidersGroup : public QGroupBox

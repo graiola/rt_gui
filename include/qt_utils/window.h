@@ -21,6 +21,10 @@ public:
 public slots:
     void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max);
 
+    void valueChanged(double value);
+
+signals:
+    void updateServer(QString group_name, QString data_name, double value);
 
 private:
     void createTabs();

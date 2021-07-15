@@ -32,7 +32,7 @@ find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 add_service_files(
   FILES
   addSlider.srv
-  sync.srv
+  updateClient.srv
 )
 
 generate_messages()

@@ -1,9 +1,12 @@
 #include "qt_utils/slidersgroup.h"
 
-Slider::Slider(const QString &title, const double& min, const double& max,
+Slider::Slider(const QString &group_name, const QString &data_name, const double& min, const double& max,
                QWidget *parent)
-  : QGroupBox(title, parent)
+  : QGroupBox(data_name, parent)
 {
+  group_name_ = group_name;
+  data_name_  = data_name;
+
   slider_ = new QwtSlider(Qt::Horizontal);
   slider_->setFocusPolicy(Qt::StrongFocus);
   slider_->setScale(min,max);
@@ -28,21 +31,33 @@ Slider::Slider(const QString &title, const double& min, const double& max,
   setLayout(widgets_layout);
 }
 
-double *Slider::getValue()
+double Slider::getValue()
 {
-  return &value_;
+  return value_;
+}
+
+const QString &Slider::getDataName() const
+{
+  return data_name_;
+}
+
+const QString &Slider::getGroupName() const
+{
+  return group_name_;
 }
 
 void Slider::setValue(double value)
 {
   value_ = value;
   current_->setText(QString::number(value_));
+  emit valueChanged(value_);
 }
 
 void Slider::setValue(QString value)
 {
   value_ = value.toDouble();
   slider_->setValue(value_);
+  emit valueChanged(value_);
 }
 
 SlidersGroup::SlidersGroup(const QString &title,
