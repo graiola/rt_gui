@@ -28,8 +28,6 @@ class RtGuiClient
 {
 public:
 
-
-
   static RtGuiClient& getIstance()
   {
     static RtGuiClient istance;
@@ -56,11 +54,12 @@ public:
 
   }
 
-  bool updateSlider(updateSlider::Request &req,
-                    updateSlider::Response &res)
-  {
-     return slider_m_->update(req,res);
-  }
+  //bool updateSlider(updateSlider::Request &req,
+  //                  updateSlider::Response &res)
+  //{
+  //   res.resp = slider_m_->update(req,res);
+  //   return res.resp;
+  //}
 
   void sync()
   {
@@ -73,7 +72,7 @@ private:
   {
     std::string ros_node_name = RT_GUI_CLIENT_NAME;
     ros_node_.reset(new RosNode(ros_node_name,6));
-    slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode());
+    slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),"add_slider","update_slider");
   }
 
   ~RtGuiClient()
