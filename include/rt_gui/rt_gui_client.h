@@ -33,7 +33,7 @@ class RtGuiClient
 public:
 
   typedef std::pair<std::string,std::string> sliders_buffer_key_t;
-  typedef std::pair<double*,double*> sliders_buffer_value_t;
+  typedef std::pair<double*,double> sliders_buffer_value_t;
   typedef std::map<sliders_buffer_key_t, sliders_buffer_value_t> sliders_buffer_t;
 
   static RtGuiClient& getIstance()
@@ -60,7 +60,7 @@ public:
       if(srv.response.resp == false)
         throw std::runtime_error("RtGuiServer::addSlider::resp is false!");
       else
-        sliders_buffer_[sliders_buffer_key_t(group_name,data_name)] = sliders_buffer_value_t(data_ptr,new double(*data_ptr));
+        sliders_buffer_[sliders_buffer_key_t(group_name,data_name)] = sliders_buffer_value_t(data_ptr,*data_ptr);
     }
     else
     {
@@ -73,7 +73,7 @@ public:
   {
      ROS_DEBUG_STREAM("updateClient: " << req.group_name << " " << req.data_name << " " << req.value << std::endl);
      sync_mtx_.lock();
-     *sliders_buffer_[sliders_buffer_key_t(req.group_name,req.data_name)].second = req.value;
+     sliders_buffer_[sliders_buffer_key_t(req.group_name,req.data_name)].second = req.value;
      sync_mtx_.unlock();
      // FIXME add a proper error handling
      res.resp = true;
@@ -81,22 +81,13 @@ public:
      return res.resp;
   }
 
-  //int run() // FIXME to be threaded away.........
-  //{
-  //  ros::Rate r(50);
-  //  while(ros::ok())
-  //  {
-  //    r.sleep();
-  //  }
-  //  return 0;
-  //}
-
   void sync()
   {
-    if (sync_mtx_.try_lock())
+    if(sync_mtx_.try_lock())
     {
       for(auto tmp_map : sliders_buffer_)
-        *tmp_map.second.first = *tmp_map.second.second;
+        if(tmp_map.second.first!=nullptr) // The data pointer still exists
+          *tmp_map.second.first = tmp_map.second.second;
       sync_mtx_.unlock();
     }
   }
@@ -110,18 +101,10 @@ private:
 
     add_slider_ = ros_node_->getNode().serviceClient<rt_gui::addSlider>("/" RT_GUI_SERVER_NAME "/add_slider");
     update_client_ = ros_node_->getNode().advertiseService("update_client", &RtGuiClient::updateClient, this);
-
   }
 
   ~RtGuiClient()
   {
-    for(auto tmp_map : sliders_buffer_)
-    {
-      //if(tmp_map.second.first!=nullptr)
-      //  delete tmp_map.second.first;
-      if(tmp_map.second.second!=nullptr)
-        delete tmp_map.second.second;
-    }
   }
 
   RtGuiClient(const RtGuiClient&)= delete;

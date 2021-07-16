@@ -7,6 +7,8 @@ Slider::Slider(const QString &group_name, const QString &data_name, const double
   group_name_ = group_name;
   data_name_  = data_name;
 
+  setObjectName(data_name);
+
   slider_ = new QwtSlider(Qt::Horizontal);
   slider_->setFocusPolicy(Qt::StrongFocus);
   slider_->setScale(min,max);
@@ -67,10 +69,10 @@ SlidersGroup::SlidersGroup(const QString &title,
   : QGroupBox(title, parent)
 {
   sliders_layout_ = new QBoxLayout(QBoxLayout::TopToBottom);
+  setLayout(sliders_layout_);
 }
 
 void SlidersGroup::addSlider(Slider *slider)
 {
   sliders_layout_->addWidget(slider);
-  setLayout(sliders_layout_);
 }

@@ -49,7 +49,6 @@ public:
   SlidersGroup(const QString &title,
                QWidget *parent = 0);
 
-public:
   void addSlider(Slider* slider);
 
 private:

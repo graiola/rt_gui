@@ -19,13 +19,30 @@ void Window::addSlider(const QString& group_name, const QString& data_name,
   if(sliders_.count(group_name) == 0)
     sliders_[group_name] = new SlidersGroup(group_name);
 
-  Slider* slider = new Slider(group_name,data_name,min,max,init);
-  sliders_[group_name]->addSlider(slider);
+  bool duplicated = false;
+  for (int i = 0; i < sliders_[group_name]->layout()->count(); ++i)
+  {
+    QWidget *widget = sliders_[group_name]->layout()->itemAt(i)->widget();
+    if(widget != Q_NULLPTR && widget->objectName() == data_name)
+    {
+      duplicated = true;
+      break;
+    }
+  }
 
-  QObject::connect(slider, SIGNAL(valueChanged(double)),
-                   this,   SLOT(valueChanged(double)));
+  if(!duplicated)
+  {
+    Slider* slider = new Slider(group_name,data_name,min,max,init);
+    sliders_[group_name]->addSlider(slider);
 
-  createTabs();
+    QObject::connect(slider, SIGNAL(valueChanged(double)),
+                     this,   SLOT(valueChanged(double)));
+
+    createTabs();
+  }
+  else
+    qDebug() << "Slider: "<< group_name << ", " << data_name <<" already exists!";
+
 }
 
 void Window::valueChanged(double /*value*/)
