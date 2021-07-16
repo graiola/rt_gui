@@ -1,0 +1,5 @@
+string[] init
+string group_name
+string data_name
+---
+bool resp

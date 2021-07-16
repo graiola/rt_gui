@@ -22,8 +22,6 @@
 #include <rt_gui/common.h>
 
 #include <qt_utils/window.h>
-#include <rt_gui/addSlider.h>
-#include <rt_gui/updateClient.h>
 
 namespace rt_gui
 {
@@ -55,13 +53,13 @@ public:
   int run(int argc, char *argv[])
   {
     std::string ros_node_name = RT_GUI_SERVER_NAME;
-    ros_node_.reset(new RosNode(ros_node_name));
+    ros_node_.reset(new RosNode(ros_node_name,1));
 
     app_ = std::make_shared<QApplication>(argc,argv);
     window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
 
     add_slider_ = ros_node_->getNode().advertiseService("add_slider", &RtGuiServer::addSlider, this);
-    update_client_ = ros_node_->getNode().serviceClient<rt_gui::updateClient>("/" RT_GUI_CLIENT_NAME "/update_client");
+    update_slider_ = ros_node_->getNode().serviceClient<rt_gui::updateSlider>("/" RT_GUI_CLIENT_NAME "/update_slider");
 
     QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
                      window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
@@ -80,20 +78,20 @@ public slots:
   {
     ROS_DEBUG_STREAM("updateServer: " << group_name.toStdString() << " " << data_name.toStdString() << " " << value << std::endl);
 
-    rt_gui::updateClient srv;
+    rt_gui::updateSlider srv;
     srv.request.data_name  = data_name.toStdString();
     srv.request.group_name = group_name.toStdString();
     srv.request.value = value;
 
-    if(update_client_.exists())
+    if(update_slider_.exists())
     {
-      update_client_.call(srv);
+      update_slider_.call(srv);
       if(srv.response.resp == false)
-        throw std::runtime_error("RtGuiClient::updateClient::resp is false!");
+        throw std::runtime_error("RtGuiClient::updateSlider::resp is false!");
     }
     else
     {
-      throw std::runtime_error("RtGuiClient::updateClient service is not available!");
+      throw std::runtime_error("RtGuiClient::updateSlider service is not available!");
     }
     return true;
   }
@@ -116,10 +114,8 @@ private:
   std::shared_ptr<QApplication> app_;
   std::unique_ptr<RosNode> ros_node_;
 
-  //std::vector<std::pair<double*,double*> > slider_values_;
-
   ros::ServiceServer add_slider_;
-  ros::ServiceClient update_client_;
+  ros::ServiceClient update_slider_;
 
 };
 
