@@ -24,7 +24,7 @@ namespace rt_gui
 #define RT_GUI_SERVER_NAME "rt_gui_server"
 #define RT_GUI_CLIENT_NAME "rt_gui_client"
 
-typedef std::pair<std::string,std::string> buffer_key_t;
+
 
 class RosNode
 {
@@ -106,20 +106,111 @@ protected:
   std::unique_ptr<ros::AsyncSpinner> spinner_;
 };
 
-class SliderClientManager
+template<typename data_t, typename srv_t>
+class ClientManagerBase
 {
 
 public:
 
-  typedef std::pair<double*,double> buffer_value_t;
+  typedef std::pair<std::string,std::string> buffer_key_t;
+  typedef std::pair<data_t*,data_t> buffer_value_t;
   typedef std::map<buffer_key_t, buffer_value_t> buffer_t;
+
+  typedef std::shared_ptr<ClientManagerBase> Ptr;
+
+  ClientManagerBase(ros::NodeHandle& node, const std::string& service_name, const std::string& client_name)
+  {
+     add_ = node.serviceClient<srv_t>("/" RT_GUI_SERVER_NAME "/"+service_name); //add_slider
+     update_ = node.advertiseService(client_name, &ClientManagerBase::update, this); //update_slider
+  }
+
+  bool update(srv_t::Request  &req,
+              srv_t::Response &res)
+  {
+     sync_mtx_.lock();
+     buffer_[buffer_key_t(req.group_name,req.data_name)].second = req.value;
+     sync_mtx_.unlock();
+     // FIXME add a proper error handling
+     res.resp = true;
+
+     return res.resp;
+  }
+
+  virtual void add()
+  {
+  }
+
+  bool sync()
+  {
+    if(sync_mtx_.try_lock())
+    {
+      for(auto tmp_map : buffer_)
+        if(tmp_map.second.first!=nullptr) // The data pointer still exists
+          *tmp_map.second.first = tmp_map.second.second;
+      sync_mtx_.unlock();
+    }
+  }
+
+protected:
+  ros::ServiceServer update_;
+  ros::ServiceClient add_;
+  buffer_t buffer_;
+  std::mutex sync_mtx_;
+
+};
+
+class SliderClientManager : public ClientManagerBase<double,rt_gui::addSlider>
+{
+
+public:
 
   typedef std::shared_ptr<SliderClientManager> Ptr;
 
-  SliderClientManager(ros::NodeHandle& node)
+  SliderClientManager(ros::NodeHandle& node, const std::string& service_name, const std::string& client_name)
+    :ClientManagerBase<double,addSlider>(node,service_name,client_name)
   {
-     add_ = node.serviceClient<rt_gui::addSlider>("/" RT_GUI_SERVER_NAME "/add_slider");
-     update_ = node.advertiseService("update_slider", &SliderClientManager::update, this);
+  }
+
+  virtual void add(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr) override
+  {
+    assert(data_ptr);
+    rt_gui::addSlider srv;
+    srv.request.min = min;
+    srv.request.max = max;
+    srv.request.init = *data_ptr;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    if(add_.exists())
+    {
+      add_.call(srv);
+      if(srv.response.resp == false)
+        throw std::runtime_error("RtGuiServer::addSlider::resp is false!");
+      else
+        buffer_[buffer_key_t(group_name,data_name)] = buffer_value_t(data_ptr,*data_ptr);
+    }
+    else
+    {
+      throw std::runtime_error("RtGuiServer::addSlider service is not available!");
+    }
+  }
+
+};
+
+ // ComboBox
+class ComboBoxManager
+{
+
+public:
+
+  typedef std::pair<std::vector<std::string>*,std::vector<std::string> > buffer_value_t;
+  typedef std::map<buffer_key_t, buffer_value_t> buffer_t;
+
+  typedef std::shared_ptr<ComboBoxManager> Ptr;
+
+  ComboBoxManager(ros::NodeHandle& node)
+  {
+     add_ = node.serviceClient<rt_gui::addSlider>("/" RT_GUI_SERVER_NAME "/add_combobox");
+     update_ = node.advertiseService("update_combobox", &SliderClientManager::update, this);
   }
 
   bool update(updateSlider::Request &req,
