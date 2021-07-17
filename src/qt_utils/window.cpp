@@ -1,6 +1,7 @@
 #include "qt_utils/slider.h"
 #include "qt_utils/radio_button.h"
 #include "qt_utils/window.h"
+#include "qt_utils/combo_box.h"
 
 WidgetsGroup::WidgetsGroup(const QString &title,
                            QWidget *parent)
@@ -53,29 +54,35 @@ void Window::addSlider(const QString& group_name, const QString& data_name,
   {
     Slider* slider = new Slider(group_name,data_name,min,max,init);
     widgets_group_[group_name]->add(slider);
-
     QObject::connect(slider, SIGNAL(valueChanged(double)),
                      this,   SLOT(sliderChanged(double)));
-
     createTabs();
   }
 }
 
 void Window::addRadioButton(const QString &group_name, const QString &data_name, const bool &init)
 {
-
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
     RadioButton* radio_button = new RadioButton(group_name,data_name,init);
     widgets_group_[group_name]->add(radio_button);
-
     QObject::connect(radio_button, SIGNAL(valueChanged(bool)),
                      this,   SLOT(radioButtonChanged(bool)));
-
     createTabs();
   }
 }
 
+void Window::addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    ComboBox* combo_box = new ComboBox(group_name,data_name,list,init);
+    widgets_group_[group_name]->add(combo_box);
+    QObject::connect(combo_box, SIGNAL(valueChanged(QString)),
+                     this,   SLOT(comboBoxChanged(QString)));
+    createTabs();
+  }
+}
 void Window::sliderChanged(double /*value*/)
 {
   Slider* slider = qobject_cast<Slider*>(sender());
@@ -88,6 +95,13 @@ void Window::radioButtonChanged(bool /*value*/)
   RadioButton* radio = qobject_cast<RadioButton*>(sender());
   if(radio!=Q_NULLPTR)
     emit updateRadioButton(radio->getGroupName(),radio->getDataName(),radio->getValue());
+}
+
+void Window::comboBoxChanged(QString /*value*/)
+{
+  ComboBox* combo = qobject_cast<ComboBox*>(sender());
+  if(combo!=Q_NULLPTR)
+    emit updateComboBox(combo->getGroupName(),combo->getDataName(),combo->getValue());
 }
 
 void Window::createTabs()

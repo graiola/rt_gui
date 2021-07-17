@@ -36,11 +36,11 @@ public:
     return true;
   }
 
-  bool update(QString group_name, QString data_name, data_t value)
+  bool update(const std::string& group_name, const std::string& data_name, data_t value)
   {
     data_srv_request_t srv;
-    srv.request.data_name  = data_name.toStdString();
-    srv.request.group_name = group_name.toStdString();
+    srv.request.data_name  = data_name;
+    srv.request.group_name = group_name;
     srv.request.value = value;
     return update(srv);
   }
@@ -52,6 +52,7 @@ protected:
 
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SliderServerManager : public QObject, ServerManagerBase<double,rt_gui::updateSlider>
 {
 
@@ -85,13 +86,15 @@ public:
 public slots:
   bool updateSlider(QString group_name, QString data_name, double value)
   {
-    return update(group_name,data_name,value);
+
+    return update(group_name.toStdString(),data_name.toStdString(),value);
   }
 
 signals:
   void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class RadioButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::updateRadioButton>
 {
 
@@ -125,11 +128,55 @@ public:
 public slots:
   bool updateRadioButton(QString group_name, QString data_name, bool value)
   {
-    return update(group_name,data_name,value);
+    return update(group_name.toStdString(),data_name.toStdString(),value);
   }
 
 signals:
   void addRadioButton(const QString& group_name, const QString& data_name, const bool& init);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ComboBoxServerManager : public QObject, ServerManagerBase<std::string,rt_gui::updateComboBox>
+{
+
+  Q_OBJECT
+
+public:
+
+  typedef std::shared_ptr<ComboBoxServerManager> Ptr;
+
+  ComboBoxServerManager(std::shared_ptr<Window> window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ServerManagerBase<std::string,rt_gui::updateComboBox>(window,node,srv_requested,srv_provided)
+  {
+     add_ = node.advertiseService(srv_provided, &ComboBoxServerManager::addComboBox, this); // FIXME to be moved in base
+
+
+     QObject::connect(this,          SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
+                      window_.get(), SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
+
+     QObject::connect(window_.get(), SIGNAL(updateComboBox(QString, QString, QString)),
+                      this,          SLOT(updateComboBox(QString, QString, QString)));
+  }
+
+  bool addComboBox(addComboBox::Request  &req, addComboBox::Response &res)
+  {
+    QStringList list;
+    for(unsigned int i=0;i<req.list.size();i++)
+      list.push_back(QString::fromStdString(req.list[i]));
+    emit addComboBox(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.init));
+    // FIXME add a proper error handling
+    res.resp = true;
+    return res.resp;
+  }
+
+public slots:
+  bool updateComboBox(QString group_name, QString data_name, QString value)
+  {
+    return update(group_name.toStdString(),data_name.toStdString(),value.toStdString());
+  }
+
+signals:
+  void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 };
 
 

@@ -48,6 +48,7 @@ protected:
 
   void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, data_srv_request_t& srv)
   {
+    assert(data_ptr);
     if(add_.exists())
     {
       add_.call(srv);
@@ -69,6 +70,7 @@ protected:
 
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SliderClientManager : public ClientManagerBase<double,rt_gui::addSlider>
 {
 
@@ -90,7 +92,6 @@ public:
 
   void add(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr)
   {
-    assert(data_ptr);
     rt_gui::addSlider srv;
     srv.request.min = min;
     srv.request.max = max;
@@ -102,6 +103,7 @@ public:
 
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class RadioButtonClientManager : public ClientManagerBase<bool,rt_gui::addRadioButton>
 {
 
@@ -123,7 +125,6 @@ public:
 
   void add(const std::string& group_name, const std::string& data_name, bool* data_ptr)
   {
-    assert(data_ptr);
     rt_gui::addRadioButton srv;
     srv.request.init = *data_ptr;
     srv.request.group_name = group_name;
@@ -132,6 +133,40 @@ public:
   }
 
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ComboBoxClientManager : public ClientManagerBase<std::string,rt_gui::addComboBox>
+{
+
+public:
+
+  typedef std::shared_ptr<ComboBoxClientManager> Ptr;
+
+  ComboBoxClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ClientManagerBase<std::string,rt_gui::addComboBox>(node,srv_requested,srv_provided)
+  {
+     update_ = node.advertiseService(srv_provided, &ComboBoxClientManager::update, this); // FIXME to be moved in base
+  }
+
+  bool update(updateComboBox::Request& req, updateComboBox::Response& res)
+  {
+    res.resp = ClientManagerBase::update(req.group_name,req.data_name,req.value);
+    return res.resp;
+  }
+
+  void add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr)
+  {
+    rt_gui::addComboBox srv;
+    srv.request.init = *data_ptr;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    for(unsigned int i=0;i<list.size();i++)
+      srv.request.list.push_back(list[i]);
+    ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+  }
+
+};
+
 
 
 } // namespace

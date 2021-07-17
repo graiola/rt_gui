@@ -1,4 +1,5 @@
-string[] init
+string init
+string[] list
 string group_name
 string data_name
 ---

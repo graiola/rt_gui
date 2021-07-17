@@ -38,6 +38,12 @@ struct
     std::string update = "update_radio_button";
   } radio_button;
 
+  struct
+  {
+    std::string add    = "add_combo_box";
+    std::string update = "update_combo_box";
+  } combo_box;
+
   unsigned int n_threads = 3;
 
 } _ros_services;

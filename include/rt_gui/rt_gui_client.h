@@ -50,15 +50,16 @@ public:
 
   }
 
-  void addComboBox(const std::string& group_name, const std::string& data_name, std::vector<std::string>* data_ptr)
+  void addComboBox(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr)
   {
-
+    combo_m_->add(group_name,data_name,list,data_ptr);
   }
 
   void sync()
   {
      slider_m_->sync();
      radio_m_->sync();
+     combo_m_->sync();
   }
 
 private:
@@ -69,6 +70,7 @@ private:
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
     slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),_ros_services.slider.add,_ros_services.slider.update);
     radio_m_  = std::make_shared<RadioButtonClientManager>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
+    combo_m_  = std::make_shared<ComboBoxClientManager>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
   }
 
   ~RtGuiClient()
@@ -81,6 +83,7 @@ private:
   std::unique_ptr<RosNode> ros_node_;
   SliderClientManager::Ptr slider_m_;
   RadioButtonClientManager::Ptr radio_m_;
+  ComboBoxClientManager::Ptr combo_m_;
 
 };
 

@@ -37,15 +37,17 @@ public:
 
 public slots:
     void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
-
     void addRadioButton(const QString& group_name, const QString& data_name, const bool& init);
+    void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
     void sliderChanged(double value);
     void radioButtonChanged(bool value);
+    void comboBoxChanged(QString value);
 
 signals:
     void updateSlider(QString group_name, QString data_name, double value);
     void updateRadioButton(QString group_name, QString data_name, bool value);
+    void updateComboBox(QString group_name, QString data_name, QString value);
 
 private:
     void createTabs();
