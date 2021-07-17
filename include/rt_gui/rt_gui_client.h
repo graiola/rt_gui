@@ -21,6 +21,7 @@
 
 #include <support/common.h>
 #include <support/client.h>
+#include <eigen3/Eigen/Core>
 
 namespace rt_gui
 {
@@ -38,6 +39,18 @@ public:
   void addSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr)
   {
     slider_m_->add(group_name,data_name,min,max,data_ptr);
+  }
+
+  void addSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::vector<double>* data_ptr)
+  {
+    for(unsigned int i=0;i<data_ptr->size();i++)
+      slider_m_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i));
+  }
+
+  void addSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::VectorXd* data_ptr)
+  {
+    for(unsigned int i=0;i<data_ptr->size();i++)
+      slider_m_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i));
   }
 
   void addRadioButton(const std::string& group_name, const std::string& data_name, bool* data_ptr)
