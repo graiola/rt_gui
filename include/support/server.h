@@ -15,7 +15,7 @@ public:
 
   typedef std::shared_ptr<ServerManagerBase> Ptr;
 
-  ServerManagerBase(std::shared_ptr<Window> window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+  ServerManagerBase(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
   {
      update_ = node.serviceClient<data_srv_request_t>("/" RT_GUI_CLIENT_NAME "/"+srv_requested);
      window_ = window;
@@ -48,7 +48,7 @@ public:
 protected:
   ros::ServiceServer add_;
   ros::ServiceClient update_;
-  std::shared_ptr<Window> window_;
+  Window* window_;
 
 };
 
@@ -62,17 +62,17 @@ public:
 
   typedef std::shared_ptr<SliderServerManager> Ptr;
 
-  SliderServerManager(std::shared_ptr<Window> window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+  SliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ServerManagerBase<double,rt_gui::updateSlider>(window,node,srv_requested,srv_provided)
   {
      add_ = node.advertiseService(srv_provided, &SliderServerManager::addSlider, this); // FIXME to be moved in base
 
 
-     QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
-                      window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
+     QObject::connect(this,    SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
+                      window_, SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
 
-     QObject::connect(window_.get(), SIGNAL(updateSlider(QString, QString, double)),
-                      this,          SLOT(updateSlider(QString, QString, double)));
+     QObject::connect(window_, SIGNAL(updateSlider(QString, QString, double)),
+                      this,    SLOT(updateSlider(QString, QString, double)));
   }
 
   bool addSlider(addSlider::Request  &req, addSlider::Response &res)
@@ -104,17 +104,17 @@ public:
 
   typedef std::shared_ptr<RadioButtonServerManager> Ptr;
 
-  RadioButtonServerManager(std::shared_ptr<Window> window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+  RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ServerManagerBase<bool,rt_gui::updateRadioButton>(window,node,srv_requested,srv_provided)
   {
      add_ = node.advertiseService(srv_provided, &RadioButtonServerManager::addRadioButton, this); // FIXME to be moved in base
 
 
-     QObject::connect(this,          SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
-                      window_.get(), SLOT(addRadioButton(const QString&, const QString&, const bool&)));
+     QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
+                      window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
 
-     QObject::connect(window_.get(), SIGNAL(updateRadioButton(QString, QString, bool)),
-                      this,          SLOT(updateRadioButton(QString, QString, bool)));
+     QObject::connect(window_, SIGNAL(updateRadioButton(QString, QString, bool)),
+                      this,    SLOT(updateRadioButton(QString, QString, bool)));
   }
 
   bool addRadioButton(addRadioButton::Request  &req, addRadioButton::Response &res)
@@ -145,17 +145,17 @@ public:
 
   typedef std::shared_ptr<ComboBoxServerManager> Ptr;
 
-  ComboBoxServerManager(std::shared_ptr<Window> window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+  ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ServerManagerBase<std::string,rt_gui::updateComboBox>(window,node,srv_requested,srv_provided)
   {
      add_ = node.advertiseService(srv_provided, &ComboBoxServerManager::addComboBox, this); // FIXME to be moved in base
 
 
-     QObject::connect(this,          SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
-                      window_.get(), SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
+     QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
+                      window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
 
-     QObject::connect(window_.get(), SIGNAL(updateComboBox(QString, QString, QString)),
-                      this,          SLOT(updateComboBox(QString, QString, QString)));
+     QObject::connect(window_, SIGNAL(updateComboBox(QString, QString, QString)),
+                      this,    SLOT(updateComboBox(QString, QString, QString)));
   }
 
   bool addComboBox(addComboBox::Request  &req, addComboBox::Response &res)

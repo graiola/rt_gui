@@ -43,8 +43,8 @@ public:
     std::string ros_node_name = RT_GUI_SERVER_NAME;
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
 
-    app_ = std::make_shared<QApplication>(argc,argv);
-    window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
+    app_ = new QApplication(argc,argv);
+    window_ = new Window(QString::fromStdString(ros_node_name));
 
     slider_m_ = std::make_shared<SliderServerManager>(window_,ros_node_->getNode(),_ros_services.slider.update,_ros_services.slider.add);
     radio_m_  = std::make_shared<RadioButtonServerManager>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
@@ -66,8 +66,8 @@ private:
   RtGuiServer(const RtGuiServer&)= delete;
   RtGuiServer& operator=(const RtGuiServer&)= delete;
 
-  std::shared_ptr<Window> window_;
-  std::shared_ptr<QApplication> app_;
+  Window* window_;
+  QApplication* app_;
   std::unique_ptr<RosNode> ros_node_;
 
   SliderServerManager::Ptr slider_m_;
