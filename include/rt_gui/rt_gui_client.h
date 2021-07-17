@@ -19,7 +19,8 @@
 #ifndef RT_GUI_RT_GUI_CLIENT_H
 #define RT_GUI_RT_GUI_CLIENT_H
 
-#include <rt_gui/common.h>
+#include <support/common.h>
+#include <support/client.h>
 
 namespace rt_gui
 {
@@ -41,7 +42,7 @@ public:
 
   void addRadioButton(const std::string& group_name, const std::string& data_name, bool* data_ptr)
   {
-
+    radio_m_->add(group_name,data_name,data_ptr);
   }
 
   void addCheckBox(const std::string& group_name, const std::string& data_name, bool* data_ptr)
@@ -54,16 +55,10 @@ public:
 
   }
 
-  //bool updateSlider(updateSlider::Request &req,
-  //                  updateSlider::Response &res)
-  //{
-  //   res.resp = slider_m_->update(req,res);
-  //   return res.resp;
-  //}
-
   void sync()
   {
      slider_m_->sync();
+     radio_m_->sync();
   }
 
 private:
@@ -71,8 +66,9 @@ private:
   RtGuiClient()
   {
     std::string ros_node_name = RT_GUI_CLIENT_NAME;
-    ros_node_.reset(new RosNode(ros_node_name,6));
-    slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),"add_slider","update_slider");
+    ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
+    slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),_ros_services.slider.add,_ros_services.slider.update);
+    radio_m_  = std::make_shared<RadioButtonClientManager>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
   }
 
   ~RtGuiClient()
@@ -84,6 +80,7 @@ private:
 
   std::unique_ptr<RosNode> ros_node_;
   SliderClientManager::Ptr slider_m_;
+  RadioButtonClientManager::Ptr radio_m_;
 
 };
 

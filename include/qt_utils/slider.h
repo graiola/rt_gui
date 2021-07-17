@@ -1,5 +1,5 @@
-#ifndef QT_UTILS_SLIDERSGROUP_H
-#define QT_UTILS_SLIDERSGROUP_H
+#ifndef QT_UTILS_SLIDERS_H
+#define QT_UTILS_SLIDERS_H
 
 #include <QtWidgets>
 #include <QGroupBox>
@@ -39,20 +39,6 @@ private:
 
   QString         data_name_;
   QString         group_name_;
-};
-
-class SlidersGroup : public QGroupBox
-{
-  Q_OBJECT
-
-public:
-  SlidersGroup(const QString &title,
-               QWidget *parent = 0);
-
-  void addSlider(Slider* slider);
-
-private:
-  QBoxLayout* sliders_layout_;
 };
 
 #endif

@@ -19,14 +19,13 @@
 #ifndef RT_GUI_RT_GUI_SERVER_H
 #define RT_GUI_RT_GUI_SERVER_H
 
-#include <rt_gui/common.h>
-
-#include <qt_utils/window.h>
+#include <support/common.h>
+#include <support/server.h>
 
 namespace rt_gui
 {
 
-class RtGuiServer : QObject
+class RtGuiServer : public QObject
 {
 
   Q_OBJECT
@@ -39,73 +38,29 @@ public:
     return istance;
   }
 
-  bool addSlider(addSlider::Request  &req, addSlider::Response &res)
-  {
-
-    emit addSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
-
-    // FIXME add a proper error handling
-    res.resp = true;
-
-    return res.resp;
-  }
-
   int run(int argc, char *argv[])
   {
     std::string ros_node_name = RT_GUI_SERVER_NAME;
-    ros_node_.reset(new RosNode(ros_node_name,1));
+    ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
 
     app_ = std::make_shared<QApplication>(argc,argv);
     window_ = std::make_shared<Window>(QString::fromStdString(ros_node_name));
 
-    add_slider_ = ros_node_->getNode().advertiseService("add_slider", &RtGuiServer::addSlider, this);
-    update_slider_ = ros_node_->getNode().serviceClient<rt_gui::updateSlider>("/" RT_GUI_CLIENT_NAME "/update_slider");
-
-    QObject::connect(this,          SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
-                     window_.get(), SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
-
-    QObject::connect(window_.get(), SIGNAL(updateServer(QString, QString, double)),
-                     this,          SLOT(updateServer(QString, QString, double)));
+    slider_m_ = std::make_shared<SliderServerManager>(window_,ros_node_->getNode(),_ros_services.slider.update,_ros_services.slider.add);
+    radio_m_  = std::make_shared<RadioButtonServerManager>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
 
     return app_->exec();
   }
 
-signals:
-  void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
-
-public slots:
-  bool updateServer(QString group_name, QString data_name, double value)
-  {
-    ROS_DEBUG_STREAM("updateServer: " << group_name.toStdString() << " " << data_name.toStdString() << " " << value << std::endl);
-
-    rt_gui::updateSlider srv;
-    srv.request.data_name  = data_name.toStdString();
-    srv.request.group_name = group_name.toStdString();
-    srv.request.value = value;
-
-    if(update_slider_.exists())
-    {
-      update_slider_.call(srv);
-      if(srv.response.resp == false)
-        throw std::runtime_error("RtGuiClient::updateSlider::resp is false!");
-    }
-    else
-    {
-      throw std::runtime_error("RtGuiClient::updateSlider service is not available!");
-    }
-    return true;
-  }
-
 private:
-
 
   RtGuiServer()
   {
   }
 
-  //~RtGuiServer()
-  //{
-  //}
+  ~RtGuiServer()
+  {
+  }
 
   RtGuiServer(const RtGuiServer&)= delete;
   RtGuiServer& operator=(const RtGuiServer&)= delete;
@@ -114,8 +69,11 @@ private:
   std::shared_ptr<QApplication> app_;
   std::unique_ptr<RosNode> ros_node_;
 
-  ros::ServiceServer add_slider_;
-  ros::ServiceClient update_slider_;
+  SliderServerManager::Ptr slider_m_;
+  RadioButtonServerManager::Ptr radio_m_;
+
+  //ros::ServiceServer add_slider_;
+  //ros::ServiceClient update_slider_;
 
 };
 

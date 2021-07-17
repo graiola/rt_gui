@@ -10,5 +10,6 @@ int main(int argc, char *argv[])
   window.addSlider(QString("forces"),QString("Fx"),-10.5,10.5,0.0);
   window.addSlider(QString("forces"),QString("Fy"),-10.5,10.5,0.0);
   window.addSlider(QString("velocities"),QString("Vx"),-12.5,16.5,0.0);
+  window.addRadioButton(QString("velocities"),QString("Filter"),false);
   return app.exec();
 }

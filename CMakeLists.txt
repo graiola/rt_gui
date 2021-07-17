@@ -63,7 +63,7 @@ install(DIRECTORY include/${PROJECT_NAME}/
 add_executable(test_qt test/test_qt.cpp)
 target_link_libraries(test_qt PRIVATE qt_utils)
 
-add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
+add_executable(test_server include/support/server.h include/rt_gui/rt_gui_server.h test/test_server.cpp)
 target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
 
 add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)

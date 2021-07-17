@@ -1,8 +1,10 @@
 add_library(qt_utils SHARED
     include/qt_utils/window.h
-    include/qt_utils/slidersgroup.h
+    include/qt_utils/slider.h
+    include/qt_utils/radio_button.h
     src/qt_utils/window.cpp
-    src/qt_utils/slidersgroup.cpp
+    src/qt_utils/slider.cpp
+    src/qt_utils/radio_button.cpp
     )
 
 target_link_libraries(qt_utils PUBLIC
