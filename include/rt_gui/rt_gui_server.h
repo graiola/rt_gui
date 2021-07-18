@@ -50,8 +50,23 @@ public:
     radio_m_  = std::make_shared<RadioButtonServerManager>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
     combo_m_  = std::make_shared<ComboBoxServerManager>(window_,ros_node_->getNode(),_ros_services.combo_box.update,_ros_services.combo_box.add);
 
+    remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RtGuiServer::removeWidget, this);
+
+    QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &)),
+                     window_,    SLOT(removeWidget(const QString &, const QString &)));
+
     return app_->exec();
   }
+
+  bool removeWidget(removeWidget::Request& req, removeWidget::Response& res)
+  {
+    emit removeWidget(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
+    res.resp = true;
+    return res.resp;
+  }
+
+signals:
+  void removeWidget(const QString &group_name, const QString &data_name);
 
 private:
 
@@ -73,6 +88,9 @@ private:
   SliderServerManager::Ptr slider_m_;
   RadioButtonServerManager::Ptr radio_m_;
   ComboBoxServerManager::Ptr combo_m_;
+
+  ros::ServiceServer remove_;
+
 };
 
 

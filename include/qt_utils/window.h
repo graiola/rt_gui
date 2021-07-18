@@ -21,6 +21,8 @@ public:
 
   void add(QWidget* widget);
 
+  void remove(QWidget* widget);
+
 private:
   QBoxLayout* layout_;
 };
@@ -44,6 +46,8 @@ public slots:
     void radioButtonChanged(bool value);
     void comboBoxChanged(QString value);
 
+    void removeWidget(const QString& group_name, const QString& data_name);
+
 signals:
     void updateSlider(QString group_name, QString data_name, double value);
     void updateRadioButton(QString group_name, QString data_name, bool value);
@@ -58,6 +62,7 @@ private:
     QTabWidget* tabs_;
     QVBoxLayout* main_layout_;
     QGroupBox* sliders_layout_;
+
 
 };
 

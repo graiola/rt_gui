@@ -16,6 +16,11 @@ void WidgetsGroup::add(QWidget *widget)
   layout_->addWidget(widget);
 }
 
+void WidgetsGroup::remove(QWidget *widget)
+{
+  layout_->removeWidget(widget);
+}
+
 Window::Window(const QString& title)
 {
   main_layout_ = new QVBoxLayout;
@@ -102,6 +107,25 @@ void Window::comboBoxChanged(QString /*value*/)
   ComboBox* combo = qobject_cast<ComboBox*>(sender());
   if(combo!=Q_NULLPTR)
     emit updateComboBox(combo->getGroupName(),combo->getDataName(),combo->getValue());
+}
+
+void Window::removeWidget(const QString &group_name, const QString &data_name)
+{
+  if(widgets_group_.count(group_name) != 0)
+  {
+    for (int i = 0; i < widgets_group_[group_name]->layout()->count(); ++i)
+    {
+      QWidget *widget = widgets_group_[group_name]->layout()->itemAt(i)->widget();
+      if(widget != Q_NULLPTR && widget->objectName() == data_name)
+      {
+        widgets_group_[group_name]->remove(widget);
+        main_layout_->removeWidget(widget);
+        delete widget;
+      }
+    }
+  }
+  if(widgets_group_[group_name]->layout()->count() == 0)
+    delete widgets_group_[group_name];
 }
 
 void Window::createTabs()

@@ -13,6 +13,8 @@
 #include <rt_gui/updateRadioButton.h>
 #include <rt_gui/updateSlider.h>
 
+#include <rt_gui/removeWidget.h>
+
 #include <memory>
 #include <atomic>
 #include <thread>
@@ -45,6 +47,8 @@ struct
   } combo_box;
 
   unsigned int n_threads = 3;
+  double wait_service_secs = 10.0;
+  std::string remove_service = "remove_widget";
 
 } _ros_services;
 

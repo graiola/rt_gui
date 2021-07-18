@@ -86,7 +86,6 @@ public:
 public slots:
   bool updateSlider(QString group_name, QString data_name, double value)
   {
-
     return update(group_name.toStdString(),data_name.toStdString(),value);
   }
 

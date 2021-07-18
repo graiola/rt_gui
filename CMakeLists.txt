@@ -39,6 +39,7 @@ add_service_files(
   update/updateComboBox.srv
   update/updateRadioButton.srv
   update/updateSlider.srv
+  removeWidget.srv
 )
 
 generate_messages()

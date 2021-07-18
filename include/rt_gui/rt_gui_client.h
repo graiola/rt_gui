@@ -68,11 +68,19 @@ public:
     combo_m_->add(group_name,data_name,list,data_ptr);
   }
 
+  void removeWidget(const std::string& group_name, const std::string& data_name)
+  {
+    rt_gui::removeWidget srv;
+    srv.request.data_name = data_name;
+    srv.request.group_name = group_name;
+    remove_.call(srv);
+  }
+
   void sync()
   {
-     slider_m_->sync();
-     radio_m_->sync();
-     combo_m_->sync();
+    slider_m_->sync();
+    radio_m_->sync();
+    combo_m_->sync();
   }
 
 private:
@@ -84,6 +92,8 @@ private:
     slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),_ros_services.slider.add,_ros_services.slider.update);
     radio_m_  = std::make_shared<RadioButtonClientManager>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
     combo_m_  = std::make_shared<ComboBoxClientManager>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
+
+    remove_ = ros_node_->getNode().serviceClient<rt_gui::removeWidget>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
   }
 
   ~RtGuiClient()
@@ -97,6 +107,8 @@ private:
   SliderClientManager::Ptr slider_m_;
   RadioButtonClientManager::Ptr radio_m_;
   ComboBoxClientManager::Ptr combo_m_;
+
+  ros::ServiceClient remove_;
 
 };
 
