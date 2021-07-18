@@ -7,27 +7,58 @@
 namespace rt_gui
 {
 
+template <class data_t>
+class Buffer {
+
+public:
+
+  Buffer() {}
+
+  typedef std::pair<std::string,std::string> buffer_key_t;
+  typedef std::pair<data_t*,data_t> buffer_value_t;
+  typedef std::map<buffer_key_t, buffer_value_t> buffer_t;
+
+  void add(const std::string& key1, const std::string& key2, data_t* data_ptr)
+  {
+    buffer_[buffer_key_t(key1,key2)] = buffer_value_t(data_ptr,*data_ptr);
+  }
+
+  void update(const std::string& key1, const std::string& key2, const data_t& value)
+  {
+    buffer_[buffer_key_t(key1,key2)].second = value;
+  }
+
+  void sync()
+  {
+    for(auto tmp_map : buffer_)
+    {
+      if(tmp_map.second.first!=nullptr) // The data pointer still exists
+        *tmp_map.second.first = tmp_map.second.second;
+    }
+  }
+
+private:
+  buffer_t buffer_;
+
+};
+
 template<typename data_t, typename data_srv_request_t>
 class ClientManagerBase
 {
 
 public:
 
-  typedef std::pair<std::string,std::string> buffer_key_t;
-  typedef std::pair<data_t*,data_t> buffer_value_t;
-  typedef std::map<buffer_key_t, buffer_value_t> buffer_t;
-
   typedef std::shared_ptr<ClientManagerBase> Ptr;
 
   ClientManagerBase(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
   {
-     add_ = node.serviceClient<data_srv_request_t>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+     add_    = node.serviceClient<data_srv_request_t>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
   }
 
   bool update(const std::string& group_name, const std::string& data_name, const data_t& value)
   {
      sync_mtx_.lock();
-     buffer_[buffer_key_t(group_name,data_name)].second = value;
+     buffer_.update(group_name,data_name,value);
      sync_mtx_.unlock();
      // FIXME add a proper error handling
      return true;
@@ -37,9 +68,7 @@ public:
   {
     if(sync_mtx_.try_lock())
     {
-      for(auto tmp_map : buffer_)
-        if(tmp_map.second.first!=nullptr) // The data pointer still exists
-          *tmp_map.second.first = tmp_map.second.second;
+      buffer_.sync();
       sync_mtx_.unlock();
     }
   }
@@ -49,25 +78,22 @@ protected:
   void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, data_srv_request_t& srv)
   {
     assert(data_ptr);
-    if(add_.exists())
+    if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
     {
       add_.call(srv);
       if(srv.response.resp == false)
         throw std::runtime_error("RtGuiServer::add::resp is false!");
       else
-        buffer_[buffer_key_t(group_name,data_name)] = buffer_value_t(data_ptr,*data_ptr);
+        buffer_.add(group_name,data_name,data_ptr);
     }
     else
-    {
       throw std::runtime_error("RtGuiServer::add service is not available!");
-    }
   }
 
   ros::ServiceServer update_;
   ros::ServiceClient add_;
-  buffer_t buffer_;
   std::mutex sync_mtx_;
-
+  Buffer<data_t> buffer_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
