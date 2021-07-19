@@ -7,17 +7,23 @@ void printFunction()
   std::cout << "hello world!" << std::endl;
 }
 
+void sumFunction()
+{
+  double a = 0.0;
+  double b = 0.0;
+  std::cout << "Sum two numbers" << std::endl;
+  newline::getDouble("First number: ",a,a);
+  newline::getDouble("Second number: ",b,b);
+  std::cout << a + b << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
 
   Console console;
 
-  Console::ConsoleCommand printFunctionCmd;
-  printFunctionCmd.command = "print";
-  printFunctionCmd.comment = "print some useful stuff";
-  printFunctionCmd.function = printFunction;
-
-  console.addConsoleFunction(printFunctionCmd);
+  console.addConsoleFunction("print","print some useful stuff",printFunction);
+  console.addConsoleFunction("sum","sum two numbers",sumFunction);
 
   console.runConsole();
 
