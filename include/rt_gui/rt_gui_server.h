@@ -49,6 +49,7 @@ public:
     slider_m_ = std::make_shared<SliderServerManager>(window_,ros_node_->getNode(),_ros_services.slider.update,_ros_services.slider.add);
     radio_m_  = std::make_shared<RadioButtonServerManager>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
     combo_m_  = std::make_shared<ComboBoxServerManager>(window_,ros_node_->getNode(),_ros_services.combo_box.update,_ros_services.combo_box.add);
+    button_m_ = std::make_shared<ButtonServerManager>(window_,ros_node_->getNode(),_ros_services.button.update,_ros_services.button.add);
 
     remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RtGuiServer::removeWidget, this);
 
@@ -88,6 +89,7 @@ private:
   SliderServerManager::Ptr slider_m_;
   RadioButtonServerManager::Ptr radio_m_;
   ComboBoxServerManager::Ptr combo_m_;
+  ButtonServerManager::Ptr button_m_;
 
   ros::ServiceServer remove_;
 

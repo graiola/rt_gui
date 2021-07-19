@@ -13,8 +13,6 @@ class Console
 
 public:
 
-  //typedef void (*function_pointer)();
-
   typedef std::function<void ()> funct_t;
 
   struct ConsoleCommand {

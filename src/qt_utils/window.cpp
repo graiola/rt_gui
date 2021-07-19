@@ -2,6 +2,7 @@
 #include "qt_utils/radio_button.h"
 #include "qt_utils/window.h"
 #include "qt_utils/combo_box.h"
+#include "qt_utils/button.h"
 
 WidgetsGroup::WidgetsGroup(const QString &title,
                            QWidget *parent)
@@ -52,6 +53,18 @@ bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& gr
   return duplicated;
 }
 
+void Window::addButton(const QString& group_name, const QString& data_name)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    Button* button = new Button(group_name,data_name);
+    widgets_group_[group_name]->add(button);
+    QObject::connect(button, SIGNAL(valueChanged()),
+                     this,   SLOT(buttonChanged()));
+    createTabs();
+  }
+}
+
 void Window::addSlider(const QString& group_name, const QString& data_name,
                        const double& min, const double& max, const double& init)
 {
@@ -88,6 +101,14 @@ void Window::addComboBox(const QString& group_name, const QString& data_name, co
     createTabs();
   }
 }
+
+void Window::buttonChanged()
+{
+  Button* button = qobject_cast<Button*>(sender());
+  if(button!=Q_NULLPTR)
+    emit updateButton(button->getGroupName(),button->getDataName());
+}
+
 void Window::sliderChanged(double /*value*/)
 {
   Slider* slider = qobject_cast<Slider*>(sender());

@@ -2,6 +2,12 @@
 
 using namespace rt_gui;
 
+bool stopController()
+{
+  ROS_WARN("Stopping the controller!");
+  return true;
+}
+
 int main(int /*argc*/, char*[] /*argv[]*/)
 {
 
@@ -23,6 +29,7 @@ int main(int /*argc*/, char*[] /*argv[]*/)
   RtGuiClient::getIstance().addRadioButton(std::string("velocities"),std::string("Filter"),&Filter_on);
   RtGuiClient::getIstance().addComboBox(std::string("controllers"),std::string("type"),controller_list,&controller_type);
   RtGuiClient::getIstance().addRadioButton(std::string("controllers"),std::string("status"),&Controller_on);
+  RtGuiClient::getIstance().addButton(std::string("controllers"),std::string("stop"),&stopController);
 
   ros::Rate r(100);
   while(ros::ok())

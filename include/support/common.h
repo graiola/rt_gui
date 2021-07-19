@@ -3,12 +3,12 @@
 
 #include <ros/ros.h>
 
-#include <rt_gui/addCheckBox.h>
+#include <rt_gui/addButton.h>
 #include <rt_gui/addComboBox.h>
 #include <rt_gui/addRadioButton.h>
 #include <rt_gui/addSlider.h>
 
-#include <rt_gui/updateCheckBox.h>
+#include <rt_gui/updateButton.h>
 #include <rt_gui/updateComboBox.h>
 #include <rt_gui/updateRadioButton.h>
 #include <rt_gui/updateSlider.h>
@@ -45,6 +45,12 @@ struct
     std::string add    = "add_combo_box";
     std::string update = "update_combo_box";
   } combo_box;
+
+  struct
+  {
+    std::string add    = "add_button";
+    std::string update = "update_button";
+  } button;
 
   unsigned int n_threads = 3;
   double wait_service_secs = 10.0;

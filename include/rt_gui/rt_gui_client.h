@@ -58,9 +58,9 @@ public:
     radio_m_->add(group_name,data_name,data_ptr);
   }
 
-  void addCheckBox(const std::string& group_name, const std::string& data_name, bool* data_ptr)
+  void addButton(const std::string& group_name, const std::string& data_name, ButtonClientManager::funct_t fun)
   {
-
+    button_m_->add(group_name,data_name,fun);
   }
 
   void addComboBox(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr)
@@ -92,6 +92,7 @@ private:
     slider_m_ = std::make_shared<SliderClientManager>(ros_node_->getNode(),_ros_services.slider.add,_ros_services.slider.update);
     radio_m_  = std::make_shared<RadioButtonClientManager>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
     combo_m_  = std::make_shared<ComboBoxClientManager>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
+    button_m_ = std::make_shared<ButtonClientManager>(ros_node_->getNode(),_ros_services.button.add,_ros_services.button.update);
 
     remove_ = ros_node_->getNode().serviceClient<rt_gui::removeWidget>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
   }
@@ -107,6 +108,7 @@ private:
   SliderClientManager::Ptr slider_m_;
   RadioButtonClientManager::Ptr radio_m_;
   ComboBoxClientManager::Ptr combo_m_;
+  ButtonClientManager::Ptr button_m_;
 
   ros::ServiceClient remove_;
 

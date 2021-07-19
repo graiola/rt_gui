@@ -77,7 +77,6 @@ protected:
 
   void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, data_srv_request_t& srv)
   {
-    assert(data_ptr);
     if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
     {
       add_.call(srv);
@@ -97,6 +96,55 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ButtonClientManager
+{
+
+public:
+
+  typedef std::shared_ptr<ButtonClientManager> Ptr;
+
+  typedef std::function<bool ()> funct_t;
+
+  ButtonClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+  {
+     update_ = node.advertiseService(srv_provided, &ButtonClientManager::update, this);
+     add_    = node.serviceClient<rt_gui::addButton>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+  }
+
+  bool update(updateButton::Request& req, updateButton::Response& res)
+  {
+    res.resp = fun_(); // Trigger
+    return res.resp;
+  }
+
+  void add(const std::string& group_name, const std::string& data_name, funct_t fun)
+  {
+
+    assert(fun);
+    fun_ = fun;
+    rt_gui::addButton srv;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    {
+      add_.call(srv);
+      if(srv.response.resp == false)
+        throw std::runtime_error("RtGuiServer::add::resp is false!");
+    }
+    else
+      throw std::runtime_error("RtGuiServer::add service is not available!");
+  }
+
+private:
+
+  ros::ServiceServer update_;
+  ros::ServiceClient add_;
+
+  funct_t fun_;
+
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class SliderClientManager : public ClientManagerBase<double,rt_gui::addSlider>
 {
 
@@ -107,7 +155,7 @@ public:
   SliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ClientManagerBase<double,rt_gui::addSlider>(node,srv_requested,srv_provided)
   {
-     update_ = node.advertiseService(srv_provided, &SliderClientManager::update, this); // FIXME to be moved in base
+     update_ = node.advertiseService(srv_provided, &SliderClientManager::update, this);
   }
 
   bool update(updateSlider::Request& req, updateSlider::Response& res)
@@ -140,7 +188,7 @@ public:
   RadioButtonClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ClientManagerBase<bool,rt_gui::addRadioButton>(node,srv_requested,srv_provided)
   {
-     update_ = node.advertiseService(srv_provided, &RadioButtonClientManager::update, this); // FIXME to be moved in base
+     update_ = node.advertiseService(srv_provided, &RadioButtonClientManager::update, this);
   }
 
   bool update(updateRadioButton::Request& req, updateRadioButton::Response& res)
@@ -171,7 +219,7 @@ public:
   ComboBoxClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     :ClientManagerBase<std::string,rt_gui::addComboBox>(node,srv_requested,srv_provided)
   {
-     update_ = node.advertiseService(srv_provided, &ComboBoxClientManager::update, this); // FIXME to be moved in base
+     update_ = node.advertiseService(srv_provided, &ComboBoxClientManager::update, this);
   }
 
   bool update(updateComboBox::Request& req, updateComboBox::Response& res)
