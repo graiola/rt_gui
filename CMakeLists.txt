@@ -55,6 +55,10 @@ include_directories(
     ${QWT_INCLUDE_DIRS}
 )
 
+## Compile console lib
+add_library(console src/console/console_core.cpp src/console/console.cpp)
+target_link_libraries(console readline pthread)
+
 include(src/qt_utils/qt_utils.cmake)
 
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -69,6 +73,9 @@ target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
 
 add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
 target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
+
+add_executable(test_console test/test_console.cpp)
+target_link_libraries(test_console PRIVATE console)
 
 install(TARGETS test_qt test_server test_client
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
