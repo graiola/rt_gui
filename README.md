@@ -1,5 +1,5 @@
 # rt_gui
 
-# todo
-[] add console gui
-[] add console socket
+## todo
+- [] add console gui
+- [] add console socket
