@@ -1,6 +1,6 @@
-#include "qt_utils/slider.h"
+#include "qt_utils/double_slider.h"
 
-Slider::Slider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
+DoubleSlider::DoubleSlider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
                QWidget *parent)
   : QGroupBox(data_name, parent)
 {
@@ -35,29 +35,29 @@ Slider::Slider(const QString &group_name, const QString &data_name, const double
   setLayout(widgets_layout);
 }
 
-double Slider::getValue()
+double DoubleSlider::getValue()
 {
   return value_;
 }
 
-const QString &Slider::getDataName() const
+const QString &DoubleSlider::getDataName() const
 {
   return data_name_;
 }
 
-const QString &Slider::getGroupName() const
+const QString &DoubleSlider::getGroupName() const
 {
   return group_name_;
 }
 
-void Slider::setValue(double value)
+void DoubleSlider::setValue(double value)
 {
   value_ = value;
   current_->setText(QString::number(value_));
   emit valueChanged(value_);
 }
 
-void Slider::setValue(QString value)
+void DoubleSlider::setValue(QString value)
 {
   value_ = value.toDouble();
   slider_->setValue(value_);

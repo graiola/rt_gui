@@ -23,7 +23,7 @@ public:
 
   bool update(data_srv_request_t& srv)
   {
-    if(update_.exists())
+    if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
     {
       update_.call(srv);
       if(srv.response.resp == false)
@@ -89,7 +89,7 @@ public slots:
     rt_gui::addButton srv;
     srv.request.data_name  = data_name.toStdString();
     srv.request.group_name = group_name.toStdString();
-    if(update_.exists())
+    if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
     {
       update_.call(srv);
       if(srv.response.resp == false)
@@ -107,44 +107,85 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SliderServerManager : public QObject, ServerManagerBase<double,rt_gui::updateSlider>
+class IntSliderServerManager : public QObject, ServerManagerBase<int,rt_gui::updateIntSlider>
 {
 
   Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<SliderServerManager> Ptr;
+  typedef std::shared_ptr<IntSliderServerManager> Ptr;
 
-  SliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<double,rt_gui::updateSlider>(window,node,srv_requested,srv_provided)
+  IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ServerManagerBase<int,rt_gui::updateIntSlider>(window,node,srv_requested,srv_provided)
   {
-    add_ = node.advertiseService(srv_provided, &SliderServerManager::addSlider, this); // FIXME to be moved in base
+    add_ = node.advertiseService(srv_provided, &IntSliderServerManager::addIntSlider, this); // FIXME to be moved in base
 
 
-    QObject::connect(this,    SIGNAL(addSlider(const QString&, const QString&, const double&, const double&, const double&)),
-                     window_, SLOT(addSlider(const QString&, const QString&, const double&, const double&, const double&)));
+    QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
+                     window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
 
-    QObject::connect(window_, SIGNAL(updateSlider(QString, QString, double)),
-                     this,    SLOT(updateSlider(QString, QString, double)));
+    QObject::connect(window_, SIGNAL(updateIntSlider(QString, QString, int)),
+                     this,    SLOT(updateIntSlider(QString, QString, int)));
   }
 
-  bool addSlider(addSlider::Request  &req, addSlider::Response &res)
+  bool addIntSlider(addIntSlider::Request  &req, addIntSlider::Response &res)
   {
-    emit addSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
+    emit addIntSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
     // FIXME add a proper error handling
     res.resp = true;
     return res.resp;
   }
 
 public slots:
-  bool updateSlider(QString group_name, QString data_name, double value)
+  bool updateIntSlider(QString group_name, QString data_name, int value)
   {
     return update(group_name.toStdString(),data_name.toStdString(),value);
   }
 
 signals:
-  void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
+  void addIntSlider(const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DoubleSliderServerManager : public QObject, ServerManagerBase<double,rt_gui::updateDoubleSlider>
+{
+
+  Q_OBJECT
+
+public:
+
+  typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
+
+  DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ServerManagerBase<double,rt_gui::updateDoubleSlider>(window,node,srv_requested,srv_provided)
+  {
+    add_ = node.advertiseService(srv_provided, &DoubleSliderServerManager::addDoubleSlider, this); // FIXME to be moved in base
+
+
+    QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
+                     window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
+
+    QObject::connect(window_, SIGNAL(updateDoubleSlider(QString, QString, double)),
+                     this,    SLOT(updateDoubleSlider(QString, QString, double)));
+  }
+
+  bool addDoubleSlider(addDoubleSlider::Request  &req, addDoubleSlider::Response &res)
+  {
+    emit addDoubleSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
+    // FIXME add a proper error handling
+    res.resp = true;
+    return res.resp;
+  }
+
+public slots:
+  bool updateDoubleSlider(QString group_name, QString data_name, double value)
+  {
+    return update(group_name.toStdString(),data_name.toStdString(),value);
+  }
+
+signals:
+  void addDoubleSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,5 @@
-#include "qt_utils/slider.h"
+#include "qt_utils/double_slider.h"
+#include "qt_utils/int_slider.h"
 #include "qt_utils/radio_button.h"
 #include "qt_utils/window.h"
 #include "qt_utils/combo_box.h"
@@ -65,15 +66,28 @@ void Window::addButton(const QString& group_name, const QString& data_name)
   }
 }
 
-void Window::addSlider(const QString& group_name, const QString& data_name,
+void Window::addIntSlider(const QString& group_name, const QString& data_name,
+                       const int& min, const int& max, const int& init)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    IntSlider* int_slider = new IntSlider(group_name,data_name,min,max,init);
+    widgets_group_[group_name]->add(int_slider);
+    QObject::connect(int_slider, SIGNAL(valueChanged(int)),
+                     this,   SLOT(intSliderChanged(int)));
+    createTabs();
+  }
+}
+
+void Window::addDoubleSlider(const QString& group_name, const QString& data_name,
                        const double& min, const double& max, const double& init)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    Slider* slider = new Slider(group_name,data_name,min,max,init);
-    widgets_group_[group_name]->add(slider);
-    QObject::connect(slider, SIGNAL(valueChanged(double)),
-                     this,   SLOT(sliderChanged(double)));
+    DoubleSlider* double_slider = new DoubleSlider(group_name,data_name,min,max,init);
+    widgets_group_[group_name]->add(double_slider);
+    QObject::connect(double_slider, SIGNAL(valueChanged(double)),
+                     this,   SLOT(doubleSliderChanged(double)));
     createTabs();
   }
 }
@@ -109,11 +123,18 @@ void Window::buttonChanged()
     emit updateButton(button->getGroupName(),button->getDataName());
 }
 
-void Window::sliderChanged(double /*value*/)
+void Window::intSliderChanged(int /*value*/)
 {
-  Slider* slider = qobject_cast<Slider*>(sender());
-  if(slider!=Q_NULLPTR)
-    emit updateSlider(slider->getGroupName(),slider->getDataName(),slider->getValue());
+  IntSlider* int_slider = qobject_cast<IntSlider*>(sender());
+  if(int_slider!=Q_NULLPTR)
+    emit updateIntSlider(int_slider->getGroupName(),int_slider->getDataName(),int_slider->getValue());
+}
+
+void Window::doubleSliderChanged(double /*value*/)
+{
+  DoubleSlider* double_slider = qobject_cast<DoubleSlider*>(sender());
+  if(double_slider!=Q_NULLPTR)
+    emit updateDoubleSlider(double_slider->getGroupName(),double_slider->getDataName(),double_slider->getValue());
 }
 
 void Window::radioButtonChanged(bool /*value*/)

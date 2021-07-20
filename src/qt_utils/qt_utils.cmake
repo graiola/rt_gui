@@ -1,11 +1,13 @@
 add_library(qt_utils SHARED
     include/qt_utils/window.h
-    include/qt_utils/slider.h
+    include/qt_utils/double_slider.h
+    include/qt_utils/int_slider.h
     include/qt_utils/radio_button.h
     include/qt_utils/combo_box.h
     include/qt_utils/button.h
     src/qt_utils/window.cpp
-    src/qt_utils/slider.cpp
+    src/qt_utils/double_slider.cpp
+    src/qt_utils/int_slider.cpp
     src/qt_utils/radio_button.cpp
     src/qt_utils/combo_box.cpp
     src/qt_utils/button.cpp

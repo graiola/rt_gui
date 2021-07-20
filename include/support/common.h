@@ -6,12 +6,14 @@
 #include <rt_gui/addButton.h>
 #include <rt_gui/addComboBox.h>
 #include <rt_gui/addRadioButton.h>
-#include <rt_gui/addSlider.h>
+#include <rt_gui/addDoubleSlider.h>
+#include <rt_gui/addIntSlider.h>
 
 #include <rt_gui/updateButton.h>
 #include <rt_gui/updateComboBox.h>
 #include <rt_gui/updateRadioButton.h>
-#include <rt_gui/updateSlider.h>
+#include <rt_gui/updateDoubleSlider.h>
+#include <rt_gui/updateIntSlider.h>
 
 #include <rt_gui/removeWidget.h>
 
@@ -30,9 +32,15 @@ struct
 {
   struct
   {
-    std::string add    = "add_slider";
-    std::string update = "update_slider";
-  } slider;
+    std::string add    = "add_double_slider";
+    std::string update = "update_double_slider";
+  } double_slider;
+
+  struct
+  {
+    std::string add    = "add_int_slider";
+    std::string update = "update_int_slider";
+  } int_slider;
 
   struct
   {

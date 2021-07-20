@@ -8,7 +8,7 @@
 QT_BEGIN_NAMESPACE
 class QGroupBox;
 QT_END_NAMESPACE
-class Slider;
+class DoubleSlider;
 class RadioButton;
 
 class WidgetsGroup : public QGroupBox
@@ -39,12 +39,14 @@ public:
 
 public slots:
     void addButton(const QString& group_name, const QString& data_name);
-    void addSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
+    void addDoubleSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
+    void addIntSlider(const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
     void addRadioButton(const QString& group_name, const QString& data_name, const bool& init);
     void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
     void buttonChanged();
-    void sliderChanged(double value);
+    void intSliderChanged(int value);
+    void doubleSliderChanged(double value);
     void radioButtonChanged(bool value);
     void comboBoxChanged(QString value);
 
@@ -52,7 +54,8 @@ public slots:
 
 signals:
     void updateButton(QString group_name, QString data_name);
-    void updateSlider(QString group_name, QString data_name, double value);
+    void updateDoubleSlider(QString group_name, QString data_name, double value);
+    void updateIntSlider(QString group_name, QString data_name, int value);
     void updateRadioButton(QString group_name, QString data_name, bool value);
     void updateComboBox(QString group_name, QString data_name, QString value);
 

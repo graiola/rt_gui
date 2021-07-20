@@ -145,20 +145,53 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SliderClientManager : public ClientManagerBase<double,rt_gui::addSlider>
+class IntSliderClientManager : public ClientManagerBase<int,rt_gui::addIntSlider>
 {
 
 public:
 
-  typedef std::shared_ptr<SliderClientManager> Ptr;
+  typedef std::shared_ptr<IntSliderClientManager> Ptr;
 
-  SliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ClientManagerBase<double,rt_gui::addSlider>(node,srv_requested,srv_provided)
+  IntSliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ClientManagerBase<int,rt_gui::addIntSlider>(node,srv_requested,srv_provided)
   {
-     update_ = node.advertiseService(srv_provided, &SliderClientManager::update, this);
+     update_ = node.advertiseService(srv_provided, &IntSliderClientManager::update, this);
   }
 
-  bool update(updateSlider::Request& req, updateSlider::Response& res)
+  bool update(updateIntSlider::Request& req, updateIntSlider::Response& res)
+  {
+    res.resp = ClientManagerBase::update(req.group_name,req.data_name,req.value);
+    return res.resp;
+  }
+
+  void add(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr)
+  {
+    rt_gui::addIntSlider srv;
+    srv.request.min = min;
+    srv.request.max = max;
+    srv.request.init = *data_ptr;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+  }
+
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class DoubleSliderClientManager : public ClientManagerBase<double,rt_gui::addDoubleSlider>
+{
+
+public:
+
+  typedef std::shared_ptr<DoubleSliderClientManager> Ptr;
+
+  DoubleSliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    :ClientManagerBase<double,rt_gui::addDoubleSlider>(node,srv_requested,srv_provided)
+  {
+     update_ = node.advertiseService(srv_provided, &DoubleSliderClientManager::update, this);
+  }
+
+  bool update(updateDoubleSlider::Request& req, updateDoubleSlider::Response& res)
   {
     res.resp = ClientManagerBase::update(req.group_name,req.data_name,req.value);
     return res.resp;
@@ -166,7 +199,7 @@ public:
 
   void add(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr)
   {
-    rt_gui::addSlider srv;
+    rt_gui::addDoubleSlider srv;
     srv.request.min = min;
     srv.request.max = max;
     srv.request.init = *data_ptr;

@@ -34,11 +34,13 @@ add_service_files(
   add/addButton.srv
   add/addComboBox.srv
   add/addRadioButton.srv
-  add/addSlider.srv
+  add/addDoubleSlider.srv
+  add/addIntSlider.srv
   update/updateButton.srv
   update/updateComboBox.srv
   update/updateRadioButton.srv
-  update/updateSlider.srv
+  update/updateDoubleSlider.srv
+  update/updateIntSlider.srv
   removeWidget.srv
 )
 
