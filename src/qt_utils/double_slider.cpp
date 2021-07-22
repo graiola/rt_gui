@@ -16,8 +16,10 @@ DoubleSlider::DoubleSlider(const QString &group_name, const QString &data_name, 
   slider_->setValue(init);
 
   current_ = new QLineEdit();
-  QDoubleValidator* validator = new QDoubleValidator(min,max,10,current_);
+  int n_digits = 5;
+  QDoubleValidator* validator = new QDoubleValidator(min,max,n_digits,current_);
   validator->setNotation(QDoubleValidator::StandardNotation);
+  validator->setLocale(QLocale::C);
   current_->setValidator(validator);
   current_->setText(QString::number(init));
 
@@ -25,7 +27,7 @@ DoubleSlider::DoubleSlider(const QString &group_name, const QString &data_name, 
   min_ = new QLabel(QString::number(min));
 
   connect(slider_, SIGNAL(valueChanged(double)), this, SLOT(setValue(double)));
-  connect(current_, SIGNAL(textChanged(QString)), this, SLOT(setValue(QString)));
+  connect(current_, SIGNAL(returnPressed()), this, SLOT(setValue()));
 
   QBoxLayout *widgets_layout = new QBoxLayout(QBoxLayout::LeftToRight);
   widgets_layout->addWidget(min_);
@@ -57,9 +59,9 @@ void DoubleSlider::setValue(double value)
   emit valueChanged(value_);
 }
 
-void DoubleSlider::setValue(QString value)
+void DoubleSlider::setValue()
 {
-  value_ = value.toDouble();
+  value_ = current_->text().toDouble();
   slider_->setValue(value_);
   emit valueChanged(value_);
 }

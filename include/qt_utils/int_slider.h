@@ -27,7 +27,7 @@ signals:
   void valueChanged(int value);
 
 public slots:
-  void setValue(QString value);
+  void setValue();
   void setValue(int value);
 
 private:

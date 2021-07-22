@@ -33,6 +33,9 @@ int main(int /*argc*/, char*[] /*argv[]*/)
   RtGuiClient::getIstance().addButton(std::string("controllers"),std::string("stop"),&stopController);
   RtGuiClient::getIstance().addIntSlider(std::string("controllers"),std::string("steps"),0,10,&steps);
 
+  // Remove a widget example:
+  //RtGuiClient::getIstance().remove(std::string("controllers"),std::string("steps"));
+
   ros::Rate r(100);
   while(ros::ok())
   {

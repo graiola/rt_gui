@@ -26,7 +26,7 @@ signals:
   void valueChanged(double value);
 
 public slots:
-  void setValue(QString value);
+  void setValue();
   void setValue(double value);
 
 private:

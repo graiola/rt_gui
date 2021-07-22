@@ -24,7 +24,7 @@ IntSlider::IntSlider(const QString &group_name, const QString &data_name, const 
   min_ = new QLabel(QString::number(min));
 
   connect(slider_, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
-  connect(current_, SIGNAL(textChanged(QString)), this, SLOT(setValue(QString)));
+  connect(current_, SIGNAL(returnPressed()), this, SLOT(setValue()));
 
   QBoxLayout *widgets_layout = new QBoxLayout(QBoxLayout::LeftToRight);
   widgets_layout->addWidget(min_);
@@ -56,9 +56,9 @@ void IntSlider::setValue(int value)
   emit valueChanged(value_);
 }
 
-void IntSlider::setValue(QString value)
+void IntSlider::setValue()
 {
-  value_ = value.toInt();
+  value_ = current_->text().toInt();
   slider_->setValue(value_);
   emit valueChanged(value_);
 }

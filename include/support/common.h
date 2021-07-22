@@ -96,7 +96,7 @@ public:
       throw std::runtime_error("roscore not found... Did you start the server?");
     }
 
-    spinner_.reset(new ros::AsyncSpinner(n_threads)); // Use one thread to keep the ros magic alive
+    spinner_.reset(new ros::AsyncSpinner(n_threads)); // Use n_threads to keep the ros magic alive
     spinner_->start();
 
     init_ = true;
