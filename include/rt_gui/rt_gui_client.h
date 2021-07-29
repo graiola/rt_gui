@@ -64,7 +64,8 @@ public:
       double_slider_m_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i));
   }
 
-  void addDoubleSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::VectorXd* data_ptr)
+  template<typename Derived>
+  void addDoubleSlider(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::MatrixBase<Derived>* data_ptr)
   {
     for(unsigned int i=0;i<data_ptr->size();i++)
       double_slider_m_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i));
