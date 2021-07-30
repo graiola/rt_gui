@@ -16,18 +16,16 @@ class WidgetsGroup : public QGroupBox
   Q_OBJECT
 
 public:
-  WidgetsGroup(const QString &title,
-               QWidget *parent = 0);
+  WidgetsGroup(QWidget *parent = 0);
 
   void add(QWidget* widget);
-
   void remove(QWidget* widget);
 
 private:
   QBoxLayout* layout_;
 };
 
-class Window : public QWidget
+class Window : public QMainWindow
 {
     Q_OBJECT
 
@@ -62,12 +60,12 @@ signals:
 private:
     void createTabs();
 
-    bool checkIfDuplicated(const widgets_group_map_t& map, const QString& group_name, const QString& data_name);
+    bool checkIfDuplicated(widgets_group_map_t& map, const QString& group_name, const QString& data_name);
 
     widgets_group_map_t widgets_group_;
     QTabWidget* tabs_;
-    QVBoxLayout* main_layout_;
-    QGroupBox* sliders_layout_;
+    //QVBoxLayout* main_layout_;
+    QScrollArea* scroll_;
 
 
 };

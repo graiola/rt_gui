@@ -1,15 +1,16 @@
 #include "qt_utils/double_slider.h"
 #include "qt_utils/int_slider.h"
 #include "qt_utils/radio_button.h"
-#include "qt_utils/window.h"
 #include "qt_utils/combo_box.h"
 #include "qt_utils/button.h"
 
-WidgetsGroup::WidgetsGroup(const QString &title,
-                           QWidget *parent)
-  : QGroupBox(title, parent)
+#include "qt_utils/window.h"
+
+WidgetsGroup::WidgetsGroup(QWidget *parent)
+  : QGroupBox(parent)
 {
   layout_ = new QBoxLayout(QBoxLayout::TopToBottom);
+  layout_->setSizeConstraint(QLayout::SetFixedSize);
   setLayout(layout_);
 }
 
@@ -25,33 +26,73 @@ void WidgetsGroup::remove(QWidget *widget)
 
 Window::Window(const QString& title)
 {
-  main_layout_ = new QVBoxLayout;
-  tabs_ = new QTabWidget;
+  //main_layout_ = new QVBoxLayout;
+  //main_layout_->setSizeConstraint(QLayout::SetFixedSize);
 
-  setLayout(main_layout_);
+  scroll_ = new QScrollArea;
 
+  tabs_ = new QTabWidget(scroll_);
+  //main_layout_->addWidget(tabs_);
+
+  scroll_->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  scroll_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  scroll_->setWidgetResizable(true);
+  scroll_->setVisible(true);
+  scroll_->setWidget(tabs_);
+  //main_layout_->addWidget(scroll_);
+
+  //setLayout(main_layout_);
   setWindowTitle(title);
 }
 
-bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& group_name, const QString& data_name)
+bool Window::checkIfDuplicated(widgets_group_map_t& map, const QString& group_name, const QString& data_name)
 {
-  if(widgets_group_.count(group_name) == 0)
-    widgets_group_[group_name] = new WidgetsGroup(group_name);
+  if(map.count(group_name) == 0)
+    map[group_name] = new WidgetsGroup(this);
 
   bool duplicated = false;
-  for (int i = 0; i < map[group_name]->layout()->count(); ++i)
+
+  if(map.count(group_name) != 0)
   {
-    QWidget *widget = map[group_name]->layout()->itemAt(i)->widget();
-    if(widget != Q_NULLPTR && widget->objectName() == data_name)
+    for (int i = 0; i < map[group_name]->layout()->count(); i++)
     {
-      duplicated = true;
-      break;
+      QWidget *widget = map[group_name]->layout()->itemAt(i)->widget();
+      if(widget != Q_NULLPTR && widget->objectName() == data_name)
+      {
+        duplicated = true;
+        break;
+      }
     }
   }
   if(duplicated)
      qDebug() << "Widget in: "<< group_name << ", " << data_name <<" already exists!";
 
   return duplicated;
+}
+
+void Window::createTabs()
+{
+  const auto& map = widgets_group_.toStdMap();
+  for(auto tmp : map)
+  {
+    tabs_->addTab(tmp.second,tmp.first);
+    tabs_->adjustSize();
+    //tabs_->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored);
+  }
+  scroll_->adjustSize();
+}
+
+void Window::addDoubleSlider(const QString& group_name, const QString& data_name,
+                       const double& min, const double& max, const double& init)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    DoubleSlider* double_slider = new DoubleSlider(group_name,data_name,min,max,init);
+    widgets_group_[group_name]->add(double_slider);
+    QObject::connect(double_slider, SIGNAL(valueChanged(double)),
+                     this,   SLOT(doubleSliderChanged(double)));
+    createTabs();
+  }
 }
 
 void Window::addButton(const QString& group_name, const QString& data_name)
@@ -75,19 +116,6 @@ void Window::addIntSlider(const QString& group_name, const QString& data_name,
     widgets_group_[group_name]->add(int_slider);
     QObject::connect(int_slider, SIGNAL(valueChanged(int)),
                      this,   SLOT(intSliderChanged(int)));
-    createTabs();
-  }
-}
-
-void Window::addDoubleSlider(const QString& group_name, const QString& data_name,
-                       const double& min, const double& max, const double& init)
-{
-  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
-  {
-    DoubleSlider* double_slider = new DoubleSlider(group_name,data_name,min,max,init);
-    widgets_group_[group_name]->add(double_slider);
-    QObject::connect(double_slider, SIGNAL(valueChanged(double)),
-                     this,   SLOT(doubleSliderChanged(double)));
     createTabs();
   }
 }
@@ -161,22 +189,11 @@ void Window::removeWidget(const QString &group_name, const QString &data_name)
       if(widget != Q_NULLPTR && widget->objectName() == data_name)
       {
         widgets_group_[group_name]->remove(widget);
-        main_layout_->removeWidget(widget);
+        //main_layout_->removeWidget(widget);
         delete widget;
       }
     }
   }
   if(widgets_group_[group_name]->layout()->count() == 0)
     delete widgets_group_[group_name];
-}
-
-void Window::createTabs()
-{
-  const auto& map = widgets_group_.toStdMap();
-  for(auto tmp : map)
-  {
-    tabs_->addTab(tmp.second,tmp.first);
-  }
-  main_layout_->addWidget(tabs_);
-  show();
 }
