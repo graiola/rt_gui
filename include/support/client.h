@@ -96,6 +96,8 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The ButtonClientManager class
+///
 class ButtonClientManager
 {
 
@@ -145,6 +147,65 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The GetSetManager class
+///
+template <class data_t>
+class GetSetManager
+{
+
+public:
+
+  typedef std::shared_ptr<GetSetManager> Ptr;
+
+  typedef std::function<const data_t& ()> get_fun_t;
+  typedef std::function<void (const data_t&)> set_fun_t;
+
+  GetSetManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+  {
+     update_ = node.advertiseService(srv_provided, &GetSetManager::update, this);
+     add_    = node.serviceClient<rt_gui::addGetSet>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+  }
+
+  bool update(updateGetSet::Request& req, updateGetSet::Response& res)
+  {
+    //res.resp = fun_(); // Trigger
+    //return res.resp;
+  }
+
+  void add(const std::string& group_name, const std::string& data_name,
+           get_fun_t get, set_fun_t set)
+  {
+
+    //assert(get);
+    //assert(set);
+    //get_ = get;
+    //set_ = set;
+    //rt_gui::addButton srv;
+    //srv.request.group_name = group_name;
+    //srv.request.data_name = data_name;
+    //if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    //{
+    //  add_.call(srv);
+    //  if(srv.response.resp == false)
+    //    throw std::runtime_error("RtGuiServer::add::resp is false!");
+    //}
+    //else
+    //  throw std::runtime_error("RtGuiServer::add service is not available!");
+  }
+
+private:
+
+  ros::ServiceServer update_;
+  ros::ServiceClient add_;
+
+  get_fun_t get_;
+  set_fun_t set_;
+
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The IntSliderClientManager class
+///
 class IntSliderClientManager : public ClientManagerBase<int,rt_gui::addIntSlider>
 {
 
@@ -178,6 +239,8 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The DoubleSliderClientManager class
+///
 class DoubleSliderClientManager : public ClientManagerBase<double,rt_gui::addDoubleSlider>
 {
 
@@ -211,6 +274,8 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The RadioButtonClientManager class
+///
 class RadioButtonClientManager : public ClientManagerBase<bool,rt_gui::addRadioButton>
 {
 
@@ -242,6 +307,8 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// \brief The ComboBoxClientManager class
+///
 class ComboBoxClientManager : public ClientManagerBase<std::string,rt_gui::addComboBox>
 {
 

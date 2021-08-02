@@ -36,6 +36,11 @@ public:
     return istance;
   }
 
+  template <class data_t>
+  void addGetSet(const std::string& group_name, const std::string& data_name, GetSetManager<data_t>::get_fun_t get, GetSetManager<data_t>::set_fun_t set)
+  {
+  }
+
   void addIntSlider(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr)
   {
     int_slider_m_->add(group_name,data_name,min,max,data_ptr);
