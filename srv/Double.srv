@@ -1,5 +1,6 @@
-string init
-string[] list
+float64 min
+float64 max
+float64 value
 string group_name
 string data_name
 ---

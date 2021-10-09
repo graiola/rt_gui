@@ -29,17 +29,11 @@ find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
 add_service_files(
   FILES
-  add/addButton.srv
-  add/addComboBox.srv
-  add/addRadioButton.srv
-  add/addDoubleSlider.srv
-  add/addIntSlider.srv
-  update/updateButton.srv
-  update/updateComboBox.srv
-  update/updateRadioButton.srv
-  update/updateDoubleSlider.srv
-  update/updateIntSlider.srv
-  removeWidget.srv
+  Bool.srv
+  Double.srv
+  Int.srv
+  String.srv
+  Void.srv
 )
 
 generate_messages()

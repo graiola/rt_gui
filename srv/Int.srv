@@ -1,4 +1,6 @@
-string value
+int64 min
+int64 max
+int64 value
 string group_name
 string data_name
 ---

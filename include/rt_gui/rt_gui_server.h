@@ -60,7 +60,7 @@ public:
     return app_->exec();
   }
 
-  bool removeWidget(removeWidget::Request& req, removeWidget::Response& res)
+  bool removeWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
   {
     emit removeWidget(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
     res.resp = true;

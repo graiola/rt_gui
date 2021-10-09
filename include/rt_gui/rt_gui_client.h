@@ -87,7 +87,7 @@ public:
 
   void remove(const std::string& group_name, const std::string& data_name)
   {
-    rt_gui::removeWidget srv;
+    rt_gui::Void srv;
     srv.request.data_name = data_name;
     srv.request.group_name = group_name;
     remove_.call(srv);
@@ -113,7 +113,7 @@ private:
     combo_m_         = std::make_shared<ComboBoxClientManager>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
     button_m_        = std::make_shared<ButtonClientManager>(ros_node_->getNode(),_ros_services.button.add,_ros_services.button.update);
 
-    remove_ = ros_node_->getNode().serviceClient<rt_gui::removeWidget>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
+    remove_ = ros_node_->getNode().serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
   }
 
   ~RtGuiClient()

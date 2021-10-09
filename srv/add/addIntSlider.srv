@@ -1,7 +1,0 @@
-int64 min
-int64 max
-int64 init
-string group_name
-string data_name
----
-bool resp

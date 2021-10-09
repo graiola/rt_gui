@@ -53,7 +53,7 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::updateButton>
+class ButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::Void>
 {
 
   Q_OBJECT
@@ -63,7 +63,7 @@ public:
   typedef std::shared_ptr<ButtonServerManager> Ptr;
 
   ButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<bool,rt_gui::updateButton>(window,node,srv_requested,srv_provided)
+    :ServerManagerBase<bool,rt_gui::Void>(window,node,srv_requested,srv_provided)
   {
     add_ = node.advertiseService(srv_provided, &ButtonServerManager::addButton, this);
 
@@ -75,7 +75,7 @@ public:
                      this,    SLOT(updateButton(QString, QString)));
   }
 
-  bool addButton(addButton::Request  &req, addButton::Response &res)
+  bool addButton(rt_gui::Void::Request  &req, rt_gui::Void::Response &res)
   {
     emit addButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
     // FIXME add a proper error handling
@@ -86,7 +86,7 @@ public:
 public slots:
   bool updateButton(QString group_name, QString data_name)
   {
-    rt_gui::addButton srv;
+    rt_gui::Void srv;
     srv.request.data_name  = data_name.toStdString();
     srv.request.group_name = group_name.toStdString();
     if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
@@ -107,7 +107,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntSliderServerManager : public QObject, ServerManagerBase<int,rt_gui::updateIntSlider>
+class IntSliderServerManager : public QObject, ServerManagerBase<int,rt_gui::Int>
 {
 
   Q_OBJECT
@@ -117,7 +117,7 @@ public:
   typedef std::shared_ptr<IntSliderServerManager> Ptr;
 
   IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<int,rt_gui::updateIntSlider>(window,node,srv_requested,srv_provided)
+    :ServerManagerBase<int,rt_gui::Int>(window,node,srv_requested,srv_provided)
   {
     add_ = node.advertiseService(srv_provided, &IntSliderServerManager::addIntSlider, this); // FIXME to be moved in base
 
@@ -129,9 +129,9 @@ public:
                      this,    SLOT(updateIntSlider(QString, QString, int)));
   }
 
-  bool addIntSlider(addIntSlider::Request  &req, addIntSlider::Response &res)
+  bool addIntSlider(rt_gui::Int::Request  &req, rt_gui::Int::Response &res)
   {
-    emit addIntSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
+    emit addIntSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
     // FIXME add a proper error handling
     res.resp = true;
     return res.resp;
@@ -148,7 +148,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleSliderServerManager : public QObject, ServerManagerBase<double,rt_gui::updateDoubleSlider>
+class DoubleSliderServerManager : public QObject, ServerManagerBase<double,rt_gui::Double>
 {
 
   Q_OBJECT
@@ -158,7 +158,7 @@ public:
   typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
 
   DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<double,rt_gui::updateDoubleSlider>(window,node,srv_requested,srv_provided)
+    :ServerManagerBase<double,rt_gui::Double>(window,node,srv_requested,srv_provided)
   {
     add_ = node.advertiseService(srv_provided, &DoubleSliderServerManager::addDoubleSlider, this); // FIXME to be moved in base
 
@@ -170,9 +170,9 @@ public:
                      this,    SLOT(updateDoubleSlider(QString, QString, double)));
   }
 
-  bool addDoubleSlider(addDoubleSlider::Request  &req, addDoubleSlider::Response &res)
+  bool addDoubleSlider(rt_gui::Double::Request  &req, rt_gui::Double::Response &res)
   {
-    emit addDoubleSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
+    emit addDoubleSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
     // FIXME add a proper error handling
     res.resp = true;
     return res.resp;
@@ -189,7 +189,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RadioButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::updateRadioButton>
+class RadioButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::Bool>
 {
 
   Q_OBJECT
@@ -199,7 +199,7 @@ public:
   typedef std::shared_ptr<RadioButtonServerManager> Ptr;
 
   RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<bool,rt_gui::updateRadioButton>(window,node,srv_requested,srv_provided)
+    :ServerManagerBase<bool,rt_gui::Bool>(window,node,srv_requested,srv_provided)
   {
     add_ = node.advertiseService(srv_provided, &RadioButtonServerManager::addRadioButton, this); // FIXME to be moved in base
 
@@ -211,9 +211,9 @@ public:
                      this,    SLOT(updateRadioButton(QString, QString, bool)));
   }
 
-  bool addRadioButton(addRadioButton::Request  &req, addRadioButton::Response &res)
+  bool addRadioButton(rt_gui::Bool::Request  &req, rt_gui::Bool::Response &res)
   {
-    emit addRadioButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.init);
+    emit addRadioButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.value);
     // FIXME add a proper error handling
     res.resp = true;
     return res.resp;
@@ -230,7 +230,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ComboBoxServerManager : public QObject, ServerManagerBase<std::string,rt_gui::updateComboBox>
+class ComboBoxServerManager : public QObject, ServerManagerBase<std::string,rt_gui::String>
 {
 
   Q_OBJECT
@@ -240,7 +240,7 @@ public:
   typedef std::shared_ptr<ComboBoxServerManager> Ptr;
 
   ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<std::string,rt_gui::updateComboBox>(window,node,srv_requested,srv_provided)
+    :ServerManagerBase<std::string,rt_gui::String>(window,node,srv_requested,srv_provided)
   {
     add_ = node.advertiseService(srv_provided, &ComboBoxServerManager::addComboBox, this); // FIXME to be moved in base
 
@@ -252,12 +252,12 @@ public:
                      this,    SLOT(updateComboBox(QString, QString, QString)));
   }
 
-  bool addComboBox(addComboBox::Request  &req, addComboBox::Response &res)
+  bool addComboBox(rt_gui::String::Request  &req, rt_gui::String::Response &res)
   {
     QStringList list;
     for(unsigned int i=0;i<req.list.size();i++)
       list.push_back(QString::fromStdString(req.list[i]));
-    emit addComboBox(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.init));
+    emit addComboBox(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.value));
     // FIXME add a proper error handling
     res.resp = true;
     return res.resp;
