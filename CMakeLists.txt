@@ -58,6 +58,7 @@ target_link_libraries(console readline pthread)
 
 ## Compile the server node
 add_executable(server_node include/support/server.h include/rt_gui/rt_gui_server.h src/server.cpp)
+add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE qt_utils ${catkin_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -79,9 +80,11 @@ if (CATKIN_ENABLE_TESTING)
     target_link_libraries(test_qt PRIVATE qt_utils)
 
     add_executable(test_server include/support/server.h include/rt_gui/rt_gui_server.h test/test_server.cpp)
+    add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
     target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
 
     add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
+    add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
     target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
 
     add_executable(test_console test/test_console.cpp)
