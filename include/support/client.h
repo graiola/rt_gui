@@ -141,28 +141,6 @@ public:
     {
     }
 
-    //virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
-    //{
-    //    res.resp = CallbackManager::callback(req.value);
-    //    return res.resp;
-    //}
-
-    //template<class Q = srv_t>
-    //typename std::enable_if<std::is_same<Q, rt_gui::Void>::value, bool>::type
-    //update(typename srv_t::Request& req, typename srv_t::Response& res)
-    //{
-    //    res.resp = fun_();
-    //    return res.resp;
-    //}
-    //
-    //template<class Q = srv_t>
-    //typename std::enable_if<!std::is_same<Q, rt_gui::Void>::value, bool>::type
-    //update(typename srv_t::Request& req, typename srv_t::Response& res)
-    //{
-    //    res.resp = fun_(req.value);
-    //    return res.resp;
-    //}
-
     virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
     {
         if constexpr(std::is_same<srv_t,rt_gui::Void>::value)
@@ -183,6 +161,37 @@ public:
         srv_t srv;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
+        callServer(srv);
+    }
+
+    template <typename data_t>
+    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, funct_t fun)
+    {
+        assert(fun);
+        fun_ = fun;
+        srv_t srv;
+        srv.request.min = min;
+        srv.request.max = max;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        callServer(srv);
+    }
+
+    template <typename data_t>
+    void add(const std::string& group_name, const std::string& data_name, funct_t fun)
+    {
+        assert(fun);
+        fun_ = fun;
+        srv_t srv;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        callServer(srv);
+    }
+
+protected:
+
+    void callServer(srv_t& srv)
+    {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
             this->client_.call(srv);
@@ -193,11 +202,8 @@ public:
             throw std::runtime_error("RtGuiServer::add service is not available!");
     }
 
-protected:
-
     funct_t fun_;
 };
-
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -210,6 +216,48 @@ public:
 
     TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
         :CallbackHandler<rt_gui::Void>(node,srv_requested,srv_provided)
+    {
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SetIntHandler : public CallbackHandler<rt_gui::Int,int>
+{
+
+public:
+
+    typedef std::shared_ptr<SetIntHandler> Ptr;
+
+    SetIntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :CallbackHandler<rt_gui::Int,int>(node,srv_requested,srv_provided)
+    {
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SetDoubleHandler : public CallbackHandler<rt_gui::Double,double>
+{
+
+public:
+
+    typedef std::shared_ptr<SetDoubleHandler> Ptr;
+
+    SetDoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :CallbackHandler<rt_gui::Double,double>(node,srv_requested,srv_provided)
+    {
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SetBoolHandler : public CallbackHandler<rt_gui::Bool,bool>
+{
+
+public:
+
+    typedef std::shared_ptr<SetDoubleHandler> Ptr;
+
+    SetBoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :CallbackHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided)
     {
     }
 };
@@ -237,7 +285,6 @@ public:
         srv.request.data_name = data_name;
         BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
-
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -263,7 +310,6 @@ public:
         srv.request.data_name = data_name;
         BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
-
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -287,7 +333,6 @@ public:
         srv.request.data_name = data_name;
         BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
-
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -313,10 +358,7 @@ public:
             srv.request.list.push_back(list[i]);
         BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
-
 };
-
-
 
 } // namespace
 

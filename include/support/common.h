@@ -26,12 +26,14 @@ struct
   {
     std::string add    = "add_double_slider";
     std::string update = "update_double_slider";
+    std::string set    = "set_double";
   } double_slider;
 
   struct
   {
     std::string add    = "add_int_slider";
     std::string update = "update_int_slider";
+    std::string set    = "set_int";
   } int_slider;
 
   struct

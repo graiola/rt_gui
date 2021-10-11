@@ -8,6 +8,12 @@ bool stopController()
   return true;
 }
 
+bool setForceY(const double& Fy)
+{
+  ROS_WARN_STREAM("Fy:"<<Fy);
+  return true;
+}
+
 int main(int /*argc*/, char*[] /*argv[]*/)
 {
 
@@ -26,6 +32,7 @@ int main(int /*argc*/, char*[] /*argv[]*/)
 
 
   RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
+  RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fy"),-10.5,10.5,&setForceY);
   RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
   RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
   RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);

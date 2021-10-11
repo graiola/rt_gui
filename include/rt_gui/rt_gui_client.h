@@ -41,6 +41,11 @@ public:
     int_h_->add(group_name,data_name,min,max,data_ptr);
   }
 
+  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, SetIntHandler::funct_t fun)
+  {
+    set_int_h_->add<int>(group_name,data_name,min,max,fun);
+  }
+
   void addDouble(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::vector<int>* data_ptr)
   {
     for(unsigned int i=0;i<data_ptr->size();i++)
@@ -56,6 +61,12 @@ public:
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr)
   {
     double_h_->add(group_name,data_name,min,max,data_ptr);
+  }
+
+  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, SetDoubleHandler::funct_t fun)
+  {
+    set_double_h_->add<double>(group_name,data_name,min,max,fun);
+    getchar();
   }
 
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::vector<double>* data_ptr)
@@ -100,7 +111,7 @@ public:
     int_h_->sync();
     bool_h_->sync();
     list_h_->sync();
-    trigger_h_->sync();
+    //trigger_h_->sync();
   }
 
 private:
@@ -110,7 +121,9 @@ private:
     std::string ros_node_name = RT_GUI_CLIENT_NAME;
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
     double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_slider.add,_ros_services.double_slider.update);
+    set_double_h_   = std::make_shared<SetDoubleHandler>(ros_node_->getNode(),_ros_services.double_slider.add,_ros_services.double_slider.set);
     int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_slider.add,_ros_services.int_slider.update);
+    set_int_h_      = std::make_shared<SetIntHandler>(ros_node_->getNode(),_ros_services.int_slider.add,_ros_services.int_slider.set);
     bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
     list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
     trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.button.add,_ros_services.button.update);
@@ -127,7 +140,9 @@ private:
 
   std::unique_ptr<RosNode> ros_node_;
   DoubleHandler::Ptr double_h_;
+  SetDoubleHandler::Ptr set_double_h_;
   IntHandler::Ptr int_h_;
+  SetIntHandler::Ptr set_int_h_;
   BoolHandler::Ptr bool_h_;
   ListHandler::Ptr list_h_;
   TriggerHandler::Ptr trigger_h_;
