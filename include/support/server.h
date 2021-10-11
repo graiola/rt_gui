@@ -8,19 +8,21 @@ namespace rt_gui
 {
 
 template<typename data_t, typename srv_t>
-class ServerManagerBase
+class WindowServerManager
 {
 
 public:
 
-    typedef std::shared_ptr<ServerManagerBase> Ptr;
+    typedef std::shared_ptr<WindowServerManager> Ptr;
 
-    ServerManagerBase(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+    WindowServerManager(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
     {
         update_ = node.serviceClient<srv_t>("/" RT_GUI_CLIENT_NAME "/"+srv_requested);
-        add_ = node.advertiseService(srv_provided, &ServerManagerBase::addWidget, this);
+        add_ = node.advertiseService(srv_provided, &WindowServerManager::addWidget, this);
         window_ = window;
     }
+
+    virtual ~WindowServerManager() {}
 
     virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
 
@@ -56,7 +58,7 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::Void>
+class ButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Void>
 {
 
     Q_OBJECT
@@ -66,7 +68,7 @@ public:
     typedef std::shared_ptr<ButtonServerManager> Ptr;
 
     ButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ServerManagerBase<bool,rt_gui::Void>(window,node,srv_requested,srv_provided)
+        :WindowServerManager<bool,rt_gui::Void>(window,node,srv_requested,srv_provided)
     {
 
         QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&)),
@@ -108,7 +110,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntSliderServerManager : public QObject, ServerManagerBase<int,rt_gui::Int>
+class IntSliderServerManager : public QObject, WindowServerManager<int,rt_gui::Int>
 {
 
     Q_OBJECT
@@ -118,7 +120,7 @@ public:
     typedef std::shared_ptr<IntSliderServerManager> Ptr;
 
     IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ServerManagerBase<int,rt_gui::Int>(window,node,srv_requested,srv_provided)
+        :WindowServerManager<int,rt_gui::Int>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
                          window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
@@ -146,7 +148,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleSliderServerManager : public QObject, ServerManagerBase<double,rt_gui::Double>
+class DoubleSliderServerManager : public QObject, WindowServerManager<double,rt_gui::Double>
 {
 
     Q_OBJECT
@@ -156,7 +158,7 @@ public:
     typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
 
     DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ServerManagerBase<double,rt_gui::Double>(window,node,srv_requested,srv_provided)
+        :WindowServerManager<double,rt_gui::Double>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
                          window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
@@ -184,7 +186,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RadioButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::Bool>
+class RadioButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Bool>
 {
 
     Q_OBJECT
@@ -194,7 +196,7 @@ public:
     typedef std::shared_ptr<RadioButtonServerManager> Ptr;
 
     RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ServerManagerBase<bool,rt_gui::Bool>(window,node,srv_requested,srv_provided)
+        :WindowServerManager<bool,rt_gui::Bool>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
                          window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
@@ -222,7 +224,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ComboBoxServerManager : public QObject, ServerManagerBase<std::string,rt_gui::String>
+class ComboBoxServerManager : public QObject, WindowServerManager<std::string,rt_gui::List>
 {
 
     Q_OBJECT
@@ -232,7 +234,7 @@ public:
     typedef std::shared_ptr<ComboBoxServerManager> Ptr;
 
     ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ServerManagerBase<std::string,rt_gui::String>(window,node,srv_requested,srv_provided)
+        :WindowServerManager<std::string,rt_gui::List>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
                          window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
@@ -241,7 +243,7 @@ public:
                          this,    SLOT(updateComboBox(QString, QString, QString)));
     }
 
-    bool addWidget(rt_gui::String::Request& req, rt_gui::String::Response& res)
+    bool addWidget(rt_gui::List::Request& req, rt_gui::List::Response& res)
     {
         QStringList list;
         for(unsigned int i=0;i<req.list.size();i++)

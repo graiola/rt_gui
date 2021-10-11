@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(rt_gui)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 
 option(QT_VERSION_GREATER_THAN_5_5 "Set to true if Qt5 > 5.5 is installed" FALSE)
 
@@ -32,7 +32,7 @@ add_service_files(
   Bool.srv
   Double.srv
   Int.srv
-  String.srv
+  List.srv
   Void.srv
 )
 

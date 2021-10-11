@@ -3,9 +3,36 @@
 
 #include <support/common.h>
 #include <mutex>
+#include <type_traits>
 
 namespace rt_gui
 {
+
+template<class srv_t>
+class InterfaceHandler
+{
+
+public:
+
+    typedef std::shared_ptr<InterfaceHandler> Ptr;
+
+    InterfaceHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+    {
+        server_    = node.advertiseService(srv_provided, &InterfaceHandler::update, this);
+        client_    = node.serviceClient<srv_t>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+    }
+
+    virtual ~InterfaceHandler() {}
+
+    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
+
+    virtual bool sync() = 0;
+
+protected:
+
+    ros::ServiceServer server_;
+    ros::ServiceClient client_;
+};
 
 template <class data_t>
 class Buffer {
@@ -42,36 +69,26 @@ private:
 
 };
 
-template<typename data_t, class srv_t>
-class ClientManagerBase
+template<class srv_t, typename data_t>
+class BufferHandler : public InterfaceHandler<srv_t>
 {
 
 public:
 
-    typedef std::shared_ptr<ClientManagerBase> Ptr;
+    typedef std::shared_ptr<BufferHandler> Ptr;
 
-    ClientManagerBase(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+    BufferHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+        :InterfaceHandler<srv_t>(node,srv_requested,srv_provided)
     {
-        update_ = node.advertiseService(srv_provided, &ClientManagerBase::update, this);
-        add_    = node.serviceClient<srv_t>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
     }
 
-    bool update(typename srv_t::Request& req, typename srv_t::Response& res)
+    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
     {
-        res.resp = ClientManagerBase::updateBuffer(req.group_name,req.data_name,req.value);
+        res.resp = BufferHandler::updateBuffer(req.group_name,req.data_name,req.value);
         return res.resp;
     }
 
-    bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
-    {
-        sync_mtx_.lock();
-        buffer_.update(group_name,data_name,value);
-        sync_mtx_.unlock();
-        // FIXME add a proper error handling
-        return true;
-    }
-
-    bool sync()
+    virtual bool sync()
     {
         if(sync_mtx_.try_lock())
         {
@@ -82,11 +99,20 @@ public:
 
 protected:
 
+    bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
+    {
+        sync_mtx_.lock();
+        buffer_.update(group_name,data_name,value);
+        sync_mtx_.unlock();
+        // FIXME add a proper error handling
+        return true;
+    }
+
     void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv)
     {
-        if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+        if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
-            add_.call(srv);
+            this->client_.call(srv);
             if(srv.response.resp == false)
                 throw std::runtime_error("RtGuiServer::add::resp is false!");
             else
@@ -96,45 +122,70 @@ protected:
             throw std::runtime_error("RtGuiServer::add service is not available!");
     }
 
-    ros::ServiceServer update_;
-    ros::ServiceClient add_;
-    std::mutex sync_mtx_;
     Buffer<data_t> buffer_;
+    std::mutex sync_mtx_;
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ButtonClientManager
+template<class srv_t, typename ...Args>
+class CallbackHandler : public InterfaceHandler<srv_t>
 {
 
 public:
 
-    typedef std::shared_ptr<ButtonClientManager> Ptr;
+    typedef std::shared_ptr<CallbackHandler> Ptr;
 
-    typedef std::function<bool ()> funct_t;
+    using funct_t = std::function<bool(Args...)>;
 
-    ButtonClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    CallbackHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+        :InterfaceHandler<srv_t>(node,srv_requested,srv_provided)
     {
-        update_ = node.advertiseService(srv_provided, &ButtonClientManager::update, this);
-        add_    = node.serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
     }
 
-    bool update(Void::Request& req, Void::Response& res)
+    //virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
+    //{
+    //    res.resp = CallbackManager::callback(req.value);
+    //    return res.resp;
+    //}
+
+    //template<class Q = srv_t>
+    //typename std::enable_if<std::is_same<Q, rt_gui::Void>::value, bool>::type
+    //update(typename srv_t::Request& req, typename srv_t::Response& res)
+    //{
+    //    res.resp = fun_();
+    //    return res.resp;
+    //}
+    //
+    //template<class Q = srv_t>
+    //typename std::enable_if<!std::is_same<Q, rt_gui::Void>::value, bool>::type
+    //update(typename srv_t::Request& req, typename srv_t::Response& res)
+    //{
+    //    res.resp = fun_(req.value);
+    //    return res.resp;
+    //}
+
+    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
     {
-        res.resp = fun_(); // Trigger
+        if constexpr(std::is_same<srv_t,rt_gui::Void>::value)
+            res.resp = fun_();
+        else
+            res.resp = fun_(req.value);
         return res.resp;
+    }
+
+    virtual bool sync() // Purely async at the moment
+    {
     }
 
     void add(const std::string& group_name, const std::string& data_name, funct_t fun)
     {
-
         assert(fun);
         fun_ = fun;
-        rt_gui::Void srv;
+        srv_t srv;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        if(add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+        if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
-            add_.call(srv);
+            this->client_.call(srv);
             if(srv.response.resp == false)
                 throw std::runtime_error("RtGuiServer::add::resp is false!");
         }
@@ -142,25 +193,37 @@ public:
             throw std::runtime_error("RtGuiServer::add service is not available!");
     }
 
-private:
-
-    ros::ServiceServer update_;
-    ros::ServiceClient add_;
+protected:
 
     funct_t fun_;
-
 };
 
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntSliderClientManager : public ClientManagerBase<int,rt_gui::Int>
+class TriggerHandler : public CallbackHandler<rt_gui::Void>
 {
 
 public:
 
-    typedef std::shared_ptr<IntSliderClientManager> Ptr;
+    typedef std::shared_ptr<TriggerHandler> Ptr;
 
-    IntSliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ClientManagerBase<int,rt_gui::Int>(node,srv_requested,srv_provided)
+    TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :CallbackHandler<rt_gui::Void>(node,srv_requested,srv_provided)
+    {
+    }
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class IntHandler : public BufferHandler<rt_gui::Int,int>
+{
+
+public:
+
+    typedef std::shared_ptr<IntHandler> Ptr;
+
+    IntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :BufferHandler<rt_gui::Int,int>(node,srv_requested,srv_provided)
     {
     }
 
@@ -172,21 +235,21 @@ public:
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+        BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
 
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleSliderClientManager : public ClientManagerBase<double,rt_gui::Double>
+class DoubleHandler : public BufferHandler<rt_gui::Double,double>
 {
 
 public:
 
-    typedef std::shared_ptr<DoubleSliderClientManager> Ptr;
+    typedef std::shared_ptr<DoubleHandler> Ptr;
 
-    DoubleSliderClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ClientManagerBase<double,rt_gui::Double>(node,srv_requested,srv_provided)
+    DoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :BufferHandler<rt_gui::Double,double>(node,srv_requested,srv_provided)
     {
     }
 
@@ -198,21 +261,21 @@ public:
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+        BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
 
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RadioButtonClientManager : public ClientManagerBase<bool,rt_gui::Bool>
+class BoolHandler : public BufferHandler<rt_gui::Bool,bool>
 {
 
 public:
 
-    typedef std::shared_ptr<RadioButtonClientManager> Ptr;
+    typedef std::shared_ptr<BoolHandler> Ptr;
 
-    RadioButtonClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ClientManagerBase<bool,rt_gui::Bool>(node,srv_requested,srv_provided)
+    BoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :BufferHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided)
     {
     }
 
@@ -222,33 +285,33 @@ public:
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+        BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
 
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ComboBoxClientManager : public ClientManagerBase<std::string,rt_gui::String>
+class ListHandler : public BufferHandler<rt_gui::List,std::string>
 {
 
 public:
 
-    typedef std::shared_ptr<ComboBoxClientManager> Ptr;
+    typedef std::shared_ptr<ListHandler> Ptr;
 
-    ComboBoxClientManager(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :ClientManagerBase<std::string,rt_gui::String>(node,srv_requested,srv_provided)
+    ListHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :BufferHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided)
     {
     }
 
     void add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr)
     {
-        rt_gui::String srv;
+        rt_gui::List srv;
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         for(unsigned int i=0;i<list.size();i++)
             srv.request.list.push_back(list[i]);
-        ClientManagerBase::add(group_name,data_name,data_ptr,srv);
+        BufferHandler::add(group_name,data_name,data_ptr,srv);
     }
 
 };

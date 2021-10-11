@@ -25,13 +25,13 @@ int main(int /*argc*/, char*[] /*argv[]*/)
   std::vector<double> velocities(3);
 
 
-  RtGuiClient::getIstance().addDoubleSlider(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
-  RtGuiClient::getIstance().addDoubleSlider(std::string("velocities"),std::string("V"),-100,100,&velocities);
+  RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
+  RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
   RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
   RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);
   RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("status"),&Controller_on);
-  RtGuiClient::getIstance().addButton(std::string("controllers"),std::string("stop"),&stopController);
-  RtGuiClient::getIstance().addIntSlider(std::string("controllers"),std::string("steps"),0,10,&steps);
+  RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
+  RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
 
   // Remove a widget example:
   //RtGuiClient::getIstance().remove(std::string("controllers"),std::string("steps"));
