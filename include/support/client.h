@@ -2,7 +2,6 @@
 #define SUPPORT_CLIENT_H
 
 #include <support/common.h>
-#include <mutex>
 #include <type_traits>
 
 namespace rt_gui
