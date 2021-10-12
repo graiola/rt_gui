@@ -8,13 +8,15 @@
 namespace rt_gui
 {
 
-template<class srv_t>
+template<class srv_t, class data_t>
 class InterfaceHandler
 {
 
 public:
 
     typedef std::shared_ptr<InterfaceHandler> Ptr;
+
+    typedef std::function<void(data_t)> fun_t;
 
     InterfaceHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
     {
@@ -24,91 +26,88 @@ public:
 
     virtual ~InterfaceHandler() {}
 
-    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
-
-    virtual bool sync() = 0;
-
-protected:
-
-    ros::ServiceServer server_;
-    ros::ServiceClient client_;
-};
-
-template <class data_t>
-class Buffer {
-
-public:
-
-    Buffer() {}
-
-    typedef std::pair<std::string,std::string> buffer_key_t;
-    typedef std::pair<data_t*,data_t> buffer_value_t;
-    typedef std::map<buffer_key_t, buffer_value_t> buffer_t;
-
-    void add(const std::string& key1, const std::string& key2, data_t* data_ptr)
+    bool update(typename srv_t::Request& req, typename srv_t::Response& res)
     {
-        buffer_[buffer_key_t(key1,key2)] = buffer_value_t(data_ptr,*data_ptr);
-    }
-
-    void update(const std::string& key1, const std::string& key2, const data_t& value)
-    {
-        buffer_[buffer_key_t(key1,key2)].second = value;
-    }
-
-    void sync()
-    {
-        for(auto tmp_map : buffer_)
-        {
-            if(tmp_map.second.first!=nullptr) // The data pointer still exists
-                *tmp_map.second.first = tmp_map.second.second;
-        }
-    }
-
-private:
-    buffer_t buffer_;
-
-};
-
-template<class srv_t, typename data_t>
-class BufferHandler : public InterfaceHandler<srv_t>
-{
-
-public:
-
-    typedef std::shared_ptr<BufferHandler> Ptr;
-
-    BufferHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<srv_t>(node,srv_requested,srv_provided)
-    {
-    }
-
-    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
-    {
-        res.resp = BufferHandler::updateBuffer(req.group_name,req.data_name,req.value);
+        res.resp = updateBuffer(req.group_name,req.data_name,req.value);
         return res.resp;
     }
 
-    virtual bool sync()
+    void add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t* data_ptr, bool sync)
     {
+        srv_t srv;
+        srv.request.value = *data_ptr;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        for(unsigned int i=0;i<list.size();i++)
+            srv.request.list.push_back(list[i]);
+        addRawData(group_name,data_name,data_ptr,srv,sync);
+    }
+
+    void add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t data, fun_t fun, bool sync)
+    {
+        srv_t srv;
+        srv.request.value = data;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        for(unsigned int i=0;i<list.size();i++)
+            srv.request.list.push_back(list[i]);
+        addCallback(group_name,data_name,data,fun,srv,sync);
+    }
+
+    void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, bool sync)
+    {
+        srv_t srv;
+        srv.request.value = *data_ptr;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        addRawData(group_name,data_name,data_ptr,srv,sync);
+    }
+
+    void add(const std::string& group_name, const std::string& data_name, data_t data, fun_t fun, bool sync)
+    {
+        srv_t srv;
+        srv.request.value = data;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        addCallback(group_name,data_name,data,fun,srv,sync);
+    }
+
+    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t* data_ptr, bool sync)
+    {
+        srv_t srv;
+        srv.request.min = min;
+        srv.request.max = max;
+        srv.request.value = *data_ptr;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        addRawData(group_name,data_name,data_ptr,srv,sync);
+    }
+
+    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t data, fun_t fun, bool sync)
+    {
+        srv_t srv;
+        srv.request.min = min;
+        srv.request.max = max;
+        srv.request.value = data;
+        srv.request.group_name = group_name;
+        srv.request.data_name = data_name;
+        addCallback(group_name,data_name,data,fun,srv,sync);
+    }
+
+    bool sync()
+    {
+        bool res = true;
         if(sync_mtx_.try_lock())
         {
-            buffer_.sync();
+            res = res && buffer_.sync();
             sync_mtx_.unlock();
         }
+        return res;
     }
 
 protected:
 
-    bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
-    {
-        sync_mtx_.lock();
-        buffer_.update(group_name,data_name,value);
-        sync_mtx_.unlock();
-        // FIXME add a proper error handling
-        return true;
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv)
+    void addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync)
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
@@ -116,82 +115,63 @@ protected:
             if(srv.response.resp == false)
                 throw std::runtime_error("RtGuiServer::add::resp is false!");
             else
-                buffer_.add(group_name,data_name,data_ptr);
+                buffer_.add(group_name,data_name,data_ptr,sync);
         }
         else
             throw std::runtime_error("RtGuiServer::add service is not available!");
     }
 
-    Buffer<data_t> buffer_;
+    void addCallback(const std::string& group_name, const std::string& data_name, data_t data, std::function<void(data_t)> fun, srv_t& srv, bool sync)
+    {
+        if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+        {
+            this->client_.call(srv);
+            if(srv.response.resp == false)
+                throw std::runtime_error("RtGuiServer::add::resp is false!");
+            else
+                buffer_.add(group_name,data_name,data,fun,sync);
+        }
+        else
+            throw std::runtime_error("RtGuiServer::add service is not available!");
+    }
+
+    bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
+    {
+        sync_mtx_.lock();
+        bool res = buffer_.update(group_name,data_name,value);
+        sync_mtx_.unlock();
+        return res;
+    }
+
+    ros::ServiceServer server_;
+    ros::ServiceClient client_;
+    CallbackBuffer<data_t> buffer_;
     std::mutex sync_mtx_;
 };
 
-template<class srv_t, typename ...Args>
-class CallbackHandler : public InterfaceHandler<srv_t>
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TriggerHandler
 {
 
 public:
 
-    typedef std::shared_ptr<CallbackHandler> Ptr;
+    typedef std::shared_ptr<TriggerHandler> Ptr;
 
-    using funct_t = std::function<bool(Args...)>;
+    typedef std::function<void()> fun_t;
 
-    CallbackHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<srv_t>(node,srv_requested,srv_provided)
+    TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
     {
+        server_    = node.advertiseService(srv_provided, &TriggerHandler::update, this);
+        client_    = node.serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
     }
 
-    virtual bool update(typename srv_t::Request& req, typename srv_t::Response& res)
+    void add(const std::string& group_name, const std::string& data_name, fun_t fun)
     {
-        if constexpr(std::is_same<srv_t,rt_gui::Void>::value)
-            res.resp = fun_();
-        else
-            res.resp = fun_(req.value);
-        return res.resp;
-    }
-
-    virtual bool sync() // Purely async at the moment
-    {
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, funct_t fun)
-    {
+        rt_gui::Void srv;
         assert(fun);
         fun_ = fun;
-        srv_t srv;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        callServer(srv);
-    }
-
-    template <typename data_t>
-    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, funct_t fun)
-    {
-        assert(fun);
-        fun_ = fun;
-        srv_t srv;
-        srv.request.min = min;
-        srv.request.max = max;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        callServer(srv);
-    }
-
-    template <typename data_t>
-    void add(const std::string& group_name, const std::string& data_name, funct_t fun)
-    {
-        assert(fun);
-        fun_ = fun;
-        srv_t srv;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        callServer(srv);
-    }
-
-protected:
-
-    void callServer(srv_t& srv)
-    {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
             this->client_.call(srv);
@@ -202,68 +182,22 @@ protected:
             throw std::runtime_error("RtGuiServer::add service is not available!");
     }
 
-    funct_t fun_;
-};
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TriggerHandler : public CallbackHandler<rt_gui::Void>
-{
-
-public:
-
-    typedef std::shared_ptr<TriggerHandler> Ptr;
-
-    TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :CallbackHandler<rt_gui::Void>(node,srv_requested,srv_provided)
+    bool update(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
     {
+        fun_();
+        res.resp = true;
+        return res.resp;
     }
+
+protected:
+
+    fun_t fun_;
+    ros::ServiceServer server_;
+    ros::ServiceClient client_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SetIntHandler : public CallbackHandler<rt_gui::Int,int>
-{
-
-public:
-
-    typedef std::shared_ptr<SetIntHandler> Ptr;
-
-    SetIntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :CallbackHandler<rt_gui::Int,int>(node,srv_requested,srv_provided)
-    {
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SetDoubleHandler : public CallbackHandler<rt_gui::Double,double>
-{
-
-public:
-
-    typedef std::shared_ptr<SetDoubleHandler> Ptr;
-
-    SetDoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :CallbackHandler<rt_gui::Double,double>(node,srv_requested,srv_provided)
-    {
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SetBoolHandler : public CallbackHandler<rt_gui::Bool,bool>
-{
-
-public:
-
-    typedef std::shared_ptr<SetDoubleHandler> Ptr;
-
-    SetBoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :CallbackHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided)
-    {
-    }
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntHandler : public BufferHandler<rt_gui::Int,int>
+class IntHandler : public InterfaceHandler<rt_gui::Int,int>
 {
 
 public:
@@ -271,24 +205,11 @@ public:
     typedef std::shared_ptr<IntHandler> Ptr;
 
     IntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :BufferHandler<rt_gui::Int,int>(node,srv_requested,srv_provided)
-    {
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr)
-    {
-        rt_gui::Int srv;
-        srv.request.min = min;
-        srv.request.max = max;
-        srv.request.value = *data_ptr;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        BufferHandler::add(group_name,data_name,data_ptr,srv);
-    }
+        :InterfaceHandler<rt_gui::Int,int>(node,srv_requested,srv_provided) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleHandler : public BufferHandler<rt_gui::Double,double>
+class DoubleHandler : public InterfaceHandler<rt_gui::Double,double>
 {
 
 public:
@@ -296,24 +217,11 @@ public:
     typedef std::shared_ptr<DoubleHandler> Ptr;
 
     DoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :BufferHandler<rt_gui::Double,double>(node,srv_requested,srv_provided)
-    {
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr)
-    {
-        rt_gui::Double srv;
-        srv.request.min = min;
-        srv.request.max = max;
-        srv.request.value = *data_ptr;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        BufferHandler::add(group_name,data_name,data_ptr,srv);
-    }
+        :InterfaceHandler<rt_gui::Double,double>(node,srv_requested,srv_provided) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class BoolHandler : public BufferHandler<rt_gui::Bool,bool>
+class BoolHandler : public InterfaceHandler<rt_gui::Bool,bool>
 {
 
 public:
@@ -321,22 +229,11 @@ public:
     typedef std::shared_ptr<BoolHandler> Ptr;
 
     BoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :BufferHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided)
-    {
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, bool* data_ptr)
-    {
-        rt_gui::Bool srv;
-        srv.request.value = *data_ptr;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        BufferHandler::add(group_name,data_name,data_ptr,srv);
-    }
+        :InterfaceHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ListHandler : public BufferHandler<rt_gui::List,std::string>
+class ListHandler : public InterfaceHandler<rt_gui::List,std::string>
 {
 
 public:
@@ -344,20 +241,7 @@ public:
     typedef std::shared_ptr<ListHandler> Ptr;
 
     ListHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :BufferHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided)
-    {
-    }
-
-    void add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr)
-    {
-        rt_gui::List srv;
-        srv.request.value = *data_ptr;
-        srv.request.group_name = group_name;
-        srv.request.data_name = data_name;
-        for(unsigned int i=0;i<list.size();i++)
-            srv.request.list.push_back(list[i]);
-        BufferHandler::add(group_name,data_name,data_ptr,srv);
-    }
+        :InterfaceHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided) {}
 };
 
 } // namespace
