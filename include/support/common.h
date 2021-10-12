@@ -176,31 +176,31 @@ struct
     {
         std::string add    = "add_double";
         std::string update = "update_double";
-    } double_slider;
+    } double_srvs;
 
     struct
     {
         std::string add    = "add_int";
         std::string update = "update_int";
-    } int_slider;
+    } int_srvs;
 
     struct
     {
         std::string add    = "add_bool";
         std::string update = "update_bool";
-    } radio_button;
+    } bool_srvs;
 
     struct
     {
         std::string add    = "add_list";
         std::string update = "update_list";
-    } combo_box;
+    } list_srvs;
 
     struct
     {
         std::string add    = "add_trigger";
         std::string update = "update_trigger";
-    } button;
+    } trigger_srvs;
 
     unsigned int n_threads = 3;
     double wait_service_secs = 10.0;

@@ -46,11 +46,11 @@ public:
     app_ = new QApplication(argc,argv);
     window_ = new Window(QString::fromStdString(ros_node_name));
 
-    double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_slider.update,_ros_services.double_slider.add);
-    int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_slider.update,_ros_services.int_slider.add);
-    bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
-    list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.combo_box.update,_ros_services.combo_box.add);
-    trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.button.update,_ros_services.button.add);
+    double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add);
+    int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add);
+    bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add);
+    list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.list_srvs.update,_ros_services.list_srvs.add);
+    trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.add);
 
     remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RtGuiServer::removeWidget, this);
 

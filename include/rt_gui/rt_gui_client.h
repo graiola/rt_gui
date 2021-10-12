@@ -118,11 +118,11 @@ private:
   {
     std::string ros_node_name = RT_GUI_CLIENT_NAME;
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
-    bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.radio_button.add,_ros_services.radio_button.update);
-    list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.combo_box.add,_ros_services.combo_box.update);
-    trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.button.add,_ros_services.button.update);
-    double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_slider.add,_ros_services.double_slider.update);
-    int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_slider.add,_ros_services.int_slider.update);
+    bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update);
+    list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update);
+    trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update);
+    double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update);
+    int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update);
 
     remove_ = ros_node_->getNode().serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
   }
