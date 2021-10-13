@@ -8,6 +8,12 @@ bool stopController()
   return true;
 }
 
+bool setForceY(const double& Fy)
+{
+  ROS_WARN_STREAM("Fy:"<<Fy);
+  return true;
+}
+
 int main(int /*argc*/, char*[] /*argv[]*/)
 {
 
@@ -24,8 +30,8 @@ int main(int /*argc*/, char*[] /*argv[]*/)
 
   std::vector<double> velocities(3);
 
-
   RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
+  RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fy"),-10.5,10.5,0.0,&setForceY);
   RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
   RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
   RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);
@@ -35,6 +41,9 @@ int main(int /*argc*/, char*[] /*argv[]*/)
 
   // Remove a widget example:
   //RtGuiClient::getIstance().remove(std::string("controllers"),std::string("steps"));
+
+  // Async example: update the data as soon as we receive the new data
+  //RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps,false);
 
   ros::Rate r(100);
   while(ros::ok())

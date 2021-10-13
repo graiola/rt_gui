@@ -46,11 +46,11 @@ public:
     app_ = new QApplication(argc,argv);
     window_ = new Window(QString::fromStdString(ros_node_name));
 
-    double_slider_m_ = std::make_shared<DoubleSliderServerManager>(window_,ros_node_->getNode(),_ros_services.double_slider.update,_ros_services.double_slider.add);
-    int_slider_m_    = std::make_shared<IntSliderServerManager>(window_,ros_node_->getNode(),_ros_services.int_slider.update,_ros_services.int_slider.add);
-    radio_m_         = std::make_shared<RadioButtonServerManager>(window_,ros_node_->getNode(),_ros_services.radio_button.update,_ros_services.radio_button.add);
-    combo_m_         = std::make_shared<ComboBoxServerManager>(window_,ros_node_->getNode(),_ros_services.combo_box.update,_ros_services.combo_box.add);
-    button_m_        = std::make_shared<ButtonServerManager>(window_,ros_node_->getNode(),_ros_services.button.update,_ros_services.button.add);
+    double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add);
+    int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add);
+    bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add);
+    list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.list_srvs.update,_ros_services.list_srvs.add);
+    trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.add);
 
     remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RtGuiServer::removeWidget, this);
 
@@ -87,11 +87,11 @@ private:
   QApplication* app_;
   std::unique_ptr<RosNode> ros_node_;
 
-  DoubleSliderServerManager::Ptr double_slider_m_;
-  IntSliderServerManager::Ptr int_slider_m_;
-  RadioButtonServerManager::Ptr radio_m_;
-  ComboBoxServerManager::Ptr combo_m_;
-  ButtonServerManager::Ptr button_m_;
+  DoubleServerHandler::Ptr double_h_;
+  IntServerHandler::Ptr int_h_;
+  BoolServerHandler::Ptr bool_h_;
+  ListServerHandler::Ptr list_h_;
+  TriggerServerHandler::Ptr trigger_h_;
 
   ros::ServiceServer remove_;
 

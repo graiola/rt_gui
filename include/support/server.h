@@ -7,22 +7,22 @@
 namespace rt_gui
 {
 
-template<typename data_t, typename srv_t>
-class WindowServerManager
+template<typename srv_t, typename data_t>
+class WindowServerHandler
 {
 
 public:
 
-    typedef std::shared_ptr<WindowServerManager> Ptr;
+    typedef std::shared_ptr<WindowServerHandler> Ptr;
 
-    WindowServerManager(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+    WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
     {
         update_ = node.serviceClient<srv_t>("/" RT_GUI_CLIENT_NAME "/"+srv_requested);
-        add_ = node.advertiseService(srv_provided, &WindowServerManager::addWidget, this);
+        add_ = node.advertiseService(srv_provided, &WindowServerHandler::addWidget, this);
         window_ = window;
     }
 
-    virtual ~WindowServerManager() {}
+    virtual ~WindowServerHandler() {}
 
     virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
 
@@ -58,17 +58,17 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Void>
+class TriggerServerHandler : public QObject, WindowServerHandler<rt_gui::Void,bool>
 {
 
     Q_OBJECT
 
 public:
 
-    typedef std::shared_ptr<ButtonServerManager> Ptr;
+    typedef std::shared_ptr<TriggerServerHandler> Ptr;
 
-    ButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :WindowServerManager<bool,rt_gui::Void>(window,node,srv_requested,srv_provided)
+    TriggerServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerHandler<rt_gui::Void,bool>(window,node,srv_requested,srv_provided)
     {
 
         QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&)),
@@ -110,17 +110,17 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntSliderServerManager : public QObject, WindowServerManager<int,rt_gui::Int>
+class IntServerHandler : public QObject, WindowServerHandler<rt_gui::Int,int>
 {
 
     Q_OBJECT
 
 public:
 
-    typedef std::shared_ptr<IntSliderServerManager> Ptr;
+    typedef std::shared_ptr<IntServerHandler> Ptr;
 
-    IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :WindowServerManager<int,rt_gui::Int>(window,node,srv_requested,srv_provided)
+    IntServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerHandler<rt_gui::Int,int>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
                          window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
@@ -148,17 +148,17 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleSliderServerManager : public QObject, WindowServerManager<double,rt_gui::Double>
+class DoubleServerHandler : public QObject, WindowServerHandler<rt_gui::Double,double>
 {
 
     Q_OBJECT
 
 public:
 
-    typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
+    typedef std::shared_ptr<DoubleServerHandler> Ptr;
 
-    DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :WindowServerManager<double,rt_gui::Double>(window,node,srv_requested,srv_provided)
+    DoubleServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerHandler<rt_gui::Double,double>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
                          window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
@@ -186,17 +186,17 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RadioButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Bool>
+class BoolServerHandler : public QObject, WindowServerHandler<rt_gui::Bool,bool>
 {
 
     Q_OBJECT
 
 public:
 
-    typedef std::shared_ptr<RadioButtonServerManager> Ptr;
+    typedef std::shared_ptr<BoolServerHandler> Ptr;
 
-    RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :WindowServerManager<bool,rt_gui::Bool>(window,node,srv_requested,srv_provided)
+    BoolServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerHandler<rt_gui::Bool,bool>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
                          window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
@@ -224,17 +224,17 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ComboBoxServerManager : public QObject, WindowServerManager<std::string,rt_gui::List>
+class ListServerHandler : public QObject, WindowServerHandler<rt_gui::List,std::string>
 {
 
     Q_OBJECT
 
 public:
 
-    typedef std::shared_ptr<ComboBoxServerManager> Ptr;
+    typedef std::shared_ptr<ListServerHandler> Ptr;
 
-    ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :WindowServerManager<std::string,rt_gui::List>(window,node,srv_requested,srv_provided)
+    ListServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerHandler<rt_gui::List,std::string>(window,node,srv_requested,srv_provided)
     {
         QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
                          window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
