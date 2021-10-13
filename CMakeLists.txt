@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(rt_gui)
 
-add_compile_options(-std=c++14)
+add_compile_options(-std=c++17)
 
 option(QT_VERSION_GREATER_THAN_5_5 "Set to true if Qt5 > 5.5 is installed" FALSE)
 
@@ -29,17 +29,11 @@ find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
 add_service_files(
   FILES
-  add/addButton.srv
-  add/addComboBox.srv
-  add/addRadioButton.srv
-  add/addDoubleSlider.srv
-  add/addIntSlider.srv
-  update/updateButton.srv
-  update/updateComboBox.srv
-  update/updateRadioButton.srv
-  update/updateDoubleSlider.srv
-  update/updateIntSlider.srv
-  removeWidget.srv
+  Bool.srv
+  Double.srv
+  Int.srv
+  List.srv
+  Void.srv
 )
 
 generate_messages()
@@ -64,6 +58,7 @@ target_link_libraries(console readline pthread)
 
 ## Compile the server node
 add_executable(server_node include/support/server.h include/rt_gui/rt_gui_server.h src/server.cpp)
+add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE qt_utils ${catkin_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
@@ -88,9 +83,11 @@ if (CATKIN_ENABLE_TESTING)
     target_link_libraries(test_groups PRIVATE qt_utils)
 
     add_executable(test_server include/support/server.h include/rt_gui/rt_gui_server.h test/test_server.cpp)
+    add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
     target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
 
     add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
+    add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
     target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
 
     add_executable(test_console test/test_console.cpp)

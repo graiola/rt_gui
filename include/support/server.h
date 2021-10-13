@@ -7,270 +7,261 @@
 namespace rt_gui
 {
 
-template<typename data_t, typename data_srv_request_t>
-class ServerManagerBase
+template<typename data_t, typename srv_t>
+class WindowServerManager
 {
 
 public:
 
-  typedef std::shared_ptr<ServerManagerBase> Ptr;
+    typedef std::shared_ptr<WindowServerManager> Ptr;
 
-  ServerManagerBase(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
-  {
-    update_ = node.serviceClient<data_srv_request_t>("/" RT_GUI_CLIENT_NAME "/"+srv_requested);
-    window_ = window;
-  }
-
-  bool update(data_srv_request_t& srv)
-  {
-    if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    WindowServerManager(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
     {
-      update_.call(srv);
-      if(srv.response.resp == false)
-        throw std::runtime_error("RtGuiClient::update::resp is false!");
+        update_ = node.serviceClient<srv_t>("/" RT_GUI_CLIENT_NAME "/"+srv_requested);
+        add_ = node.advertiseService(srv_provided, &WindowServerManager::addWidget, this);
+        window_ = window;
     }
-    else
-    {
-      throw std::runtime_error("RtGuiClient::update service is not available!");
-    }
-    return true;
-  }
 
-  bool update(const std::string& group_name, const std::string& data_name, data_t value)
-  {
-    data_srv_request_t srv;
-    srv.request.data_name  = data_name;
-    srv.request.group_name = group_name;
-    srv.request.value = value;
-    return update(srv);
-  }
+    virtual ~WindowServerManager() {}
+
+    virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
+
+    bool update(srv_t& srv)
+    {
+        if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+        {
+            update_.call(srv);
+            if(srv.response.resp == false)
+                throw std::runtime_error("RtGuiClient::update::resp is false!");
+        }
+        else
+        {
+            throw std::runtime_error("RtGuiClient::update service is not available!");
+        }
+        return true;
+    }
+
+    bool update(const std::string& group_name, const std::string& data_name, data_t value)
+    {
+        srv_t srv;
+        srv.request.data_name  = data_name;
+        srv.request.group_name = group_name;
+        srv.request.value = value;
+        return update(srv);
+    }
 
 protected:
-  ros::ServiceServer add_;
-  ros::ServiceClient update_;
-  Window* window_;
+    ros::ServiceServer add_;
+    ros::ServiceClient update_;
+    Window* window_;
 
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::updateButton>
+class ButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Void>
 {
 
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<ButtonServerManager> Ptr;
+    typedef std::shared_ptr<ButtonServerManager> Ptr;
 
-  ButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<bool,rt_gui::updateButton>(window,node,srv_requested,srv_provided)
-  {
-    add_ = node.advertiseService(srv_provided, &ButtonServerManager::addButton, this);
-
-
-    QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&)),
-                     window_, SLOT(addButton(const QString&, const QString&)));
-
-    QObject::connect(window_, SIGNAL(updateButton(QString, QString)),
-                     this,    SLOT(updateButton(QString, QString)));
-  }
-
-  bool addButton(addButton::Request  &req, addButton::Response &res)
-  {
-    emit addButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
-    // FIXME add a proper error handling
-    res.resp = true;
-    return res.resp;
-  }
-
-public slots:
-  bool updateButton(QString group_name, QString data_name)
-  {
-    rt_gui::addButton srv;
-    srv.request.data_name  = data_name.toStdString();
-    srv.request.group_name = group_name.toStdString();
-    if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    ButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerManager<bool,rt_gui::Void>(window,node,srv_requested,srv_provided)
     {
-      update_.call(srv);
-      if(srv.response.resp == false)
-        throw std::runtime_error("RtGuiClient::update::resp is false!");
+
+        QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&)),
+                         window_, SLOT(addButton(const QString&, const QString&)));
+
+        QObject::connect(window_, SIGNAL(updateButton(QString, QString)),
+                         this,    SLOT(updateButton(QString, QString)));
     }
-    else
+
+    bool addWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
     {
-      throw std::runtime_error("RtGuiClient::update service is not available!");
+        emit addButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
+        // FIXME add a proper error handling
+        res.resp = true;
+        return res.resp;
     }
-    return true;
-  }
+
+public slots:
+    bool updateButton(QString group_name, QString data_name)
+    {
+        rt_gui::Void srv;
+        srv.request.data_name  = data_name.toStdString();
+        srv.request.group_name = group_name.toStdString();
+        if(update_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+        {
+            update_.call(srv);
+            if(srv.response.resp == false)
+                throw std::runtime_error("RtGuiClient::update::resp is false!");
+        }
+        else
+        {
+            throw std::runtime_error("RtGuiClient::update service is not available!");
+        }
+        return true;
+    }
 
 signals:
-  void addButton(const QString& group_name, const QString& data_name);
+    void addButton(const QString& group_name, const QString& data_name);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntSliderServerManager : public QObject, ServerManagerBase<int,rt_gui::updateIntSlider>
+class IntSliderServerManager : public QObject, WindowServerManager<int,rt_gui::Int>
 {
 
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<IntSliderServerManager> Ptr;
+    typedef std::shared_ptr<IntSliderServerManager> Ptr;
 
-  IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<int,rt_gui::updateIntSlider>(window,node,srv_requested,srv_provided)
-  {
-    add_ = node.advertiseService(srv_provided, &IntSliderServerManager::addIntSlider, this); // FIXME to be moved in base
+    IntSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerManager<int,rt_gui::Int>(window,node,srv_requested,srv_provided)
+    {
+        QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
+                         window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
 
+        QObject::connect(window_, SIGNAL(updateIntSlider(QString, QString, int)),
+                         this,    SLOT(updateIntSlider(QString, QString, int)));
+    }
 
-    QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
-                     window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
-
-    QObject::connect(window_, SIGNAL(updateIntSlider(QString, QString, int)),
-                     this,    SLOT(updateIntSlider(QString, QString, int)));
-  }
-
-  bool addIntSlider(addIntSlider::Request  &req, addIntSlider::Response &res)
-  {
-    emit addIntSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
-    // FIXME add a proper error handling
-    res.resp = true;
-    return res.resp;
-  }
+    bool addWidget(rt_gui::Int::Request& req, rt_gui::Int::Response& res)
+    {
+        emit addIntSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
+        // FIXME add a proper error handling
+        res.resp = true;
+        return res.resp;
+    }
 
 public slots:
-  bool updateIntSlider(QString group_name, QString data_name, int value)
-  {
-    return update(group_name.toStdString(),data_name.toStdString(),value);
-  }
+    bool updateIntSlider(QString group_name, QString data_name, int value)
+    {
+        return update(group_name.toStdString(),data_name.toStdString(),value);
+    }
 
 signals:
-  void addIntSlider(const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
+    void addIntSlider(const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleSliderServerManager : public QObject, ServerManagerBase<double,rt_gui::updateDoubleSlider>
+class DoubleSliderServerManager : public QObject, WindowServerManager<double,rt_gui::Double>
 {
 
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
+    typedef std::shared_ptr<DoubleSliderServerManager> Ptr;
 
-  DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<double,rt_gui::updateDoubleSlider>(window,node,srv_requested,srv_provided)
-  {
-    add_ = node.advertiseService(srv_provided, &DoubleSliderServerManager::addDoubleSlider, this); // FIXME to be moved in base
+    DoubleSliderServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerManager<double,rt_gui::Double>(window,node,srv_requested,srv_provided)
+    {
+        QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
+                         window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
 
+        QObject::connect(window_, SIGNAL(updateDoubleSlider(QString, QString, double)),
+                         this,    SLOT(updateDoubleSlider(QString, QString, double)));
+    }
 
-    QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
-                     window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
-
-    QObject::connect(window_, SIGNAL(updateDoubleSlider(QString, QString, double)),
-                     this,    SLOT(updateDoubleSlider(QString, QString, double)));
-  }
-
-  bool addDoubleSlider(addDoubleSlider::Request  &req, addDoubleSlider::Response &res)
-  {
-    emit addDoubleSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.init);
-    // FIXME add a proper error handling
-    res.resp = true;
-    return res.resp;
-  }
+    bool addWidget(rt_gui::Double::Request& req, rt_gui::Double::Response& res)
+    {
+        emit addDoubleSlider(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
+        // FIXME add a proper error handling
+        res.resp = true;
+        return res.resp;
+    }
 
 public slots:
-  bool updateDoubleSlider(QString group_name, QString data_name, double value)
-  {
-    return update(group_name.toStdString(),data_name.toStdString(),value);
-  }
+    bool updateDoubleSlider(QString group_name, QString data_name, double value)
+    {
+        return update(group_name.toStdString(),data_name.toStdString(),value);
+    }
 
 signals:
-  void addDoubleSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
+    void addDoubleSlider(const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class RadioButtonServerManager : public QObject, ServerManagerBase<bool,rt_gui::updateRadioButton>
+class RadioButtonServerManager : public QObject, WindowServerManager<bool,rt_gui::Bool>
 {
 
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<RadioButtonServerManager> Ptr;
+    typedef std::shared_ptr<RadioButtonServerManager> Ptr;
 
-  RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<bool,rt_gui::updateRadioButton>(window,node,srv_requested,srv_provided)
-  {
-    add_ = node.advertiseService(srv_provided, &RadioButtonServerManager::addRadioButton, this); // FIXME to be moved in base
+    RadioButtonServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerManager<bool,rt_gui::Bool>(window,node,srv_requested,srv_provided)
+    {
+        QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
+                         window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
 
+        QObject::connect(window_, SIGNAL(updateRadioButton(QString, QString, bool)),
+                         this,    SLOT(updateRadioButton(QString, QString, bool)));
+    }
 
-    QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
-                     window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
-
-    QObject::connect(window_, SIGNAL(updateRadioButton(QString, QString, bool)),
-                     this,    SLOT(updateRadioButton(QString, QString, bool)));
-  }
-
-  bool addRadioButton(addRadioButton::Request  &req, addRadioButton::Response &res)
-  {
-    emit addRadioButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.init);
-    // FIXME add a proper error handling
-    res.resp = true;
-    return res.resp;
-  }
+    bool addWidget(rt_gui::Bool::Request& req, rt_gui::Bool::Response& res)
+    {
+        emit addRadioButton(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.value);
+        // FIXME add a proper error handling
+        res.resp = true;
+        return res.resp;
+    }
 
 public slots:
-  bool updateRadioButton(QString group_name, QString data_name, bool value)
-  {
-    return update(group_name.toStdString(),data_name.toStdString(),value);
-  }
+    bool updateRadioButton(QString group_name, QString data_name, bool value)
+    {
+        return update(group_name.toStdString(),data_name.toStdString(),value);
+    }
 
 signals:
-  void addRadioButton(const QString& group_name, const QString& data_name, const bool& init);
+    void addRadioButton(const QString& group_name, const QString& data_name, const bool& init);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ComboBoxServerManager : public QObject, ServerManagerBase<std::string,rt_gui::updateComboBox>
+class ComboBoxServerManager : public QObject, WindowServerManager<std::string,rt_gui::List>
 {
 
-  Q_OBJECT
+    Q_OBJECT
 
 public:
 
-  typedef std::shared_ptr<ComboBoxServerManager> Ptr;
+    typedef std::shared_ptr<ComboBoxServerManager> Ptr;
 
-  ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-    :ServerManagerBase<std::string,rt_gui::updateComboBox>(window,node,srv_requested,srv_provided)
-  {
-    add_ = node.advertiseService(srv_provided, &ComboBoxServerManager::addComboBox, this); // FIXME to be moved in base
+    ComboBoxServerManager(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+        :WindowServerManager<std::string,rt_gui::List>(window,node,srv_requested,srv_provided)
+    {
+        QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
+                         window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
 
+        QObject::connect(window_, SIGNAL(updateComboBox(QString, QString, QString)),
+                         this,    SLOT(updateComboBox(QString, QString, QString)));
+    }
 
-    QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
-                     window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));
-
-    QObject::connect(window_, SIGNAL(updateComboBox(QString, QString, QString)),
-                     this,    SLOT(updateComboBox(QString, QString, QString)));
-  }
-
-  bool addComboBox(addComboBox::Request  &req, addComboBox::Response &res)
-  {
-    QStringList list;
-    for(unsigned int i=0;i<req.list.size();i++)
-      list.push_back(QString::fromStdString(req.list[i]));
-    emit addComboBox(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.init));
-    // FIXME add a proper error handling
-    res.resp = true;
-    return res.resp;
-  }
+    bool addWidget(rt_gui::List::Request& req, rt_gui::List::Response& res)
+    {
+        QStringList list;
+        for(unsigned int i=0;i<req.list.size();i++)
+            list.push_back(QString::fromStdString(req.list[i]));
+        emit addComboBox(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.value));
+        // FIXME add a proper error handling
+        res.resp = true;
+        return res.resp;
+    }
 
 public slots:
-  bool updateComboBox(QString group_name, QString data_name, QString value)
-  {
-    return update(group_name.toStdString(),data_name.toStdString(),value.toStdString());
-  }
+    bool updateComboBox(QString group_name, QString data_name, QString value)
+    {
+        return update(group_name.toStdString(),data_name.toStdString(),value.toStdString());
+    }
 
 signals:
-  void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
+    void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 };
 
 

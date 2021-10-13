@@ -3,19 +3,11 @@
 
 #include <ros/ros.h>
 
-#include <rt_gui/addButton.h>
-#include <rt_gui/addComboBox.h>
-#include <rt_gui/addRadioButton.h>
-#include <rt_gui/addDoubleSlider.h>
-#include <rt_gui/addIntSlider.h>
-
-#include <rt_gui/updateButton.h>
-#include <rt_gui/updateComboBox.h>
-#include <rt_gui/updateRadioButton.h>
-#include <rt_gui/updateDoubleSlider.h>
-#include <rt_gui/updateIntSlider.h>
-
-#include <rt_gui/removeWidget.h>
+#include <rt_gui/Bool.h>
+#include <rt_gui/Double.h>
+#include <rt_gui/Int.h>
+#include <rt_gui/List.h>
+#include <rt_gui/Void.h>
 
 #include <memory>
 #include <atomic>
