@@ -6,7 +6,7 @@
 int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
-  Window window(QString("rt_gui"));
+  //Window window(QString("rt_gui"));
 
   WidgetsGroup group1;
   QLabel* label11 = new QLabel("label11");
