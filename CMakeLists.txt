@@ -40,6 +40,7 @@ generate_messages()
 
 catkin_package(
   INCLUDE_DIRS include
+  LIBRARIES qt_utils server
   CATKIN_DEPENDS
 )
 
@@ -56,15 +57,22 @@ include(src/qt_utils/qt_utils.cmake)
 add_library(console src/console/console_core.cpp src/console/console.cpp)
 target_link_libraries(console readline pthread)
 
+## Compile server lib
+add_library(server include/support/server.h include/support/common.h)
+target_link_libraries(server qt_utils ${catkin_LIBRARIES})
+
 ## Compile the server node
-add_executable(server_node include/support/server.h include/rt_gui/rt_gui_server.h src/server.cpp)
+add_executable(server_node include/rt_gui/rt_gui_server.h src/server.cpp)
 add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
-target_link_libraries(server_node PRIVATE qt_utils ${catkin_LIBRARIES})
+target_link_libraries(server_node PRIVATE server qt_utils ${catkin_LIBRARIES})
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS server_node
+install(DIRECTORY include/support
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+
+install(TARGETS server_node qt_utils server
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
