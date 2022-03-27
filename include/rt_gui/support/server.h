@@ -163,6 +163,64 @@ signals:
     void addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class RosServerNode : public QObject
+{
+  Q_OBJECT
+
+public:
+
+  RosServerNode()
+  {
+  }
+
+  ~RosServerNode()
+  {
+  }
+
+  void spawn(const std::string& ros_node_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
+  {
+    ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
+
+    window_ = new Window(QString::fromStdString(ros_node_name),parent);
+
+    double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add);
+    int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add);
+    bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add);
+    list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.list_srvs.update,_ros_services.list_srvs.add);
+    trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.add);
+
+    remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
+
+    QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &)),
+                     window_,    SLOT(removeWidget(const QString &, const QString &)));
+  }
+
+  bool removeWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
+  {
+    emit removeWidget(QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
+    res.resp = true;
+    return res.resp;
+  }
+
+signals:
+  void removeWidget(const QString &group_name, const QString &data_name);
+
+private:
+
+  RosServerNode(const RosServerNode&)= delete;
+  RosServerNode& operator=(const RosServerNode&)= delete;
+
+  Window* window_;
+  std::unique_ptr<RosNode> ros_node_;
+  DoubleServerHandler::Ptr double_h_;
+  IntServerHandler::Ptr int_h_;
+  BoolServerHandler::Ptr bool_h_;
+  ListServerHandler::Ptr list_h_;
+  TriggerServerHandler::Ptr trigger_h_;
+  ros::ServiceServer remove_;
+};
+
 
 } // namespace
 
