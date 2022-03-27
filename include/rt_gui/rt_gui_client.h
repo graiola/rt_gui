@@ -19,8 +19,8 @@
 #ifndef RT_GUI_RT_GUI_CLIENT_H
 #define RT_GUI_RT_GUI_CLIENT_H
 
-#include <support/common.h>
-#include <support/client.h>
+#include "rt_gui/support/common.h"
+#include "rt_gui/support/client.h"
 #include <eigen3/Eigen/Core>
 
 namespace rt_gui

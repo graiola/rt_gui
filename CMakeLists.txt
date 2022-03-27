@@ -58,13 +58,13 @@ add_library(console src/console/console_core.cpp src/console/console.cpp)
 target_link_libraries(console readline pthread)
 
 ## Compile server lib
-add_library(server include/support/server.h include/support/common.h)
+add_library(server include/rt_gui/support/server.h src/support/server.cpp)
 target_link_libraries(server qt_utils ${catkin_LIBRARIES})
 
 ## Compile the server node
-add_executable(server_node include/rt_gui/rt_gui_server.h src/server.cpp)
+add_executable(server_node include/rt_gui/rt_gui_server.h src/server_node.cpp)
 add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
-target_link_libraries(server_node PRIVATE server qt_utils ${catkin_LIBRARIES})
+target_link_libraries(server_node PRIVATE server)
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
@@ -87,9 +87,9 @@ if (CATKIN_ENABLE_TESTING)
     add_executable(test_qt test/test_qt.cpp)
     target_link_libraries(test_qt PRIVATE qt_utils)
 
-    add_executable(test_server include/support/server.h include/rt_gui/rt_gui_server.h test/test_server.cpp)
+    add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
     add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
-    target_link_libraries(test_server PRIVATE qt_utils ${catkin_LIBRARIES})
+    target_link_libraries(test_server PRIVATE server)
 
     add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
     add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})

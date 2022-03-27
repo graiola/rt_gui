@@ -19,8 +19,8 @@
 #ifndef RT_GUI_RT_GUI_SERVER_H
 #define RT_GUI_RT_GUI_SERVER_H
 
-#include <support/common.h>
-#include <support/server.h>
+#include "rt_gui/support/common.h"
+#include "rt_gui/support/server.h"
 
 namespace rt_gui
 {
