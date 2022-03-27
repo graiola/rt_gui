@@ -5,9 +5,9 @@
 #include "qt_utils/combo_box.h"
 #include "qt_utils/button.h"
 
-WidgetsGroup::WidgetsGroup(const QString &title,
+WidgetsGroup::WidgetsGroup(const QString& /*title*/,
                            QWidget *parent)
-  : QGroupBox(title, parent)
+  : QGroupBox(parent)
 {
   layout_ = new QBoxLayout(QBoxLayout::TopToBottom);
   setLayout(layout_);
@@ -23,13 +23,19 @@ void WidgetsGroup::remove(QWidget *widget)
   layout_->removeWidget(widget);
 }
 
-Window::Window(const QString& title)
+Window::Window(const QString& title, QWidget* parent)
+  :QWidget (parent, Qt::Widget)
 {
-  main_layout_ = new QVBoxLayout;
-  tabs_ = new QTabWidget;
+  main_layout_ = new QVBoxLayout(this);
+  tabs_ = new QTabWidget(this);
 
-  setLayout(main_layout_);
-
+  if(parent!=nullptr)
+    parent->setLayout(main_layout_);
+  else
+  {
+    setWindowFlag(Qt::WindowType::Window);
+    setLayout(main_layout_);
+  }
   setWindowTitle(title);
 }
 

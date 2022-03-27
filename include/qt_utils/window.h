@@ -17,7 +17,7 @@ class WidgetsGroup : public QGroupBox
 
 public:
   WidgetsGroup(const QString &title,
-               QWidget *parent = 0);
+               QWidget *parent = nullptr);
 
   void add(QWidget* widget);
 
@@ -35,7 +35,7 @@ public:
 
     typedef QMap<QString,WidgetsGroup* > widgets_group_map_t;
 
-    Window(const QString& title);
+    Window(const QString& title, QWidget* parent = nullptr);
 
 public slots:
     void addButton(const QString& group_name, const QString& data_name);
