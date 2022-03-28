@@ -58,11 +58,11 @@ add_library(console src/console/console_core.cpp src/console/console.cpp)
 target_link_libraries(console readline pthread)
 
 ## Compile server lib
-add_library(server include/rt_gui/support/server.h src/support/server.cpp)
+add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
 target_link_libraries(server qt_utils ${catkin_LIBRARIES})
 
 ## Compile the server node
-add_executable(server_node include/rt_gui/rt_gui_server.h src/server_node.cpp)
+add_executable(server_node src/server_node.cpp)
 add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE server)
 

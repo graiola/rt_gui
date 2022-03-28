@@ -15,12 +15,14 @@ if(${pybind11_FOUND})
 
     message(STATUS "compiling python bindings")
 
+    message(${CMAKE_SOURCE_DIR})
+
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    pybind11_add_module(py_server pyRtGuiServer.cpp)
-    target_link_libraries(py_server PUBLIC server)
+    pybind11_add_module(py_server py_server.cpp)
+    target_link_libraries(py_server PRIVATE server)
 
     install(TARGETS py_server
-            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+            DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
             
 else()
     message(STATUS "pybind not found")
