@@ -66,6 +66,9 @@ add_executable(server_node include/rt_gui/rt_gui_server.h src/server_node.cpp)
 add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE server)
 
+## Bindings
+add_subdirectory(bindings/python/)
+
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
