@@ -22,8 +22,7 @@ PYBIND11_MODULE(py_server, m) {
         //.def("run", &rt_gui::RtGuiServer::run);
         .def("run", [](const std::string& name=RT_GUI_SERVER_NAME) {
         int argc = 1;
-        char* arg0 = strdup(name.c_str());
-        char* argv[] = {arg0, nullptr};
+        char* argv[] = {strdup("py_server"), strdup(name.c_str())};
         return rt_gui::RtGuiServer::getIstance().run(argc, argv);
     });
 }

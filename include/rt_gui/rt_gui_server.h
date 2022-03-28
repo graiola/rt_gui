@@ -41,8 +41,8 @@ public:
   int run(int argc, char *argv[])
   {
     app_ = new QApplication(argc,argv);
-    if(argv[0]!=nullptr)
-      ros_server_node_.spawn(argv[0]);
+    if(argv[1]!=nullptr)
+      ros_server_node_.spawn(argv[1]);
     else
       ros_server_node_.spawn();
     return app_->exec();
