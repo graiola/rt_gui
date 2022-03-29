@@ -69,7 +69,7 @@ add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE server)
 
 ## Bindings
-find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED) # find_package(PythonInterp REQUIRED)
+find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
 find_package(pybind11 QUIET)
 message(STATUS "check for pybind11")
 if(${pybind11_FOUND})
