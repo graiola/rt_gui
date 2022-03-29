@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.12.0)
 project(rt_gui)
 
 add_compile_options(-std=c++17)
@@ -26,6 +26,8 @@ list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
+
+catkin_python_setup()
 
 add_service_files(
   FILES
@@ -67,12 +69,21 @@ add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE server)
 
 ## Bindings
-add_subdirectory(bindings/python/)
+find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED) # find_package(PythonInterp REQUIRED)
+find_package(pybind11 QUIET)
+message(STATUS "check for pybind11")
+if(${pybind11_FOUND})
+    message(STATUS "compiling python bindings")
+    #include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
+    target_link_libraries(py_server PRIVATE server)
+    install(TARGETS py_server
+            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+else()
+    message(STATUS "pybind not found")
+endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-
-install(DIRECTORY include/support
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
 install(TARGETS server_node qt_utils server
