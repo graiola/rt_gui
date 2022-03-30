@@ -7,7 +7,7 @@ namespace py = pybind11;
 PYBIND11_MODULE(py_server, m) {
 
     // optional module docstring
-    m.doc() = "pybind11 rt_gui plugin";
+    m.doc() = "pybind11 rt_gui_server plugin";
 
     py::class_<QWidget>(m, "QWidget")
       .def(py::init<>());

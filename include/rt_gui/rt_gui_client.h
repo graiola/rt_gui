@@ -163,10 +163,6 @@ private:
     remove_ = ros_node_->getNode().serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+_ros_services.remove_service);
   }
 
-  ~RtGuiClient()
-  {
-  }
-
   template<class data_t>
   bool loadFromServer(const std::string& group_name, const std::string& data_name, data_t& value)
   {

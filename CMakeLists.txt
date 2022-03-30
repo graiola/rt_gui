@@ -74,10 +74,15 @@ find_package(pybind11 QUIET)
 message(STATUS "check for pybind11")
 if(${pybind11_FOUND})
     message(STATUS "compiling python bindings")
-    #include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    # Server
     pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
     target_link_libraries(py_server PRIVATE server)
     install(TARGETS py_server
+            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+    # Client
+    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
+    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
+    install(TARGETS py_client
             DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 else()
     message(STATUS "pybind not found")
