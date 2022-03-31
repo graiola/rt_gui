@@ -30,6 +30,7 @@ int main(int /*argc*/, char*[] /*argv[]*/)
 
   std::vector<double> velocities(3);
 
+  RtGuiClient::getIstance().init();
   RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
   RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fy"),-10.5,10.5,0.0,&setForceY);
   RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);

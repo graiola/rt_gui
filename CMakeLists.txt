@@ -84,6 +84,9 @@ if(${pybind11_FOUND})
     target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
     install(TARGETS py_client
             DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+    # Tests
+    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
+                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 else()
     message(STATUS "pybind not found")
 endif()
