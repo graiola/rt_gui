@@ -42,9 +42,9 @@ public:
   {
     app_ = new QApplication(argc,argv);
     if(argv[1]!=nullptr)
-      ros_server_node_.spawn(argv[1]);
+      ros_server_node_.init(argv[1]);
     else
-      ros_server_node_.spawn();
+      ros_server_node_.init();
     return app_->exec();
   }
 
