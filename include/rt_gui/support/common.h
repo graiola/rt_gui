@@ -92,8 +92,7 @@ private:
     buffer_t buffer_;
 };
 
-#define RT_GUI_SERVER_NAME "rt_gui_server"
-#define RT_GUI_CLIENT_NAME "rt_gui_client"
+#define RT_GUI_NAMESPACE "rt_gui"
 
 struct
 {
@@ -160,7 +159,7 @@ public:
         }
         else
         {
-            throw std::runtime_error("roscore not found... Did you start the server?");
+            throw std::runtime_error("roscore not found... did you start the server?");
         }
 
         spinner_.reset(new ros::AsyncSpinner(n_threads)); // Use n_threads to keep the ros magic alive

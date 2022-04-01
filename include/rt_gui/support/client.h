@@ -17,10 +17,10 @@ public:
 
     typedef std::function<void(data_t)> fun_t;
 
-    InterfaceHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided)
+    InterfaceHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided, std::string ros_namespace)
     {
         server_    = node.advertiseService(srv_provided, &InterfaceHandler::update, this);
-        client_    = node.serviceClient<srv_t>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+        client_    = node.serviceClient<srv_t>("/"+ros_namespace+"_server/"+srv_requested);
     }
 
     virtual ~InterfaceHandler() {}
@@ -158,10 +158,10 @@ public:
 
     typedef std::function<void()> fun_t;
 
-    TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
+    TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
     {
         server_    = node.advertiseService(srv_provided, &TriggerHandler::update, this);
-        client_    = node.serviceClient<rt_gui::Void>("/" RT_GUI_SERVER_NAME "/"+srv_requested);
+        client_    = node.serviceClient<rt_gui::Void>("/"+ros_namespace+"_server/"+srv_requested);
     }
 
     void add(const std::string& group_name, const std::string& data_name, fun_t fun)
@@ -203,8 +203,8 @@ public:
 
     typedef std::shared_ptr<IntHandler> Ptr;
 
-    IntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<rt_gui::Int,int>(node,srv_requested,srv_provided) {}
+    IntHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
+        :InterfaceHandler<rt_gui::Int,int>(node,srv_requested,srv_provided,ros_namespace) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -215,8 +215,8 @@ public:
 
     typedef std::shared_ptr<DoubleHandler> Ptr;
 
-    DoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<rt_gui::Double,double>(node,srv_requested,srv_provided) {}
+    DoubleHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
+        :InterfaceHandler<rt_gui::Double,double>(node,srv_requested,srv_provided,ros_namespace) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -227,8 +227,8 @@ public:
 
     typedef std::shared_ptr<BoolHandler> Ptr;
 
-    BoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided) {}
+    BoolHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
+        :InterfaceHandler<rt_gui::Bool,bool>(node,srv_requested,srv_provided,ros_namespace) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -239,8 +239,8 @@ public:
 
     typedef std::shared_ptr<ListHandler> Ptr;
 
-    ListHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided)
-        :InterfaceHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided) {}
+    ListHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
+        :InterfaceHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided,ros_namespace) {}
 };
 
 } // namespace

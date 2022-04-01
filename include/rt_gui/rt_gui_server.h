@@ -41,17 +41,16 @@ public:
   int run(int argc, char *argv[])
   {
     app_ = new QApplication(argc,argv);
-    ros_server_node_.spawn();
+    if(argv[1]!=nullptr)
+      ros_server_node_.init(argv[1]);
+    else
+      ros_server_node_.init();
     return app_->exec();
   }
 
 private:
 
   RtGuiServer()
-  {
-  }
-
-  ~RtGuiServer()
   {
   }
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.12.0)
 project(rt_gui)
 
 add_compile_options(-std=c++17)
@@ -26,6 +26,8 @@ list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
+
+catkin_python_setup()
 
 add_service_files(
   FILES
@@ -58,13 +60,36 @@ add_library(console src/console/console_core.cpp src/console/console.cpp)
 target_link_libraries(console readline pthread)
 
 ## Compile server lib
-add_library(server include/rt_gui/support/server.h src/support/server.cpp)
+add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
 target_link_libraries(server qt_utils ${catkin_LIBRARIES})
 
 ## Compile the server node
-add_executable(server_node include/rt_gui/rt_gui_server.h src/server_node.cpp)
+add_executable(server_node src/server_node.cpp)
 add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
 target_link_libraries(server_node PRIVATE server)
+
+## Bindings
+find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
+find_package(pybind11 QUIET)
+message(STATUS "check for pybind11")
+if(${pybind11_FOUND})
+    message(STATUS "compiling python bindings")
+    # Server
+    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
+    target_link_libraries(py_server PRIVATE server)
+    install(TARGETS py_server
+            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+    # Client
+    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
+    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
+    install(TARGETS py_client
+            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+    # Tests
+    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
+                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+else()
+    message(STATUS "pybind not found")
+endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
