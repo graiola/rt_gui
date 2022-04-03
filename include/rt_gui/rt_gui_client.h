@@ -36,129 +36,204 @@ public:
     return istance;
   }
 
-  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    int_h_->add(group_name,data_name,min,max,data_ptr,sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      int_h_->add(group_name,data_name,min,max,data_ptr,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int data, std::function<void(int)> fun, bool sync = true)
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int data, std::function<void(int)> fun, bool sync = true)
   {
-    check();
-    int_h_->add(group_name,data_name,min,max,data,fun,sync);
+    if(check())
+    {
+      int_h_->add(group_name,data_name,min,max,data,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
   {
-    check();
-    int init_value;
-    if(loadFromServer(group_name,data_name,init_value))
-      int_h_->add(group_name,data_name,min,max,init_value,fun,sync);
+    if(check())
+    {
+      int init_value;
+      if(loadFromServer(group_name,data_name,init_value))
+        int_h_->add(group_name,data_name,min,max,init_value,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::vector<int>* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::vector<int>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    for(unsigned int i=0;i<data_ptr->size();i++)
-      int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      for(unsigned int i=0;i<data_ptr->size();i++)
+        int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, Eigen::VectorXi* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, Eigen::VectorXi* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    std::vector<int> std_v;
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,std_v);
-    for(unsigned int i=0;i<std_v.size();i++) // Copy
-      data_ptr->operator[](i) = std_v[i];
-    for(unsigned int i=0;i<data_ptr->size();i++)
-      int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+    if(check())
+    {
+      std::vector<int> std_v;
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,std_v);
+      for(unsigned int i=0;i<std_v.size();i++) // Copy
+        data_ptr->operator[](i) = std_v[i];
+      for(unsigned int i=0;i<data_ptr->size();i++)
+        int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    double_h_->add(group_name,data_name,min,max,data_ptr,sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      double_h_->add(group_name,data_name,min,max,data_ptr,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double data, std::function<void(double)> fun, bool sync = true)
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double data, std::function<void(double)> fun, bool sync = true)
   {
-    check();
-    double_h_->add(group_name,data_name,min,max,data,fun,sync);
+    if(check())
+    {
+      double_h_->add(group_name,data_name,min,max,data,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
   {
-    check();
-    int init_value;
-    if(loadFromServer(group_name,data_name,init_value))
-      double_h_->add(group_name,data_name,min,max,init_value,fun,sync);
+    if(check())
+    {
+      int init_value;
+      if(loadFromServer(group_name,data_name,init_value))
+        double_h_->add(group_name,data_name,min,max,init_value,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::vector<double>* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::vector<double>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    for(unsigned int i=0;i<data_ptr->size();i++)
-      double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      for(unsigned int i=0;i<data_ptr->size();i++)
+        double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+      return true;
+    }
+    else
+      return false;
   }
 
   template<typename Derived>
-  void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::MatrixBase<Derived>* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::MatrixBase<Derived>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    std::vector<double> std_v;
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,std_v);
-    for(unsigned int i=0;i<std_v.size();i++) // Copy
-      data_ptr->operator[](i) = std_v[i];
-    for(unsigned int i=0;i<data_ptr->size();i++)
-      double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+    if(check())
+    {
+      std::vector<double> std_v;
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,std_v);
+      for(unsigned int i=0;i<std_v.size();i++) // Copy
+        data_ptr->operator[](i) = std_v[i];
+      for(unsigned int i=0;i<data_ptr->size();i++)
+        double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addBool(const std::string& group_name, const std::string& data_name, std::function<void(bool)> fun, bool sync = true)
+  bool addBool(const std::string& group_name, const std::string& data_name, std::function<void(bool)> fun, bool sync = true)
   {
-    check();
-    bool init_value;
-    if(loadFromServer(group_name,data_name,init_value))
-      bool_h_->add(group_name,data_name,init_value,fun,sync);
+    if(check())
+    {
+      bool init_value;
+      if(loadFromServer(group_name,data_name,init_value))
+        bool_h_->add(group_name,data_name,init_value,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addBool(const std::string& group_name, const std::string& data_name, bool* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addBool(const std::string& group_name, const std::string& data_name, bool* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    bool_h_->add(group_name,data_name,data_ptr,sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      bool_h_->add(group_name,data_name,data_ptr,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addTrigger(const std::string& group_name, const std::string& data_name, std::function<void()> fun)
+  bool addTrigger(const std::string& group_name, const std::string& data_name, std::function<void()> fun)
   {
-    check();
-    trigger_h_->add(group_name,data_name,fun);
+    if(check())
+    {
+      trigger_h_->add(group_name,data_name,fun);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
-    check();
-    if(load_init_from_server)
-      loadFromServer(group_name,data_name,*data_ptr);
-    list_h_->add(group_name,data_name,list,data_ptr,sync);
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      list_h_->add(group_name,data_name,list,data_ptr,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
-  void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
+  bool addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
   {
-    check();
-    std::string init_value;
-    if(loadFromServer(group_name,data_name,init_value))
-      list_h_->add(group_name,data_name,list,init_value,fun,sync);
+    if(check())
+    {
+      std::string init_value;
+      if(loadFromServer(group_name,data_name,init_value))
+        list_h_->add(group_name,data_name,list,init_value,fun,sync);
+      return true;
+    }
+    else
+      return false;
   }
 
   void remove(const std::string& group_name, const std::string& data_name)
@@ -177,29 +252,46 @@ public:
     list_h_->sync();
   }
 
-  void init(const std::string ros_namespace = RT_GUI_NAMESPACE)
+  bool init(const std::string ros_namespace = RT_GUI_NAMESPACE, int timeout = 60)
   {
     std::string ros_node_name = ros_namespace + "_client";
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
-    bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,ros_namespace);
-    list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update,ros_namespace);
-    trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,ros_namespace);
-    double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update,ros_namespace);
-    int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update,ros_namespace);
 
-    remove_ = ros_node_->getNode().serviceClient<rt_gui::Void>("/"+ros_namespace+"_server/"+_ros_services.remove_service);
+    std::string remove_service_name = "/"+ros_namespace+"_server/"+_ros_services.remove_service;
+    if(ros::service::waitForService(remove_service_name,timeout))
+    {
+      bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,ros_namespace);
+      list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update,ros_namespace);
+      trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,ros_namespace);
+      double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update,ros_namespace);
+      int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update,ros_namespace);
+      remove_         = ros_node_->getNode().serviceClient<rt_gui::Void>(remove_service_name);
+      init_           = true;
+      return true;
+    }
+    else
+    {
+      ROS_WARN_STREAM("RtGuiClient could not find "<< ros_namespace+"_server"<< ", please select the right ros_namespace when calling init().");
+      return false;
+    }
   }
 
 private:
 
   RtGuiClient()
   {
+    init_ = false;
   }
 
-  void check()
+  bool check()
   {
-    if(!ros_node_ || !ros_node_->initDone())
-      throw std::runtime_error("RtGuiClient not initialized, please call init() function before adding widgets.");
+    if(!init_ || !ros_node_ || !ros_node_->initDone())
+    {
+      ROS_WARN("RtGuiClient not initialized, please call init() function before adding widgets.");
+      return false;
+    }
+    else
+      return true;
   }
 
   template<class data_t>
@@ -210,13 +302,13 @@ private:
     std::string ns = "/"+group_name+"/"+data_name;
     if (!ros::param::get(ns, init_value))
     {
-        ROS_WARN("No initial value given in namespace %s",ns.c_str());
-        res = false;
+      ROS_WARN("No initial value given in namespace %s",ns.c_str());
+      res = false;
     }
     else
     {
-        value = init_value;
-        res = true;
+      value = init_value;
+      res = true;
     }
     return res;
   }
@@ -232,6 +324,8 @@ private:
   TriggerHandler::Ptr trigger_h_;
 
   ros::ServiceClient remove_;
+
+  bool init_;
 
 };
 

@@ -112,12 +112,12 @@ protected:
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
-                throw std::runtime_error("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add::resp is false!");
             else
                 buffer_.add(group_name,data_name,data_ptr,sync);
         }
         else
-            throw std::runtime_error("RtGuiServer::add service is not available!");
+            ROS_WARN("RtGuiServer::add service is not available!");
     }
 
     void addCallback(const std::string& group_name, const std::string& data_name, data_t data, std::function<void(data_t)> fun, srv_t& srv, bool sync)
@@ -126,12 +126,12 @@ protected:
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
-                throw std::runtime_error("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add::resp is false!");
             else
                 buffer_.add(group_name,data_name,data,fun,sync);
         }
         else
-            throw std::runtime_error("RtGuiServer::add service is not available!");
+            ROS_WARN("RtGuiServer::add service is not available!");
     }
 
     bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
@@ -175,10 +175,10 @@ public:
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
-                throw std::runtime_error("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add::resp is false!");
         }
         else
-            throw std::runtime_error("RtGuiServer::add service is not available!");
+            ROS_WARN("RtGuiServer::add service is not available!");
     }
 
     bool update(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
