@@ -32,11 +32,15 @@ public:
         {
             update_.call(srv);
             if(srv.response.resp == false)
-                throw std::runtime_error("RtGuiClient::update::resp is false!");
+            {
+                ROS_WARN("RtGuiClient::update::resp is false!");
+                return false;
+            }
         }
         else
         {
-            throw std::runtime_error("RtGuiClient::update service is not available!");
+            ROS_WARN("RtGuiClient::update service is not available!");
+            return false;
         }
         return true;
     }
@@ -181,7 +185,7 @@ public:
   {
     std::string ros_node_name = ros_namespace + "_server";
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
-    window_ = new Window(QString::fromStdString(ros_node_name),parent);
+    window_         = new Window(QString::fromStdString(ros_node_name),parent);
     double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add,ros_namespace);
     int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add,ros_namespace);
     bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add,ros_namespace);

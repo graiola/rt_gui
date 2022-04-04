@@ -31,7 +31,7 @@ public:
         return res.resp;
     }
 
-    void add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t* data_ptr, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t* data_ptr, bool sync)
     {
         srv_t srv;
         srv.request.value = *data_ptr;
@@ -39,10 +39,10 @@ public:
         srv.request.data_name = data_name;
         for(unsigned int i=0;i<list.size();i++)
             srv.request.list.push_back(list[i]);
-        addRawData(group_name,data_name,data_ptr,srv,sync);
+        return addRawData(group_name,data_name,data_ptr,srv,sync);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t data, fun_t fun, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t data, fun_t fun, bool sync)
     {
         srv_t srv;
         srv.request.value = data;
@@ -50,28 +50,28 @@ public:
         srv.request.data_name = data_name;
         for(unsigned int i=0;i<list.size();i++)
             srv.request.list.push_back(list[i]);
-        addCallback(group_name,data_name,data,fun,srv,sync);
+        return addCallback(group_name,data_name,data,fun,srv,sync);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, bool sync)
     {
         srv_t srv;
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        addRawData(group_name,data_name,data_ptr,srv,sync);
+        return addRawData(group_name,data_name,data_ptr,srv,sync);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, data_t data, fun_t fun, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, data_t data, fun_t fun, bool sync)
     {
         srv_t srv;
         srv.request.value = data;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        addCallback(group_name,data_name,data,fun,srv,sync);
+        return addCallback(group_name,data_name,data,fun,srv,sync);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t* data_ptr, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t* data_ptr, bool sync)
     {
         srv_t srv;
         srv.request.min = min;
@@ -79,10 +79,10 @@ public:
         srv.request.value = *data_ptr;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        addRawData(group_name,data_name,data_ptr,srv,sync);
+        return addRawData(group_name,data_name,data_ptr,srv,sync);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t data, fun_t fun, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, const data_t& min, const data_t& max, data_t data, fun_t fun, bool sync)
     {
         srv_t srv;
         srv.request.min = min;
@@ -90,7 +90,7 @@ public:
         srv.request.value = data;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        addCallback(group_name,data_name,data,fun,srv,sync);
+        return addCallback(group_name,data_name,data,fun,srv,sync);
     }
 
     bool sync()
@@ -106,32 +106,46 @@ public:
 
 protected:
 
-    void addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync)
+    bool addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync)
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
+            {
                 ROS_WARN("RtGuiServer::add::resp is false!");
+                return false;
+            }
             else
                 buffer_.add(group_name,data_name,data_ptr,sync);
         }
         else
+        {
             ROS_WARN("RtGuiServer::add service is not available!");
+            return false;
+        }
+        return true;
     }
 
-    void addCallback(const std::string& group_name, const std::string& data_name, data_t data, std::function<void(data_t)> fun, srv_t& srv, bool sync)
+    bool addCallback(const std::string& group_name, const std::string& data_name, data_t data, std::function<void(data_t)> fun, srv_t& srv, bool sync)
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
+            {
                 ROS_WARN("RtGuiServer::add::resp is false!");
+                return false;
+            }
             else
                 buffer_.add(group_name,data_name,data,fun,sync);
         }
         else
+        {
             ROS_WARN("RtGuiServer::add service is not available!");
+            return false;
+        }
+        return true;
     }
 
     bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
@@ -164,7 +178,7 @@ public:
         client_    = node.serviceClient<rt_gui::Void>("/"+ros_namespace+"_server/"+srv_requested);
     }
 
-    void add(const std::string& group_name, const std::string& data_name, fun_t fun)
+    bool add(const std::string& group_name, const std::string& data_name, fun_t fun)
     {
         rt_gui::Void srv;
         assert(fun);
@@ -175,10 +189,17 @@ public:
         {
             this->client_.call(srv);
             if(srv.response.resp == false)
+            {
                 ROS_WARN("RtGuiServer::add::resp is false!");
+                return false;
+            }
         }
         else
+        {
             ROS_WARN("RtGuiServer::add service is not available!");
+            return false;
+        }
+        return true;
     }
 
     bool update(rt_gui::Void::Request& req, rt_gui::Void::Response& res)

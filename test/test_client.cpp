@@ -14,7 +14,7 @@ bool setForceY(const double& Fy)
   return true;
 }
 
-int main(int /*argc*/, char*[] /*argv[]*/)
+int main(int argc, char* argv[])
 {
 
   double Fx = 2.0;
@@ -30,15 +30,27 @@ int main(int /*argc*/, char*[] /*argv[]*/)
 
   std::vector<double> velocities(3);
 
-  RtGuiClient::getIstance().init();
-  RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
-  RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fy"),-10.5,10.5,0.0,&setForceY);
-  RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
-  RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
-  RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);
-  RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("status"),&Controller_on);
-  RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
-  RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
+  bool init = false;
+  std::string ros_namespace;
+  if(argc == 2)
+  {
+    ros_namespace = argv[1];
+    init = RtGuiClient::getIstance().init(ros_namespace); // With namespace
+  }
+  else
+    init = RtGuiClient::getIstance().init(); // Without namespace, use the default rt_gui namespace
+
+  if(init)
+  {
+    RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fx"),-10.5,10.5,&Fx);
+    RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fy"),-10.5,10.5,0.0,&setForceY);
+    RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
+    RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
+    RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);
+    RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("status"),&Controller_on);
+    RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
+    RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
+  }
 
   // Remove a widget example:
   //RtGuiClient::getIstance().remove(std::string("controllers"),std::string("steps"));

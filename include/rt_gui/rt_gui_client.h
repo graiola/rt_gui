@@ -42,8 +42,7 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
-      int_h_->add(group_name,data_name,min,max,data_ptr,sync);
-      return true;
+      return int_h_->add(group_name,data_name,min,max,data_ptr,sync);
     }
     else
       return false;
@@ -52,10 +51,7 @@ public:
   bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int data, std::function<void(int)> fun, bool sync = true)
   {
     if(check())
-    {
-      int_h_->add(group_name,data_name,min,max,data,fun,sync);
-      return true;
-    }
+      return int_h_->add(group_name,data_name,min,max,data,fun,sync);
     else
       return false;
   }
@@ -65,9 +61,10 @@ public:
     if(check())
     {
       int init_value;
-      if(loadFromServer(group_name,data_name,init_value))
-        int_h_->add(group_name,data_name,min,max,init_value,fun,sync);
-      return true;
+      if(loadFromServer(group_name,data_name,init_value) && int_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
     }
     else
       return false;
@@ -79,9 +76,10 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
+      bool res = true;
       for(unsigned int i=0;i<data_ptr->size();i++)
-        int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
-      return true;
+        res = res && int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+      return res;
     }
     else
       return false;
@@ -94,11 +92,12 @@ public:
       std::vector<int> std_v;
       if(load_init_from_server)
         loadFromServer(group_name,data_name,std_v);
+      bool res = true;
       for(unsigned int i=0;i<std_v.size();i++) // Copy
         data_ptr->operator[](i) = std_v[i];
       for(unsigned int i=0;i<data_ptr->size();i++)
-        int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
-      return true;
+        res = res && int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+      return res;
     }
     else
       return false;
@@ -110,8 +109,7 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
-      double_h_->add(group_name,data_name,min,max,data_ptr,sync);
-      return true;
+      return double_h_->add(group_name,data_name,min,max,data_ptr,sync);
     }
     else
       return false;
@@ -120,10 +118,7 @@ public:
   bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double data, std::function<void(double)> fun, bool sync = true)
   {
     if(check())
-    {
-      double_h_->add(group_name,data_name,min,max,data,fun,sync);
-      return true;
-    }
+      return double_h_->add(group_name,data_name,min,max,data,fun,sync);
     else
       return false;
   }
@@ -133,9 +128,10 @@ public:
     if(check())
     {
       int init_value;
-      if(loadFromServer(group_name,data_name,init_value))
-        double_h_->add(group_name,data_name,min,max,init_value,fun,sync);
-      return true;
+      if(loadFromServer(group_name,data_name,init_value) && double_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
     }
     else
       return false;
@@ -147,9 +143,10 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
+      bool res = true;
       for(unsigned int i=0;i<data_ptr->size();i++)
-        double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
-      return true;
+        res = res && double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
+      return res;
     }
     else
       return false;
@@ -165,9 +162,10 @@ public:
         loadFromServer(group_name,data_name,std_v);
       for(unsigned int i=0;i<std_v.size();i++) // Copy
         data_ptr->operator[](i) = std_v[i];
+      bool res = true;
       for(unsigned int i=0;i<data_ptr->size();i++)
-        double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
-      return true;
+        res = res && double_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->operator[](i),sync);
+      return res;
     }
     else
       return false;
@@ -178,9 +176,10 @@ public:
     if(check())
     {
       bool init_value;
-      if(loadFromServer(group_name,data_name,init_value))
-        bool_h_->add(group_name,data_name,init_value,fun,sync);
-      return true;
+      if(loadFromServer(group_name,data_name,init_value) && bool_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
     }
     else
       return false;
@@ -192,8 +191,7 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
-      bool_h_->add(group_name,data_name,data_ptr,sync);
-      return true;
+      return bool_h_->add(group_name,data_name,data_ptr,sync);
     }
     else
       return false;
@@ -202,10 +200,7 @@ public:
   bool addTrigger(const std::string& group_name, const std::string& data_name, std::function<void()> fun)
   {
     if(check())
-    {
-      trigger_h_->add(group_name,data_name,fun);
-      return true;
-    }
+      return trigger_h_->add(group_name,data_name,fun);
     else
       return false;
   }
@@ -216,8 +211,7 @@ public:
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
-      list_h_->add(group_name,data_name,list,data_ptr,sync);
-      return true;
+      return list_h_->add(group_name,data_name,list,data_ptr,sync);
     }
     else
       return false;
@@ -228,20 +222,21 @@ public:
     if(check())
     {
       std::string init_value;
-      if(loadFromServer(group_name,data_name,init_value))
-        list_h_->add(group_name,data_name,list,init_value,fun,sync);
-      return true;
+      if(loadFromServer(group_name,data_name,init_value) && list_h_->add(group_name,data_name,list,init_value,fun,sync))
+        return true;
+      else
+        return false;
     }
     else
       return false;
   }
 
-  void remove(const std::string& group_name, const std::string& data_name)
+  bool remove(const std::string& group_name, const std::string& data_name)
   {
     rt_gui::Void srv;
     srv.request.data_name = data_name;
     srv.request.group_name = group_name;
-    remove_.call(srv);
+    return remove_.call(srv);
   }
 
   void sync()
@@ -322,9 +317,7 @@ private:
   BoolHandler::Ptr bool_h_;
   ListHandler::Ptr list_h_;
   TriggerHandler::Ptr trigger_h_;
-
   ros::ServiceClient remove_;
-
   bool init_;
 
 };

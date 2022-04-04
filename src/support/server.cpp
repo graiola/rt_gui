@@ -32,11 +32,15 @@ bool TriggerServerHandler::updateButton(QString group_name, QString data_name)
   {
     update_.call(srv);
     if(srv.response.resp == false)
-      throw std::runtime_error("RtGuiClient::update::resp is false!");
+    {
+      ROS_WARN("RtGuiClient::update::resp is false!");
+      return false;
+    }
   }
   else
   {
-    throw std::runtime_error("RtGuiClient::update service is not available!");
+    ROS_WARN("RtGuiClient::update service is not available!");
+    return false;
   }
   return true;
 }
