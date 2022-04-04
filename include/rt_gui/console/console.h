@@ -1,7 +1,7 @@
-#ifndef CONSOLE_H
-#define CONSOLE_H
+#ifndef RT_GUI_CONSOLE_H
+#define RT_GUI_CONSOLE_H
 
-#include <console/console_core.h>
+#include <rt_gui/console/console_core.h>
 #include <atomic>
 #include <thread>
 #include <functional>

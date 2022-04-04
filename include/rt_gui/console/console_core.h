@@ -1,5 +1,5 @@
-#ifndef CONSOLE_CORE_H
-#define CONSOLE_CORE_H
+#ifndef RT_GUI_CONSOLE_CORE_H
+#define RT_GUI_CONSOLE_CORE_H
 
 #include <iostream>
 #include <memory>

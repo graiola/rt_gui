@@ -1,5 +1,5 @@
-#ifndef SUPPORT_COMMON_H
-#define SUPPORT_COMMON_H
+#ifndef RT_GUI_SUPPORT_COMMON_H
+#define RT_GUI_SUPPORT_COMMON_H
 
 #include <ros/ros.h>
 

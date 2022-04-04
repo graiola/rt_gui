@@ -1,7 +1,7 @@
-#ifndef SUPPORT_CLIENT_H
-#define SUPPORT_CLIENT_H
+#ifndef RT_GUI_SUPPORT_CLIENT_H
+#define RT_GUI_SUPPORT_CLIENT_H
 
-#include "rt_gui/support/common.h"
+#include <rt_gui/support/common.h>
 #include <type_traits>
 
 namespace rt_gui

@@ -1,5 +1,5 @@
-#ifndef QT_UTILS_WINDOW_H
-#define QT_UTILS_WINDOW_H
+#ifndef RT_GUI_QT_UTILS_WINDOW_H
+#define RT_GUI_QT_UTILS_WINDOW_H
 
 #include <QWidget>
 #include <QtWidgets>

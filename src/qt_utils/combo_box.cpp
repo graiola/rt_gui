@@ -1,4 +1,4 @@
-#include "qt_utils/combo_box.h"
+#include <rt_gui/qt_utils/combo_box.h>
 
 ComboBox::ComboBox(const QString &group_name, const QString &data_name, const QStringList& list, const QString& init, QWidget *parent)
   : QGroupBox(data_name, parent)

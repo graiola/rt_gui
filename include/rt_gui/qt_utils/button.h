@@ -1,5 +1,5 @@
-#ifndef QT_UTILS_BUTTON_H
-#define QT_UTILS_BUTTON_H
+#ifndef RT_GUI_QT_UTILS_BUTTON_H
+#define RT_GUI_QT_UTILS_BUTTON_H
 
 #include <QtWidgets>
 #include <QPushButton>

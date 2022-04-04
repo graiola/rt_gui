@@ -1,5 +1,5 @@
-#ifndef QT_UTILS_COMBO_BOX_H
-#define QT_UTILS_COMBO_BOX_H
+#ifndef RT_GUI_QT_UTILS_COMBO_BOX_H
+#define RT_GUI_QT_UTILS_COMBO_BOX_H
 
 #include <QtWidgets>
 #include <QGroupBox>

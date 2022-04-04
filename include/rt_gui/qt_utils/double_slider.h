@@ -1,5 +1,5 @@
-#ifndef QT_UTILS_DOUBLE_SLIDERS_H
-#define QT_UTILS_DOUBLE_SLIDERS_H
+#ifndef RT_GUI_QT_UTILS_DOUBLE_SLIDERS_H
+#define RT_GUI_QT_UTILS_DOUBLE_SLIDERS_H
 
 #include <QtWidgets>
 #include <QGroupBox>
