@@ -17,7 +17,7 @@ class IntSlider : public QGroupBox
 
 public:
   IntSlider(const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
-         QWidget *parent = 0);
+         QWidget *parent = nullptr);
 
   int getValue();
   const QString& getDataName() const;

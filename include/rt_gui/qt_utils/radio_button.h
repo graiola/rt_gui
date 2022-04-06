@@ -14,7 +14,7 @@ class RadioButton : public QGroupBox
   Q_OBJECT
 
 public:
-  RadioButton(const QString &group_name, const QString &data_name, const bool& init, QWidget *parent = 0);
+  RadioButton(const QString &group_name, const QString &data_name, const bool& init, QWidget *parent = nullptr);
 
   bool getValue();
   const QString& getDataName() const;

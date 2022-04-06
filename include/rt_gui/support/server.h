@@ -18,7 +18,7 @@ public:
     WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided, std::string ros_namespace)
     {
         update_ = node.serviceClient<srv_t>("/"+ros_namespace+"_client/"+srv_requested);
-        add_ = node.advertiseService(srv_provided, &WindowServerHandler::addWidget, this);
+        add_    = node.advertiseService(srv_provided, &WindowServerHandler::addWidget, this);
         window_ = window;
     }
 

@@ -13,7 +13,7 @@ class Button : public QGroupBox
   Q_OBJECT
 
 public:
-  Button(const QString &group_name, const QString &data_name, QWidget *parent = 0);
+  Button(const QString &group_name, const QString &data_name, QWidget *parent = nullptr);
 
   const QString& getDataName() const;
   const QString& getGroupName() const;

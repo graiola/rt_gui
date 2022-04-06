@@ -16,7 +16,7 @@ class DoubleSlider : public QGroupBox
 
 public:
   DoubleSlider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
-         QWidget *parent = 0);
+         QWidget *parent = nullptr);
 
   double getValue();
   const QString& getDataName() const;

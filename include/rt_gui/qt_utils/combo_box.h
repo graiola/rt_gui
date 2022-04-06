@@ -15,7 +15,7 @@ class ComboBox : public QGroupBox
   Q_OBJECT
 
 public:
-  ComboBox(const QString &group_name, const QString &data_name, const QStringList& list, const QString& init, QWidget *parent = 0);
+  ComboBox(const QString &group_name, const QString &data_name, const QStringList& list, const QString& init, QWidget *parent = nullptr);
 
   QString getValue();
   const QString& getDataName() const;
