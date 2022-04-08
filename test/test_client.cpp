@@ -58,15 +58,15 @@ int main(int argc, char* argv[])
   // Async example: update the data as soon as we receive the new data
   //RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps,false);
 
-  ros::Rate r(100);
-  while(ros::ok())
+  while(ros::ok() && RtGuiClient::getIstance().isInitialized())
   {
     RtGuiClient::getIstance().sync();
 
     ROS_INFO_STREAM("Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
                     <<" status: " <<(Controller_on ? "true" : "false") << " steps: " << steps );
 
-    r.sleep();
+
+    ros::Duration(0.1).sleep();
   }
   return 0;
 }

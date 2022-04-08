@@ -241,13 +241,19 @@ public:
 
   void sync()
   {
-    double_h_->sync();
-    int_h_->sync();
-    bool_h_->sync();
-    list_h_->sync();
+    if(init_)
+    {
+      double_h_->sync();
+      int_h_->sync();
+      bool_h_->sync();
+      list_h_->sync();
+    }
+    else {
+      ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
+    }
   }
 
-  bool init(const std::string ros_namespace = RT_GUI_NAMESPACE, int timeout = 60)
+  bool init(const std::string ros_namespace = RT_GUI_NAMESPACE, ros::Duration timeout = ros::Duration(-1))
   {
     std::string ros_node_name = ros_namespace + "_client";
     ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
@@ -255,20 +261,25 @@ public:
     std::string remove_service_name = "/"+ros_namespace+"_server/"+_ros_services.remove_service;
     if(ros::service::waitForService(remove_service_name,timeout))
     {
+      remove_         = ros_node_->getNode().serviceClient<rt_gui::Void>(remove_service_name);
       bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,ros_namespace);
       list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update,ros_namespace);
       trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,ros_namespace);
       double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update,ros_namespace);
       int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update,ros_namespace);
-      remove_         = ros_node_->getNode().serviceClient<rt_gui::Void>(remove_service_name);
       init_           = true;
-      return true;
     }
     else
     {
       ROS_WARN_STREAM("RtGuiClient could not find "<< ros_namespace+"_server"<< ", please select the right ros_namespace when calling init().");
-      return false;
+      init_ = false;
     }
+    return init_;
+  }
+
+  bool isInitialized()
+  {
+    return init_;
   }
 
 private:
