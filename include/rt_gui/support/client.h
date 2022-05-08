@@ -182,7 +182,7 @@ public:
     {
         rt_gui::Void srv;
         assert(fun);
-        fun_ = fun;
+        funs_[key_t(group_name,data_name)] = fun;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
@@ -204,14 +204,14 @@ public:
 
     bool update(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
     {
-        fun_();
+        funs_[key_t(req.group_name,req.data_name)]();
         res.resp = true;
         return res.resp;
     }
 
 protected:
 
-    fun_t fun_;
+    std::map<key_t,fun_t> funs_;
     ros::ServiceServer server_;
     ros::ServiceClient client_;
 };
