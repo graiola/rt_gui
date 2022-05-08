@@ -18,9 +18,9 @@ PYBIND11_MODULE(py_server, m) {
              py::arg("parent") = py::none());
 
     py::class_<rt_gui::RtGuiServer>(m,"RtGuiServer")
-        .def_static("run", [](const std::string& ros_namespace = RT_GUI_NAMESPACE) {
+        .def_static("run", [](const std::string& server_name = RT_GUI_SERVER_NAME) {
         int argc = 2;
-        char* argv[] = {strdup("py_server"), strdup(ros_namespace.c_str())};
+        char* argv[] = {strdup("py_server"), strdup(server_name.c_str())};
         return rt_gui::RtGuiServer::getIstance().run(argc, argv);
     });
 }

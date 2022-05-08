@@ -11,9 +11,9 @@ PYBIND11_MODULE(py_client, m) {
     m.doc() = "pybind11 rt_gui_client plugin";
 
     py::class_<rt_gui::RtGuiClient>(m,"RtGuiClient")
-        .def_static("init", [](const std::string& ros_namespace = RT_GUI_NAMESPACE)
+        .def_static("init", [](const std::string& server_name = RT_GUI_SERVER_NAME, const std::string& client_name = RT_GUI_CLIENT_NAME, const double& timeout = -1)
         {
-          rt_gui::RtGuiClient::getIstance().init(ros_namespace);
+          rt_gui::RtGuiClient::getIstance().init(server_name,client_name,ros::Duration(timeout));
         })
         .def_static("addInt", [](const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
         {

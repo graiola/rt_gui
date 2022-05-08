@@ -4,8 +4,8 @@ using namespace rt_gui;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TriggerServerHandler::TriggerServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
-  :WindowServerHandler<rt_gui::Void,bool>(window,node,srv_requested,srv_provided,ros_namespace)
+TriggerServerHandler::TriggerServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name)
+  :WindowServerHandler<rt_gui::Void,bool>(window,node,srv_requested,srv_provided,client_name)
 {
 
   QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&)),
@@ -47,8 +47,8 @@ bool TriggerServerHandler::updateButton(QString group_name, QString data_name)
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IntServerHandler::IntServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
-  :WindowServerHandler<rt_gui::Int,int>(window,node,srv_requested,srv_provided,ros_namespace)
+IntServerHandler::IntServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name)
+  :WindowServerHandler<rt_gui::Int,int>(window,node,srv_requested,srv_provided,client_name)
 {
   QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)),
                    window_, SLOT(addIntSlider(const QString&, const QString&, const int&, const int&, const int&)));
@@ -74,8 +74,8 @@ bool IntServerHandler::updateIntSlider(QString group_name, QString data_name, in
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DoubleServerHandler::DoubleServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
-  :WindowServerHandler<rt_gui::Double,double>(window,node,srv_requested,srv_provided,ros_namespace)
+DoubleServerHandler::DoubleServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name)
+  :WindowServerHandler<rt_gui::Double,double>(window,node,srv_requested,srv_provided,client_name)
 {
   QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)),
                    window_, SLOT(addDoubleSlider(const QString&, const QString&, const double&, const double&, const double&)));
@@ -99,8 +99,8 @@ bool DoubleServerHandler::updateDoubleSlider(QString group_name, QString data_na
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-BoolServerHandler::BoolServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
-  :WindowServerHandler<rt_gui::Bool,bool>(window,node,srv_requested,srv_provided,ros_namespace)
+BoolServerHandler::BoolServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name)
+  :WindowServerHandler<rt_gui::Bool,bool>(window,node,srv_requested,srv_provided,client_name)
 {
   QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const bool&)),
                    window_, SLOT(addRadioButton(const QString&, const QString&, const bool&)));
@@ -124,8 +124,8 @@ bool BoolServerHandler::updateRadioButton(QString group_name, QString data_name,
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ListServerHandler::ListServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace)
-  :WindowServerHandler<rt_gui::List,std::string>(window,node,srv_requested,srv_provided,ros_namespace)
+ListServerHandler::ListServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name)
+  :WindowServerHandler<rt_gui::List,std::string>(window,node,srv_requested,srv_provided,client_name)
 {
   QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QStringList&, const QString&)),
                    window_, SLOT(addComboBox(const QString&, const QString&, const QStringList&, const QString&)));

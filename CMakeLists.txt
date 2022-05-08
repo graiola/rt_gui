@@ -36,6 +36,7 @@ add_service_files(
   Int.srv
   List.srv
   Void.srv
+  Client.srv
 )
 
 generate_messages()
@@ -116,6 +117,10 @@ if (CATKIN_ENABLE_TESTING)
     add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
     add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
     target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
+
+    add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
+    add_dependencies(test_client_1 ${rt_gui_EXPORTED_TARGETS})
+    target_link_libraries(test_client_1 PRIVATE qt_utils ${catkin_LIBRARIES})
 
     add_executable(test_console test/test_console.cpp)
     target_link_libraries(test_console PRIVATE console)

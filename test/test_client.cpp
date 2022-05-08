@@ -31,11 +31,12 @@ int main(int argc, char* argv[])
   std::vector<double> velocities(3);
 
   bool init = false;
-  std::string ros_namespace;
-  if(argc == 2)
+  std::string server_name, client_name;
+  if(argc == 3)
   {
-    ros_namespace = argv[1];
-    init = RtGuiClient::getIstance().init(ros_namespace); // With namespace
+    server_name = argv[1];
+    client_name = argv[2];
+    init = RtGuiClient::getIstance().init(server_name,client_name); // With namespace
   }
   else
     init = RtGuiClient::getIstance().init(); // Without namespace, use the default rt_gui namespace

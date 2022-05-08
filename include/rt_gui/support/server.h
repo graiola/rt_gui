@@ -15,10 +15,10 @@ public:
 
     typedef std::shared_ptr<WindowServerHandler> Ptr;
 
-    WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided, std::string ros_namespace)
+    WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_requested, std::string srv_provided, std::string client_name)
     {
-        update_ = node.serviceClient<srv_t>("/"+ros_namespace+"_client/"+srv_requested);
-        add_    = node.advertiseService(srv_provided, &WindowServerHandler::addWidget, this);
+        update_ = node.serviceClient<srv_t>("/"+client_name+"/"+srv_requested);
+        add_    = node.advertiseService(client_name+"/"+srv_provided, &WindowServerHandler::addWidget, this);
         window_ = window;
     }
 
@@ -58,7 +58,6 @@ protected:
     ros::ServiceServer add_;
     ros::ServiceClient update_;
     Window* window_;
-
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -71,7 +70,7 @@ public:
 
     typedef std::shared_ptr<TriggerServerHandler> Ptr;
 
-    TriggerServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace);
+    TriggerServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name);
 
     bool addWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res);
 
@@ -92,7 +91,7 @@ public:
 
     typedef std::shared_ptr<IntServerHandler> Ptr;
 
-    IntServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace);
+    IntServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name);
 
     bool addWidget(rt_gui::Int::Request& req, rt_gui::Int::Response& res);
 
@@ -113,7 +112,7 @@ public:
 
     typedef std::shared_ptr<DoubleServerHandler> Ptr;
 
-    DoubleServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace);
+    DoubleServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name);
 
     bool addWidget(rt_gui::Double::Request& req, rt_gui::Double::Response& res);
 
@@ -134,7 +133,7 @@ public:
 
     typedef std::shared_ptr<BoolServerHandler> Ptr;
 
-    BoolServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace);
+    BoolServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name);
 
     bool addWidget(rt_gui::Bool::Request& req, rt_gui::Bool::Response& res);
 
@@ -155,7 +154,7 @@ public:
 
     typedef std::shared_ptr<ListServerHandler> Ptr;
 
-    ListServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string ros_namespace);
+    ListServerHandler(Window* window, ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string client_name);
 
     bool addWidget(rt_gui::List::Request& req, rt_gui::List::Response& res);
 
@@ -167,6 +166,27 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct Handlers
+{
+public:
+
+  Handlers()
+    :double_h_(nullptr)
+    ,int_h_(nullptr)
+    ,bool_h_(nullptr)
+    ,list_h_(nullptr)
+    ,trigger_h_(nullptr)
+  {}
+
+  DoubleServerHandler::Ptr double_h_;
+  IntServerHandler::Ptr int_h_;
+  BoolServerHandler::Ptr bool_h_;
+  ListServerHandler::Ptr list_h_;
+  TriggerServerHandler::Ptr trigger_h_;
+
+};
+
+/// \brief The RosServerNode class
 class RosServerNode : public QObject
 {
   Q_OBJECT
@@ -181,18 +201,16 @@ public:
   {
   }
 
-  void init(const std::string ros_namespace = RT_GUI_NAMESPACE, QWidget* parent = nullptr)
+  void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
-    std::string ros_node_name = ros_namespace + "_server";
-    ros_node_.reset(new RosNode(ros_node_name,_ros_services.n_threads));
-    window_         = new Window(QString::fromStdString(ros_node_name),parent);
-    double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add,ros_namespace);
-    int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add,ros_namespace);
-    bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add,ros_namespace);
-    list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.list_srvs.update,_ros_services.list_srvs.add,ros_namespace);
-    trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.add,ros_namespace);
+    ros_node_.reset(new RosNode(server_name,_ros_services.n_threads));
 
-    remove_ = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
+    window_      = new Window(QString::fromStdString(server_name),parent);
+    add_client_  = ros_node_->getNode().advertiseService(_ros_services.add_client,     &RosServerNode::addClient,    this);
+    remove_      = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
+
+    QObject::connect(this,       SIGNAL(addClient(const QString &)),
+                     this,       SLOT(createHandlers(const QString &)));
 
     QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &)),
                      window_,    SLOT(removeWidget(const QString &, const QString &)));
@@ -205,8 +223,33 @@ public:
     return res.resp;
   }
 
+  bool addClient(rt_gui::Client::Request& req, rt_gui::Client::Response& res)
+  {
+    res.resp = false;
+    if(!req.name.empty() && window_) // Client name
+    {
+      emit addClient(QString::fromStdString(req.name));
+      res.resp = true;
+      return res.resp;
+    }
+    return res.resp;
+  }
+
+public slots:
+  void createHandlers(const QString &client_name)
+  {
+    std::string client_name_std                = client_name.toStdString();
+    handlers_[client_name_std]                 = Handlers();
+    handlers_[client_name_std].double_h_       = std::make_shared<DoubleServerHandler>(window_,ros_node_->getNode(),_ros_services.double_srvs.update,_ros_services.double_srvs.add,client_name_std);
+    handlers_[client_name_std].int_h_          = std::make_shared<IntServerHandler>(window_,ros_node_->getNode(),_ros_services.int_srvs.update,_ros_services.int_srvs.add,client_name_std);
+    handlers_[client_name_std].bool_h_         = std::make_shared<BoolServerHandler>(window_,ros_node_->getNode(),_ros_services.bool_srvs.update,_ros_services.bool_srvs.add,client_name_std);
+    handlers_[client_name_std].list_h_         = std::make_shared<ListServerHandler>(window_,ros_node_->getNode(),_ros_services.list_srvs.update,_ros_services.list_srvs.add,client_name_std);
+    handlers_[client_name_std].trigger_h_      = std::make_shared<TriggerServerHandler>(window_,ros_node_->getNode(),_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.add,client_name_std);
+  }
+
 signals:
   void removeWidget(const QString &group_name, const QString &data_name);
+  void addClient(const QString &client_name);
 
 private:
 
@@ -215,12 +258,9 @@ private:
 
   Window* window_;
   std::unique_ptr<RosNode> ros_node_;
-  DoubleServerHandler::Ptr double_h_;
-  IntServerHandler::Ptr int_h_;
-  BoolServerHandler::Ptr bool_h_;
-  ListServerHandler::Ptr list_h_;
-  TriggerServerHandler::Ptr trigger_h_;
   ros::ServiceServer remove_;
+  ros::ServiceServer add_client_;
+  std::map<std::string,Handlers> handlers_;
 };
 
 

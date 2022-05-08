@@ -8,6 +8,7 @@
 #include <rt_gui/Int.h>
 #include <rt_gui/List.h>
 #include <rt_gui/Void.h>
+#include <rt_gui/Client.h>
 
 #include <memory>
 #include <atomic>
@@ -92,7 +93,8 @@ private:
     buffer_t buffer_;
 };
 
-#define RT_GUI_NAMESPACE "rt_gui"
+#define RT_GUI_SERVER_NAME "rt_gui_server"
+#define RT_GUI_CLIENT_NAME "rt_gui_client"
 
 struct
 {
@@ -129,6 +131,7 @@ struct
     unsigned int n_threads = 3;
     double wait_service_secs = 10.0;
     std::string remove_service = "remove_widget";
+    std::string add_client = "add_client";
 
 } _ros_services;
 

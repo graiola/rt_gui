@@ -16,7 +16,7 @@ def set_list(v):
     print(v)
   
 if __name__ == '__main__':
-    rospy.init_node('test_client', anonymous=True)
+    rospy.init_node('test_client')
     client = py_client.RtGuiClient
     
     rosparam.set_param_raw('test/int',2)

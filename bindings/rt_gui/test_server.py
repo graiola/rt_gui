@@ -4,7 +4,7 @@ import rosparam
 from rt_gui import py_server
   
 if __name__ == '__main__':
-    rospy.init_node('test_server', anonymous=True)
+    rospy.init_node('test_server')
     server = py_server.RtGuiServer
     server.run('test')
     
