@@ -8,7 +8,6 @@
 #include <rt_gui/Int.h>
 #include <rt_gui/List.h>
 #include <rt_gui/Void.h>
-#include <rt_gui/Client.h>
 
 #include <memory>
 #include <atomic>

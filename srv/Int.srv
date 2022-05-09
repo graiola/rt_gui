@@ -1,6 +1,7 @@
 int64 min
 int64 max
 int64 value
+string client_name
 string group_name
 string data_name
 ---

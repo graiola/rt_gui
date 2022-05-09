@@ -1,10 +1,11 @@
 #include <rt_gui/qt_utils/combo_box.h>
 
-ComboBox::ComboBox(const QString &group_name, const QString &data_name, const QStringList& list, const QString& init, QWidget *parent)
+ComboBox::ComboBox(const QString &client_name, const QString &group_name, const QString &data_name, const QStringList& list, const QString& init, QWidget *parent)
   : QGroupBox(data_name, parent)
 {
   group_name_ = group_name;
   data_name_  = data_name;
+  client_name_= client_name;
 
   setObjectName(data_name);
 
@@ -39,6 +40,11 @@ const QString &ComboBox::getDataName() const
 const QString &ComboBox::getGroupName() const
 {
   return group_name_;
+}
+
+const QString &ComboBox::getClientName() const
+{
+  return client_name_;
 }
 
 void ComboBox::setValue(const QString& value)

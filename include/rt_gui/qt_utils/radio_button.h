@@ -14,11 +14,12 @@ class RadioButton : public QGroupBox
   Q_OBJECT
 
 public:
-  RadioButton(const QString &group_name, const QString &data_name, const bool& init, QWidget *parent = nullptr);
+  RadioButton(const QString &client_name, const QString &group_name, const QString &data_name, const bool& init, QWidget *parent = nullptr);
 
   bool getValue();
   const QString& getDataName() const;
   const QString& getGroupName() const;
+  const QString& getClientName() const;
 
 signals:
   void valueChanged(bool value);
@@ -33,6 +34,7 @@ private:
 
   QString         data_name_;
   QString         group_name_;
+  QString         client_name_;
 
   bool value_;
 };

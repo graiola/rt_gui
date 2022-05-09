@@ -257,28 +257,16 @@ public:
   {
     ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
 
-    std::string add_client_service_name = server_name + "/" + _ros_services.add_client;
-    if(ros::service::waitForService(add_client_service_name,timeout))
+    std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
+    if(ros::service::waitForService(remove_service_name,timeout))
     {
-      rt_gui::Client::Request req;
-      rt_gui::Client::Response res;
-      req.name = client_name;
-      if(ros::service::call(add_client_service_name,req,res))
-      {
-        std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
-        remove_         = ros_node_->getNode().serviceClient<rt_gui::Void>(remove_service_name);
-        bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,server_name,client_name);
-        list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update,server_name,client_name);
-        trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
-        double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
-        int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
-        init_           = true;
-      }
-      else
-      {
-        ROS_WARN_STREAM("RtGuiClient could not call "<< add_client_service_name << ", please select the right server_name when calling init().");
-        init_ = false;
-      }
+      remove_         = ros_node_->getNode().serviceClient<rt_gui::Void>(remove_service_name);
+      bool_h_         = std::make_shared<BoolHandler>(ros_node_->getNode(),_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,server_name,client_name);
+      list_h_         = std::make_shared<ListHandler>(ros_node_->getNode(),_ros_services.list_srvs.add,_ros_services.list_srvs.update,server_name,client_name);
+      trigger_h_      = std::make_shared<TriggerHandler>(ros_node_->getNode(),_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
+      double_h_       = std::make_shared<DoubleHandler>(ros_node_->getNode(),_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
+      int_h_          = std::make_shared<IntHandler>(ros_node_->getNode(),_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
+      init_           = true;
     }
     else
     {

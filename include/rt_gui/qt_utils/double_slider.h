@@ -15,12 +15,13 @@ class DoubleSlider : public QGroupBox
   Q_OBJECT
 
 public:
-  DoubleSlider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
+  DoubleSlider(const QString &client_name, const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
          QWidget *parent = nullptr);
 
   double getValue();
   const QString& getDataName() const;
   const QString& getGroupName() const;
+  const QString& getClientName() const;
 
 signals:
   void valueChanged(double value);
@@ -38,6 +39,7 @@ private:
 
   QString         data_name_;
   QString         group_name_;
+  QString         client_name_;
 };
 
 #endif

@@ -1,10 +1,11 @@
 #include <rt_gui/qt_utils/button.h>
 
-Button::Button(const QString &group_name, const QString &data_name, QWidget *parent)
+Button::Button(const QString &client_name, const QString &group_name, const QString &data_name, QWidget *parent)
   : QGroupBox()
 {
   group_name_ = group_name;
   data_name_  = data_name;
+  client_name_= client_name;
 
   setObjectName(data_name);
 
@@ -30,4 +31,9 @@ const QString &Button::getDataName() const
 const QString &Button::getGroupName() const
 {
   return group_name_;
+}
+
+const QString &Button::getClientName() const
+{
+  return client_name_;
 }

@@ -60,11 +60,11 @@ bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& gr
   return duplicated;
 }
 
-void Window::addButton(const QString& group_name, const QString& data_name)
+void Window::addButton(const QString& client_name, const QString& group_name, const QString& data_name)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    Button* button = new Button(group_name,data_name);
+    Button* button = new Button(client_name,group_name,data_name);
     widgets_group_[group_name]->add(button);
     QObject::connect(button, SIGNAL(valueChanged()),
                      this,   SLOT(buttonChanged()));
@@ -72,12 +72,12 @@ void Window::addButton(const QString& group_name, const QString& data_name)
   }
 }
 
-void Window::addIntSlider(const QString& group_name, const QString& data_name,
-                       const int& min, const int& max, const int& init)
+void Window::addIntSlider(const QString& client_name, const QString& group_name, const QString& data_name,
+                          const int& min, const int& max, const int& init)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    IntSlider* int_slider = new IntSlider(group_name,data_name,min,max,init);
+    IntSlider* int_slider = new IntSlider(client_name,group_name,data_name,min,max,init);
     widgets_group_[group_name]->add(int_slider);
     QObject::connect(int_slider, SIGNAL(valueChanged(int)),
                      this,   SLOT(intSliderChanged(int)));
@@ -85,12 +85,12 @@ void Window::addIntSlider(const QString& group_name, const QString& data_name,
   }
 }
 
-void Window::addDoubleSlider(const QString& group_name, const QString& data_name,
-                       const double& min, const double& max, const double& init)
+void Window::addDoubleSlider(const QString& client_name, const QString& group_name, const QString& data_name,
+                             const double& min, const double& max, const double& init)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    DoubleSlider* double_slider = new DoubleSlider(group_name,data_name,min,max,init);
+    DoubleSlider* double_slider = new DoubleSlider(client_name,group_name,data_name,min,max,init);
     widgets_group_[group_name]->add(double_slider);
     QObject::connect(double_slider, SIGNAL(valueChanged(double)),
                      this,   SLOT(doubleSliderChanged(double)));
@@ -98,11 +98,11 @@ void Window::addDoubleSlider(const QString& group_name, const QString& data_name
   }
 }
 
-void Window::addRadioButton(const QString &group_name, const QString &data_name, const bool &init)
+void Window::addRadioButton(const QString& client_name, const QString &group_name, const QString &data_name, const bool &init)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    RadioButton* radio_button = new RadioButton(group_name,data_name,init);
+    RadioButton* radio_button = new RadioButton(client_name,group_name,data_name,init);
     widgets_group_[group_name]->add(radio_button);
     QObject::connect(radio_button, SIGNAL(valueChanged(bool)),
                      this,   SLOT(radioButtonChanged(bool)));
@@ -110,11 +110,11 @@ void Window::addRadioButton(const QString &group_name, const QString &data_name,
   }
 }
 
-void Window::addComboBox(const QString& group_name, const QString& data_name, const QStringList& list, const QString& init)
+void Window::addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init)
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    ComboBox* combo_box = new ComboBox(group_name,data_name,list,init);
+    ComboBox* combo_box = new ComboBox(client_name,group_name,data_name,list,init);
     widgets_group_[group_name]->add(combo_box);
     QObject::connect(combo_box, SIGNAL(valueChanged(QString)),
                      this,   SLOT(comboBoxChanged(QString)));
@@ -126,38 +126,38 @@ void Window::buttonChanged()
 {
   Button* button = qobject_cast<Button*>(sender());
   if(button!=Q_NULLPTR)
-    emit updateButton(button->getGroupName(),button->getDataName());
+    emit updateButton(button->getClientName(),button->getGroupName(),button->getDataName());
 }
 
 void Window::intSliderChanged(int /*value*/)
 {
   IntSlider* int_slider = qobject_cast<IntSlider*>(sender());
   if(int_slider!=Q_NULLPTR)
-    emit updateIntSlider(int_slider->getGroupName(),int_slider->getDataName(),int_slider->getValue());
+    emit updateIntSlider(int_slider->getClientName(),int_slider->getGroupName(),int_slider->getDataName(),int_slider->getValue());
 }
 
 void Window::doubleSliderChanged(double /*value*/)
 {
   DoubleSlider* double_slider = qobject_cast<DoubleSlider*>(sender());
   if(double_slider!=Q_NULLPTR)
-    emit updateDoubleSlider(double_slider->getGroupName(),double_slider->getDataName(),double_slider->getValue());
+    emit updateDoubleSlider(double_slider->getClientName(),double_slider->getGroupName(),double_slider->getDataName(),double_slider->getValue());
 }
 
 void Window::radioButtonChanged(bool /*value*/)
 {
   RadioButton* radio = qobject_cast<RadioButton*>(sender());
   if(radio!=Q_NULLPTR)
-    emit updateRadioButton(radio->getGroupName(),radio->getDataName(),radio->getValue());
+    emit updateRadioButton(radio->getClientName(),radio->getGroupName(),radio->getDataName(),radio->getValue());
 }
 
 void Window::comboBoxChanged(QString /*value*/)
 {
   ComboBox* combo = qobject_cast<ComboBox*>(sender());
   if(combo!=Q_NULLPTR)
-    emit updateComboBox(combo->getGroupName(),combo->getDataName(),combo->getValue());
+    emit updateComboBox(combo->getClientName(),combo->getGroupName(),combo->getDataName(),combo->getValue());
 }
 
-void Window::removeWidget(const QString &group_name, const QString &data_name)
+void Window::removeWidget(const QString &client_name, const QString &group_name, const QString &data_name)
 {
   if(widgets_group_.count(group_name) != 0)
   {

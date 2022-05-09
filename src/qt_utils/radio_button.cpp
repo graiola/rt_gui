@@ -1,10 +1,11 @@
 #include <rt_gui/qt_utils/radio_button.h>
 
-RadioButton::RadioButton(const QString &group_name, const QString &data_name, const bool& init, QWidget *parent)
+RadioButton::RadioButton(const QString &client_name, const QString &group_name, const QString &data_name, const bool& init, QWidget *parent)
   : QGroupBox(data_name, parent)
 {
-  group_name_ = group_name;
-  data_name_  = data_name;
+  group_name_  = group_name;
+  data_name_   = data_name;
+  client_name_ = client_name;
 
   setObjectName(data_name);
 
@@ -52,4 +53,9 @@ const QString &RadioButton::getDataName() const
 const QString &RadioButton::getGroupName() const
 {
   return group_name_;
+}
+
+const QString &RadioButton::getClientName() const
+{
+  return client_name_;
 }

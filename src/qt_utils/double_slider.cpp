@@ -1,11 +1,12 @@
 #include <rt_gui/qt_utils/double_slider.h>
 
-DoubleSlider::DoubleSlider(const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
+DoubleSlider::DoubleSlider(const QString &client_name, const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
                QWidget *parent)
   : QGroupBox(data_name, parent)
 {
-  group_name_ = group_name;
-  data_name_  = data_name;
+  group_name_  = group_name;
+  data_name_   = data_name;
+  client_name_ = client_name;
 
   setObjectName(data_name);
 
@@ -50,6 +51,11 @@ const QString &DoubleSlider::getDataName() const
 const QString &DoubleSlider::getGroupName() const
 {
   return group_name_;
+}
+
+const QString &DoubleSlider::getClientName() const
+{
+  return client_name_;
 }
 
 void DoubleSlider::setValue(double value)

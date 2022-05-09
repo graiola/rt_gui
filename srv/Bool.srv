@@ -1,4 +1,5 @@
 bool value
+string client_name
 string group_name
 string data_name
 ---

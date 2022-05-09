@@ -19,8 +19,12 @@ public:
 
     InterfaceHandler(ros::NodeHandle& node, std::string srv_requested, std::string srv_provided, std::string server_name, std::string client_name)
     {
-        server_    = node.advertiseService(srv_provided, &InterfaceHandler::update, this);
-        client_    = node.serviceClient<srv_t>("/"+server_name+"/"+client_name+"/"+srv_requested);
+        srv_requested_ = srv_requested;
+        srv_provided_  = srv_provided;
+        server_name_   = server_name;
+        client_name_   = client_name;
+        server_        = node.advertiseService(srv_provided, &InterfaceHandler::update, this);
+        client_        = node.serviceClient<srv_t>("/"+server_name+"/"+srv_requested);
     }
 
     virtual ~InterfaceHandler() {}
@@ -35,6 +39,7 @@ public:
     {
         srv_t srv;
         srv.request.value = *data_ptr;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         for(unsigned int i=0;i<list.size();i++)
@@ -46,6 +51,7 @@ public:
     {
         srv_t srv;
         srv.request.value = data;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         for(unsigned int i=0;i<list.size();i++)
@@ -57,6 +63,7 @@ public:
     {
         srv_t srv;
         srv.request.value = *data_ptr;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         return addRawData(group_name,data_name,data_ptr,srv,sync);
@@ -66,6 +73,7 @@ public:
     {
         srv_t srv;
         srv.request.value = data;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         return addCallback(group_name,data_name,data,fun,srv,sync);
@@ -77,6 +85,7 @@ public:
         srv.request.min = min;
         srv.request.max = max;
         srv.request.value = *data_ptr;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         return addRawData(group_name,data_name,data_ptr,srv,sync);
@@ -88,6 +97,7 @@ public:
         srv.request.min = min;
         srv.request.max = max;
         srv.request.value = data;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         return addCallback(group_name,data_name,data,fun,srv,sync);
@@ -156,6 +166,11 @@ protected:
         return res;
     }
 
+    std::string srv_requested_;
+    std::string srv_provided_ ;
+    std::string server_name_  ;
+    std::string client_name_  ;
+
     ros::ServiceServer server_;
     ros::ServiceClient client_;
     CallbackBuffer<data_t> buffer_;
@@ -174,8 +189,12 @@ public:
 
     TriggerHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string server_name, std::string client_name)
     {
-        server_    = node.advertiseService(srv_provided, &TriggerHandler::update, this);
-        client_    = node.serviceClient<rt_gui::Void>("/"+server_name+"/"+client_name+"/"+srv_requested);
+        srv_requested_ = srv_requested;
+        srv_provided_  = srv_provided;
+        server_name_   = server_name;
+        client_name_   = client_name;
+        server_        = node.advertiseService(srv_provided, &TriggerHandler::update, this);
+        client_        = node.serviceClient<rt_gui::Void>("/"+server_name+"/"+srv_requested);
     }
 
     bool add(const std::string& group_name, const std::string& data_name, fun_t fun)
@@ -183,6 +202,7 @@ public:
         rt_gui::Void srv;
         assert(fun);
         funs_[key_t(group_name,data_name)] = fun;
+        srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
@@ -210,6 +230,11 @@ public:
     }
 
 protected:
+
+    std::string srv_requested_;
+    std::string srv_provided_ ;
+    std::string server_name_  ;
+    std::string client_name_  ;
 
     std::map<key_t,fun_t> funs_;
     ros::ServiceServer server_;

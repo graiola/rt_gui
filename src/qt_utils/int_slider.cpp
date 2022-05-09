@@ -1,11 +1,12 @@
 #include <rt_gui/qt_utils/int_slider.h>
 
-IntSlider::IntSlider(const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
+IntSlider::IntSlider(const QString &client_name, const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
                QWidget *parent)
   : QGroupBox(data_name, parent)
 {
-  group_name_ = group_name;
-  data_name_  = data_name;
+  group_name_  = group_name;
+  data_name_   = data_name;
+  client_name_ = client_name;
 
   setObjectName(data_name);
 
@@ -47,6 +48,11 @@ const QString &IntSlider::getDataName() const
 const QString &IntSlider::getGroupName() const
 {
   return group_name_;
+}
+
+const QString &IntSlider::getClientName() const
+{
+  return client_name_;
 }
 
 void IntSlider::setValue(int value)

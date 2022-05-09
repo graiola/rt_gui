@@ -13,10 +13,11 @@ class Button : public QGroupBox
   Q_OBJECT
 
 public:
-  Button(const QString &group_name, const QString &data_name, QWidget *parent = nullptr);
+  Button(const QString &client_name, const QString &group_name, const QString &data_name, QWidget *parent = nullptr);
 
   const QString& getDataName() const;
   const QString& getGroupName() const;
+  const QString& getClientName() const;
 
 signals:
   void valueChanged();
@@ -28,6 +29,7 @@ private:
   QPushButton*      button_;
   QString           data_name_;
   QString           group_name_;
+  QString           client_name_;
 };
 
 #endif

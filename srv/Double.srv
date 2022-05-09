@@ -1,6 +1,7 @@
 float64 min
 float64 max
 float64 value
+string client_name
 string group_name
 string data_name
 ---

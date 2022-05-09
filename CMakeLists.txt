@@ -36,7 +36,6 @@ add_service_files(
   Int.srv
   List.srv
   Void.srv
-  Client.srv
 )
 
 generate_messages()

@@ -16,12 +16,13 @@ class IntSlider : public QGroupBox
   Q_OBJECT
 
 public:
-  IntSlider(const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
+  IntSlider(const QString &client_name, const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
          QWidget *parent = nullptr);
 
   int getValue();
   const QString& getDataName() const;
   const QString& getGroupName() const;
+  const QString& getClientName() const;
 
 signals:
   void valueChanged(int value);
@@ -39,6 +40,7 @@ private:
 
   QString         data_name_;
   QString         group_name_;
+  QString         client_name_;
 };
 
 #endif
