@@ -48,6 +48,11 @@ public:
     return app_->exec();
   }
 
+  void stop()
+  {
+    app_->exit(0);
+  }
+
 private:
 
   RtGuiServer()

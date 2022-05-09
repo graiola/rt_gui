@@ -24,7 +24,7 @@ if __name__ == '__main__':
     rosparam.set_param_raw('test/bool',True)
     rosparam.set_param_raw('test/list','a')
     
-    client.init('test')
+    client.init()
     client.addInt('test','int',1,5,set_int,True)
     client.addDouble('test','double',1,5,set_double,True)
     client.addBool('test','bool',set_bool,True)

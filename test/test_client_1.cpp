@@ -5,7 +5,7 @@ using namespace rt_gui;
 int main(int argc, char* argv[])
 {
 
-  double v = 0.0;
+  double Fz = 0.0;
   bool init = false;
   std::string server_name, client_name;
   if(argc == 3)
@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
 
   if(init)
   {
-    RtGuiClient::getIstance().addDouble(std::string("test_1"),std::string("test_1"),-10.5,10.5,&v);
+    RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fz"),-10.5,10.5,&Fz);
   }
 
   // Remove a widget example:
@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
   {
     RtGuiClient::getIstance().sync();
 
-    ROS_INFO_STREAM("v: " << v );
+    ROS_INFO_STREAM("Fz: " << Fz );
 
 
     ros::Duration(0.1).sleep();
