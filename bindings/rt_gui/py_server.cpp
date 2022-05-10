@@ -20,10 +20,10 @@ PYBIND11_MODULE(py_server, m) {
     py::class_<QWidget>(m, "QWidget")
       .def(py::init<>());
 
-    py::class_<rt_gui::RosServerNode>(m,"RosServerNode")
-        .def(py::init<>())
-        .def("init", &rt_gui::RosServerNode::init, py::arg("server_name") = RT_GUI_SERVER_NAME,
-             py::arg("parent") = py::none());
+    //py::class_<rt_gui::RosServerNode>(m,"RosServerNode")
+    //    .def(py::init<>())
+    //    .def("init", &rt_gui::RosServerNode::init, py::arg("server_name") = RT_GUI_SERVER_NAME,
+    //         py::arg("parent") = py::none());
 
     py::class_<rt_gui::RtGuiServer>(m,"RtGuiServer")
         .def_static("run", [](const std::string& server_name) {

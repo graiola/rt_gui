@@ -211,22 +211,27 @@ public:
   {
   }
 
-  void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
+  void init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
-    ros_node_.reset(new RosNode(server_name,_ros_services.n_threads));
 
     window_      = new Window(QString::fromStdString(server_name),parent);
-    remove_      = ros_node_->getNode().advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
+    remove_      = nh.advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
 
     handlers_                 = Handlers();
-    handlers_.double_h_       = std::make_shared<DoubleServerHandler>(  window_,ros_node_->getNode(),  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update    );
-    handlers_.int_h_          = std::make_shared<IntServerHandler>(     window_,ros_node_->getNode(),  _ros_services.int_srvs.add    ,  _ros_services.int_srvs.update       );
-    handlers_.bool_h_         = std::make_shared<BoolServerHandler>(    window_,ros_node_->getNode(),  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update      );
-    handlers_.list_h_         = std::make_shared<ListServerHandler>(    window_,ros_node_->getNode(),  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update      );
-    handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,ros_node_->getNode(),  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update   );
+    handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update    );
+    handlers_.int_h_          = std::make_shared<IntServerHandler>    ( window_,nh,  _ros_services.int_srvs.add    ,  _ros_services.int_srvs.update       );
+    handlers_.bool_h_         = std::make_shared<BoolServerHandler>   ( window_,nh,  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update      );
+    handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update      );
+    handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update   );
 
     QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &, const QString &)),
                      window_,    SLOT(removeWidget(const QString &, const QString &, const QString &)));
+  }
+
+  void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
+  {
+    ros_node_ = std::make_unique<RosNode>(server_name,_ros_services.n_threads);
+    init(ros_node_->getNode(),server_name,parent);
   }
 
   bool removeWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
