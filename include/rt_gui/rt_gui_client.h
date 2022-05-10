@@ -276,7 +276,7 @@ public:
 
   bool init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
-    ros_node_ = std::make_unique<RosNode>(server_name,_ros_services.n_threads);
+    ros_node_ = std::make_unique<RosNode>(client_name,_ros_services.n_threads);
     return init(ros_node_->getNode(),server_name,client_name,timeout);
   }
 
