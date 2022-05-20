@@ -4,6 +4,7 @@
 #include <rt_gui/qt_utils/window.h>
 #include <rt_gui/qt_utils/combo_box.h>
 #include <rt_gui/qt_utils/button.h>
+#include <rt_gui/qt_utils/text.h>
 
 WidgetsGroup::WidgetsGroup(const QString& /*title*/,
                            QWidget *parent)
@@ -58,6 +59,18 @@ bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& gr
      qDebug() << "Widget in: "<< group_name << ", " << data_name <<" already exists!";
 
   return duplicated;
+}
+
+void Window::addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    Text* text = new Text(client_name,group_name,data_name,placeholder);
+    widgets_group_[group_name]->add(text);
+    QObject::connect(text, SIGNAL(valueChanged(QString)),
+                     this,   SLOT(textChanged(QString)));
+    createTabs();
+  }
 }
 
 void Window::addButton(const QString& client_name, const QString& group_name, const QString& data_name)
@@ -129,6 +142,13 @@ void Window::buttonChanged()
     emit updateButton(button->getClientName(),button->getGroupName(),button->getDataName());
 }
 
+void Window::textChanged(QString /*value*/)
+{
+  Text* text = qobject_cast<Text*>(sender());
+  if(text!=Q_NULLPTR)
+    emit updateText(text->getClientName(),text->getGroupName(),text->getDataName(),text->getValue());
+}
+
 void Window::intSliderChanged(int /*value*/)
 {
   IntSlider* int_slider = qobject_cast<IntSlider*>(sender());
@@ -157,7 +177,7 @@ void Window::comboBoxChanged(QString /*value*/)
     emit updateComboBox(combo->getClientName(),combo->getGroupName(),combo->getDataName(),combo->getValue());
 }
 
-void Window::removeWidget(const QString &client_name, const QString &group_name, const QString &data_name)
+void Window::removeWidget(const QString &/*client_name*/, const QString &group_name, const QString &data_name)
 {
   if(widgets_group_.count(group_name) != 0)
   {

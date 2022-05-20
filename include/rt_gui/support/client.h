@@ -289,6 +289,18 @@ public:
         :InterfaceHandler<rt_gui::List,std::string>(node,srv_requested,srv_provided,server_name,client_name) {}
 };
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TextHandler : public InterfaceHandler<rt_gui::Text,std::string>
+{
+
+public:
+
+    typedef std::shared_ptr<TextHandler> Ptr;
+
+    TextHandler(ros::NodeHandle& node,  std::string srv_requested, std::string srv_provided, std::string server_name, std::string client_name)
+        :InterfaceHandler<rt_gui::Text,std::string>(node,srv_requested,srv_provided,server_name,client_name) {}
+};
+
 } // namespace
 
 

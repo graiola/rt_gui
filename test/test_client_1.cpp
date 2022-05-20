@@ -4,9 +4,9 @@ using namespace rt_gui;
 
 int main(int argc, char* argv[])
 {
-
   double Fz = 0.0;
   bool init = false;
+  std::string map_path = "/tmp/map.map";
   std::string server_name, client_name;
   if(argc == 3)
   {
@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
   if(init)
   {
     RtGuiClient::getIstance().addDouble(std::string("forces"),std::string("Fz"),-10.5,10.5,&Fz);
+    RtGuiClient::getIstance().addText(std::string("exploration"),std::string("map_path"),&map_path);
   }
 
   // Remove a widget example:
@@ -32,8 +33,7 @@ int main(int argc, char* argv[])
   {
     RtGuiClient::getIstance().sync();
 
-    ROS_INFO_STREAM("Fz: " << Fz );
-
+    ROS_INFO_STREAM("Fz: " << Fz << " map_path: " << map_path);
 
     ros::Duration(0.1).sleep();
   }

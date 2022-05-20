@@ -176,6 +176,27 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class TextServerHandler : public QObject, WindowServerHandler<rt_gui::Text,std::string>
+{
+
+  Q_OBJECT
+
+public:
+
+  typedef std::shared_ptr<TextServerHandler> Ptr;
+
+  TextServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+
+  bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+
+public slots:
+  bool updateText(QString client_name, QString group_name, QString data_name, QString value);
+
+signals:
+  void addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Handlers
 {
 public:
@@ -186,6 +207,7 @@ public:
     ,bool_h_(nullptr)
     ,list_h_(nullptr)
     ,trigger_h_(nullptr)
+    ,text_h_(nullptr)
   {}
 
   DoubleServerHandler::Ptr double_h_;
@@ -193,6 +215,7 @@ public:
   BoolServerHandler::Ptr bool_h_;
   ListServerHandler::Ptr list_h_;
   TriggerServerHandler::Ptr trigger_h_;
+  TextServerHandler::Ptr text_h_;
 
 };
 
@@ -223,6 +246,7 @@ public:
     handlers_.bool_h_         = std::make_shared<BoolServerHandler>   ( window_,nh,  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update      );
     handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update      );
     handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update   );
+    handlers_.text_h_         = std::make_shared<TextServerHandler>   ( window_,nh,  _ros_services.text_srvs.add   ,  _ros_services.text_srvs.update      );
 
     QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &, const QString &)),
                      window_,    SLOT(removeWidget(const QString &, const QString &, const QString &)));
@@ -230,7 +254,7 @@ public:
 
   void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
-    ros_node_ = std::make_unique<RosNode>(server_name,_ros_services.n_threads);
+    ros_node_.reset(new RosNode(server_name,_ros_services.n_threads));
     init(ros_node_->getNode(),server_name,parent);
   }
 

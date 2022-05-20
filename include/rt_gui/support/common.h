@@ -8,6 +8,7 @@
 #include <rt_gui/Int.h>
 #include <rt_gui/List.h>
 #include <rt_gui/Void.h>
+#include <rt_gui/Text.h>
 
 #include <memory>
 #include <atomic>
@@ -126,6 +127,12 @@ struct
         std::string add    = "add_trigger";
         std::string update = "update_trigger";
     } trigger_srvs;
+
+    struct
+    {
+        std::string add    = "add_text";
+        std::string update = "update_text";
+    } text_srvs;
 
     unsigned int n_threads = 3;
     double wait_service_secs = 10.0;

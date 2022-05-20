@@ -153,4 +153,29 @@ bool ListServerHandler::updateComboBox(QString client_name, QString group_name, 
   return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString());
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+TextServerHandler::TextServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested)
+  :WindowServerHandler<rt_gui::Text,std::string>(window,node,srv_provided,srv_requested)
+{
+  QObject::connect(this,    SIGNAL(addText(const QString&, const QString&, const QString&, const QString&)),
+                   window_, SLOT(addText(const QString&, const QString&, const QString&, const QString&)));
+
+  QObject::connect(window_, SIGNAL(updateText(QString, QString, QString, QString)),
+                   this,    SLOT(updateText(QString, QString, QString, QString)));
+}
+
+bool TextServerHandler::addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res)
+{
+  emit addText(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),QString::fromStdString(req.value));
+  // FIXME add a proper error handling
+  res.resp = true;
+  return res.resp;
+}
+
+bool TextServerHandler::updateText(QString client_name, QString group_name, QString data_name, QString value)
+{
+  return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString());
+}
+
 

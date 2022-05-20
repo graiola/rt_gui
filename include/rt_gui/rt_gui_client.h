@@ -231,6 +231,32 @@ public:
       return false;
   }
 
+  bool addText(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
+  {
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      return text_h_->add(group_name,data_name,data_ptr,sync);
+    }
+    else
+      return false;
+  }
+
+  bool addText(const std::string& group_name, const std::string& data_name, std::function<void(std::string)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      std::string init_value;
+      if(loadFromServer(group_name,data_name,init_value) && text_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
   bool remove(const std::string& group_name, const std::string& data_name)
   {
     rt_gui::Void srv;
@@ -247,6 +273,7 @@ public:
       int_h_->sync();
       bool_h_->sync();
       list_h_->sync();
+      text_h_->sync();
     }
     else {
       ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
@@ -264,6 +291,7 @@ public:
       trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
       double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
       int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
+      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,server_name,client_name);
       init_           = true;
     }
     else
@@ -276,7 +304,7 @@ public:
 
   bool init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
-    ros_node_ = std::make_unique<RosNode>(client_name,_ros_services.n_threads);
+    ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
     return init(ros_node_->getNode(),server_name,client_name,timeout);
   }
 
@@ -331,6 +359,7 @@ private:
   BoolHandler::Ptr bool_h_;
   ListHandler::Ptr list_h_;
   TriggerHandler::Ptr trigger_h_;
+  TextHandler::Ptr text_h_;
   ros::ServiceClient remove_;
   bool init_;
 

@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
   window.addComboBox(QString("test_qt"),QString("controllers"),QString("types"),list,QString("admittance"));
   window.addButton(QString("test_qt"),QString("main"),QString("stop"));
   window.addIntSlider(QString("test_qt"),QString("main"),QString("steps"),0,5,1);
+  window.addText(QString("test_qt"),QString("main"),QString("map"),QString("map path"));
 
   //window.removeWidget(QString("velocities"),QString("Filter"));
 
