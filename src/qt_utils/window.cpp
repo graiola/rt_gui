@@ -29,6 +29,7 @@ Window::Window(const QString& title, QWidget* parent)
 {
   main_layout_ = new QVBoxLayout(this);
   tabs_ = new QTabWidget(this);
+  tabs_->setMovable(true);
 
   if(parent!=nullptr)
     parent->setLayout(main_layout_);
