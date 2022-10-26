@@ -18,8 +18,8 @@ public:
   WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested)
   {
     //update_ = node.serviceClient<srv_t>("/"+client_name+"/"+srv_requested);
-    assert(!srv_provided_.empty());
-    assert(!srv_requested_.empty());
+    //assert(!srv_provided_.empty());
+    //assert(!srv_requested_.empty());
     srv_provided_  = srv_provided;
     srv_requested_ = srv_requested;
     node_   = node;
