@@ -197,6 +197,27 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class LabelServerHandler : public QObject, WindowServerHandler<rt_gui::Text,std::string>
+{
+
+  Q_OBJECT
+
+public:
+
+  typedef std::shared_ptr<LabelServerHandler> Ptr;
+
+  LabelServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+
+  bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+
+public slots:
+  bool updateLabel(QString client_name, QString group_name, QString data_name, QString value);
+
+signals:
+  void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Handlers
 {
 public:
@@ -208,6 +229,7 @@ public:
     ,list_h_(nullptr)
     ,trigger_h_(nullptr)
     ,text_h_(nullptr)
+    ,label_h_(nullptr)
   {}
 
   DoubleServerHandler::Ptr double_h_;
@@ -216,6 +238,7 @@ public:
   ListServerHandler::Ptr list_h_;
   TriggerServerHandler::Ptr trigger_h_;
   TextServerHandler::Ptr text_h_;
+  LabelServerHandler::Ptr label_h_;
 
 };
 
@@ -247,6 +270,7 @@ public:
     handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update      );
     handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update   );
     handlers_.text_h_         = std::make_shared<TextServerHandler>   ( window_,nh,  _ros_services.text_srvs.add   ,  _ros_services.text_srvs.update      );
+    handlers_.label_h_        = std::make_shared<LabelServerHandler>  ( window_,nh,  _ros_services.label_srvs.add  ,  _ros_services.label_srvs.update     );
 
     QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &, const QString &)),
                      window_,    SLOT(removeWidget(const QString &, const QString &, const QString &)));

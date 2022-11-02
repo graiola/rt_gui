@@ -6,6 +6,7 @@ add_library(qt_utils SHARED
     include/rt_gui/qt_utils/combo_box.h
     include/rt_gui/qt_utils/button.h
     include/rt_gui/qt_utils/text.h
+    include/rt_gui/qt_utils/label.h
     src/qt_utils/window.cpp
     src/qt_utils/double_slider.cpp
     src/qt_utils/int_slider.cpp
@@ -13,6 +14,7 @@ add_library(qt_utils SHARED
     src/qt_utils/combo_box.cpp
     src/qt_utils/button.cpp
     src/qt_utils/text.cpp
+    src/qt_utils/label.cpp
     )
 
 target_link_libraries(qt_utils PUBLIC

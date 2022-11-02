@@ -178,4 +178,30 @@ bool TextServerHandler::updateText(QString client_name, QString group_name, QStr
   return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString());
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+LabelServerHandler::LabelServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested)
+  :WindowServerHandler<rt_gui::Text,std::string>(window,node,srv_provided,srv_requested)
+{
+  QObject::connect(this,    SIGNAL(addLabel(const QString&, const QString&, const QString&, const QString&)),
+                   window_, SLOT(addLabel(const QString&, const QString&, const QString&, const QString&)));
+
+  QObject::connect(window_, SIGNAL(updateLabel(QString, QString, QString, QString)),
+                   this,    SLOT(updateLabel(QString, QString, QString, QString)));
+}
+
+bool LabelServerHandler::addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res)
+{
+  emit addLabel(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),QString::fromStdString(req.value));
+  // FIXME add a proper error handling
+  res.resp = true;
+  return res.resp;
+}
+
+bool LabelServerHandler::updateLabel(QString client_name, QString group_name, QString data_name, QString value)
+{
+  return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString());
+}
+
+
 

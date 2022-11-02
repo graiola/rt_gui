@@ -39,6 +39,7 @@ public:
 
 public slots:
     void addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
+    void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
     void addButton(const QString& client_name, const QString& group_name, const QString& data_name);
     void addDoubleSlider(const QString& client_name, const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
     void addIntSlider(const QString& client_name, const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
@@ -46,6 +47,7 @@ public slots:
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
     void textChanged(QString value);
+    void labelChanged(QString value);
     void buttonChanged();
     void intSliderChanged(int value);
     void doubleSliderChanged(double value);
@@ -56,6 +58,7 @@ public slots:
 
 signals:
     void updateText(QString client_name, QString group_name, QString data_name, QString value);
+    void updateLabel(QString client_name, QString group_name, QString data_name, QString value);
     void updateButton(QString client_name, QString group_name, QString data_name);
     void updateDoubleSlider(QString client_name, QString group_name, QString data_name, double value);
     void updateIntSlider(QString client_name, QString group_name, QString data_name, int value);

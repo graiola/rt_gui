@@ -257,6 +257,18 @@ public:
       return false;
   }
 
+  bool addLabel(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
+  {
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      return label_h_->add(group_name,data_name,data_ptr,sync);
+    }
+    else
+      return false;
+  }
+
   bool remove(const std::string& group_name, const std::string& data_name)
   {
     rt_gui::Void srv;
@@ -274,6 +286,7 @@ public:
       bool_h_->sync();
       list_h_->sync();
       text_h_->sync();
+      label_h_->sync();
     }
     else {
       ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
@@ -292,6 +305,7 @@ public:
       double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
       int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
       text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,server_name,client_name);
+      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,server_name,client_name);
       init_           = true;
     }
     else
@@ -360,6 +374,7 @@ private:
   ListHandler::Ptr list_h_;
   TriggerHandler::Ptr trigger_h_;
   TextHandler::Ptr text_h_;
+  LabelHandler::Ptr label_h_;
   ros::ServiceClient remove_;
   bool init_;
 

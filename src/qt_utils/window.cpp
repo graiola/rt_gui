@@ -5,6 +5,7 @@
 #include <rt_gui/qt_utils/combo_box.h>
 #include <rt_gui/qt_utils/button.h>
 #include <rt_gui/qt_utils/text.h>
+#include <rt_gui/qt_utils/label.h>
 
 WidgetsGroup::WidgetsGroup(const QString& /*title*/,
                            QWidget *parent)
@@ -70,6 +71,18 @@ void Window::addText(const QString& client_name, const QString& group_name, cons
     widgets_group_[group_name]->add(text);
     QObject::connect(text, SIGNAL(valueChanged(QString)),
                      this,   SLOT(textChanged(QString)));
+    createTabs();
+  }
+}
+
+void Window::addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    Label* label = new Label(client_name,group_name,data_name,placeholder);
+    widgets_group_[group_name]->add(label);
+    QObject::connect(label, SIGNAL(valueChanged(QString)),
+                     this,   SLOT(labelChanged(QString)));
     createTabs();
   }
 }
@@ -148,6 +161,13 @@ void Window::textChanged(QString /*value*/)
   Text* text = qobject_cast<Text*>(sender());
   if(text!=Q_NULLPTR)
     emit updateText(text->getClientName(),text->getGroupName(),text->getDataName(),text->getValue());
+}
+
+void Window::labelChanged(QString /*value*/)
+{
+  Label* label = qobject_cast<Label*>(sender());
+  if(label!=Q_NULLPTR)
+    emit updateLabel(label->getClientName(),label->getGroupName(),label->getDataName(),label->getValue());
 }
 
 void Window::intSliderChanged(int /*value*/)

@@ -134,6 +134,12 @@ struct
         std::string update = "update_text";
     } text_srvs;
 
+    struct
+    {
+        std::string add    = "add_label";
+        std::string update = "update_label";
+    } label_srvs;
+
     unsigned int n_threads = 3;
     double wait_service_secs = 10.0;
     std::string remove_service = "remove_widget";
