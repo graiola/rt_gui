@@ -36,8 +36,7 @@ public:
     std::string service = "/"+srv.request.client_name+"/"+srv_requested_;
     if(ros::service::waitForService(service,ros::Duration(_ros_services.wait_service_secs)))
     {
-      ros::service::call(service,srv);
-      if(srv.response.resp == false)
+      if(!ros::service::call(service,srv))
       {
         ROS_WARN("RtGuiClient::update::resp is false!");
         return false;

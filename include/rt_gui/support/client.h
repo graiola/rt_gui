@@ -32,7 +32,7 @@ public:
     bool update(typename srv_t::Request& req, typename srv_t::Response& res)
     {
         res.resp = updateBuffer(req.group_name,req.data_name,req.value);
-        return res.resp;
+        return true;
     }
 
     bool add(const std::string& group_name, const std::string& data_name, const std::vector<data_t>& list, data_t* data_ptr, bool sync)
@@ -120,10 +120,9 @@ protected:
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
-            this->client_.call(srv);
-            if(srv.response.resp == false)
+            if(!this->client_.call(srv))
             {
-                ROS_WARN("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add call response is false!");
                 return false;
             }
             else
@@ -141,10 +140,9 @@ protected:
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
-            this->client_.call(srv);
-            if(srv.response.resp == false)
+            if(!this->client_.call(srv))
             {
-                ROS_WARN("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add call response is false!");
                 return false;
             }
             else
@@ -158,12 +156,12 @@ protected:
         return true;
     }
 
-    bool updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
+    data_t updateBuffer(const std::string& group_name, const std::string& data_name, const decltype(srv_t::Request::value)& value)
     {
         sync_mtx_.lock();
-        bool res = buffer_.update(group_name,data_name,value);
+        data_t actual_value = buffer_.update(group_name,data_name,value);
         sync_mtx_.unlock();
-        return res;
+        return actual_value;
     }
 
     std::string srv_requested_;
@@ -207,10 +205,9 @@ public:
         srv.request.data_name = data_name;
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
-            this->client_.call(srv);
-            if(srv.response.resp == false)
+            if(!this->client_.call(srv))
             {
-                ROS_WARN("RtGuiServer::add::resp is false!");
+                ROS_WARN("RtGuiServer::add call response is false!");
                 return false;
             }
         }

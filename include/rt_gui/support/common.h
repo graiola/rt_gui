@@ -56,8 +56,14 @@ public:
             return false;
     }
 
-    bool update(const std::string& key1, const std::string& key2, const data_t& value)
+    data_t update(const std::string& key1, const std::string& key2, const data_t& value)
     {
+        data_t actual_value;
+        if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // Get the actual value from the buffer before writing it with the new one
+          actual_value = *std::get<0>(buffer_[key_t(key1,key2)]);
+        else
+          actual_value = value;
+
         if(std::get<3>(buffer_[key_t(key1,key2)])) // Sync - Copy the new data in the buffer
             std::get<1>(buffer_[key_t(key1,key2)]) = value;
         else // Copy the data directly into the raw data or call the callback
@@ -67,9 +73,9 @@ public:
             else if(std::get<2>(buffer_[key_t(key1,key2)])!=nullptr) // callback still exists
                 std::get<2>(buffer_[key_t(key1,key2)])(value);
             else
-                return false;
+                throw std::runtime_error("Missing pointer in buffer!");
         }
-        return true;
+        return actual_value;
     }
 
     bool sync()
