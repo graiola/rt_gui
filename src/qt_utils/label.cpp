@@ -1,5 +1,6 @@
 #include <rt_gui/qt_utils/label.h>
 #include <QStyle>
+#include <QTimer>
 
 Label::Label(const QString &client_name, const QString &group_name, const QString &data_name, const QString &placeholder, QWidget *parent)
   : QGroupBox()
@@ -15,16 +16,16 @@ Label::Label(const QString &client_name, const QString &group_name, const QStrin
   QBoxLayout *widgets_layout = new QBoxLayout(QBoxLayout::TopToBottom);
   widgets_layout->addWidget(title_);
   setLayout(widgets_layout);
+
+
+  QTimer *timer = new QTimer(this);
+  connect(timer, SIGNAL(timeout()), this, SIGNAL(updateValue()));
+  timer->start(1000);
 }
 
 void Label::setValue(QString value)
 {
   title_->setText(value);
-}
-
-QString Label::getValue()
-{
-  return value_;
 }
 
 const QString &Label::getDataName() const
@@ -40,4 +41,9 @@ const QString &Label::getGroupName() const
 const QString &Label::getClientName() const
 {
   return client_name_;
+}
+
+QString Label::getValue()
+{
+  return value_;
 }

@@ -257,13 +257,13 @@ public:
       return false;
   }
 
-  bool addLabel(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
+  bool addLabel(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool load_init_from_server = false)
   {
     if(check())
     {
       if(load_init_from_server)
         loadFromServer(group_name,data_name,*data_ptr);
-      return label_h_->add(group_name,data_name,data_ptr,sync);
+      return label_h_->add(group_name,data_name,data_ptr,false,true);
     }
     else
       return false;

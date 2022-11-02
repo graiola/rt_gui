@@ -179,8 +179,8 @@ LabelServerHandler::LabelServerHandler(Window* window, ros::NodeHandle& node, st
   QObject::connect(this,    SIGNAL(addLabel(const QString&, const QString&, const QString&, const QString&)),
                    window_, SLOT(addLabel(const QString&, const QString&, const QString&, const QString&)));
 
-  QObject::connect(window_, SIGNAL(updateLabel(QString, QString, QString, QString)),
-                   this,    SLOT(updateLabel(QString, QString, QString, QString)));
+  QObject::connect(window_, SIGNAL(updateLabel(QString, QString, QString, QString, QString&)),
+                   this,    SLOT(updateLabel(QString, QString, QString, QString, QString&)));
 }
 
 bool LabelServerHandler::addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& /*res*/)
@@ -190,9 +190,12 @@ bool LabelServerHandler::addWidget(rt_gui::Text::Request& req, rt_gui::Text::Res
   return true;
 }
 
-bool LabelServerHandler::updateLabel(QString client_name, QString group_name, QString data_name, QString value)
+bool LabelServerHandler::updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString &actual_value)
 {
-  return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString());
+  std::string actual_string_std;
+  bool res = update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdString(),actual_string_std);
+  actual_value = QString::fromStdString(actual_string_std);
+  return res;
 }
 
 

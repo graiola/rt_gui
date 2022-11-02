@@ -22,7 +22,7 @@ public:
   QString getValue();
 
 signals:
-  void valueChanged(QString value);
+  void updateValue();
 
 public slots:
   void setValue(QString value);

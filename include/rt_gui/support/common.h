@@ -30,26 +30,26 @@ public:
     using callback_t = std::function<void(data_t)>;
 
     CallbackBuffer() {}
-    //                   0       1         2       3
-    typedef std::tuple<data_t*,data_t,callback_t,bool> value_t;
+    //                   0       1         2       3   4 - 0 client data, 1 buffer data, 2 callback, 3 sync, 4 read only data
+    typedef std::tuple<data_t*,data_t,callback_t,bool,bool> value_t;
     typedef std::map<key_t,value_t> buffer_t;
 
     bool add(const std::string& key1, const std::string& key2, data_t data, callback_t callback, bool sync = true)
     {
         if(callback!=nullptr)
         {
-            buffer_[key_t(key1,key2)] = value_t(nullptr,data,callback,sync);
+            buffer_[key_t(key1,key2)] = value_t(nullptr,data,callback,sync,false);
             return true;
         }
         else
             return false;
     }
 
-    bool add(const std::string& key1, const std::string& key2, data_t* data_ptr, bool sync = true)
+    bool add(const std::string& key1, const std::string& key2, data_t* data_ptr, bool sync = true, bool read_only = false)
     {
         if(data_ptr!=nullptr)
         {
-            buffer_[key_t(key1,key2)] = value_t(data_ptr,*data_ptr,nullptr,sync);
+            buffer_[key_t(key1,key2)] = value_t(data_ptr,*data_ptr,nullptr,sync,read_only);
             return true;
         }
         else
@@ -59,21 +59,24 @@ public:
     data_t update(const std::string& key1, const std::string& key2, const data_t& value)
     {
         data_t actual_value;
-        if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // Get the actual value from the buffer before writing it with the new one
+        if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // get the actual value from the buffer before writing it with the new one
           actual_value = *std::get<0>(buffer_[key_t(key1,key2)]);
         else
           actual_value = value;
 
-        if(std::get<3>(buffer_[key_t(key1,key2)])) // Sync - Copy the new data in the buffer
-            std::get<1>(buffer_[key_t(key1,key2)]) = value;
-        else // Copy the data directly into the raw data or call the callback
+        if(!std::get<4>(buffer_[key_t(key1,key2)])) // read_only - If not read only, copy the data from buffer to pointer
         {
-            if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // data pointer still exists
-                *std::get<0>(buffer_[key_t(key1,key2)]) = value;
-            else if(std::get<2>(buffer_[key_t(key1,key2)])!=nullptr) // callback still exists
-                std::get<2>(buffer_[key_t(key1,key2)])(value);
-            else
-                throw std::runtime_error("Missing pointer in buffer!");
+          if(std::get<3>(buffer_[key_t(key1,key2)])) // sync - copy the new data in the buffer
+              std::get<1>(buffer_[key_t(key1,key2)]) = value;
+          else // copy the data directly into the raw data or call the callback
+          {
+              if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // data pointer still exists
+                  *std::get<0>(buffer_[key_t(key1,key2)]) = value;
+              else if(std::get<2>(buffer_[key_t(key1,key2)])!=nullptr) // callback still exists
+                  std::get<2>(buffer_[key_t(key1,key2)])(value);
+              else
+                  throw std::runtime_error("Missing pointer in buffer!");
+          }
         }
         return actual_value;
     }

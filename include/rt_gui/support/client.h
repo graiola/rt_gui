@@ -59,14 +59,14 @@ public:
         return addCallback(group_name,data_name,data,fun,srv,sync);
     }
 
-    bool add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, bool sync)
+    bool add(const std::string& group_name, const std::string& data_name, data_t* data_ptr, bool sync, bool read_only = false)
     {
         srv_t srv;
         srv.request.value = *data_ptr;
         srv.request.client_name = client_name_;
         srv.request.group_name = group_name;
         srv.request.data_name = data_name;
-        return addRawData(group_name,data_name,data_ptr,srv,sync);
+        return addRawData(group_name,data_name,data_ptr,srv,sync,read_only);
     }
 
     bool add(const std::string& group_name, const std::string& data_name, data_t data, fun_t fun, bool sync)
@@ -116,7 +116,7 @@ public:
 
 protected:
 
-    bool addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync)
+    bool addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync, bool read_only = false)
     {
         if(this->client_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
         {
@@ -126,7 +126,7 @@ protected:
                 return false;
             }
             else
-                buffer_.add(group_name,data_name,data_ptr,sync);
+                buffer_.add(group_name,data_name,data_ptr,sync,read_only);
         }
         else
         {

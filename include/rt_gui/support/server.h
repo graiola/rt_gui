@@ -56,8 +56,20 @@ public:
     srv.request.client_name = client_name;
     srv.request.data_name   = data_name;
     srv.request.group_name  = group_name;
-    srv.request.value = value;
+    srv.request.value       = value;
     return update(srv);
+  }
+
+  bool update(const std::string& client_name, const std::string& group_name, const std::string& data_name, data_t value, data_t& actual_value)
+  {
+    srv_t srv;
+    srv.request.client_name = client_name;
+    srv.request.data_name   = data_name;
+    srv.request.group_name  = group_name;
+    srv.request.value       = value;
+    bool res                = update(srv);
+    actual_value            = srv.response.resp;
+    return res;
   }
 
 protected:
@@ -210,7 +222,7 @@ public:
   bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
 
 public slots:
-  bool updateLabel(QString client_name, QString group_name, QString data_name, QString value);
+  bool updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString& actual_value);
 
 signals:
   void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);

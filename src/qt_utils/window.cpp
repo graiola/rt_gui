@@ -81,8 +81,8 @@ void Window::addLabel(const QString& client_name, const QString& group_name, con
   {
     Label* label = new Label(client_name,group_name,data_name,placeholder);
     widgets_group_[group_name]->add(label);
-    QObject::connect(label, SIGNAL(valueChanged(QString)),
-                     this,   SLOT(labelChanged(QString)));
+    QObject::connect(label, SIGNAL(updateValue()),
+                     this,   SLOT(labelChanged()));
     createTabs();
   }
 }
@@ -163,11 +163,13 @@ void Window::textChanged(QString /*value*/)
     emit updateText(text->getClientName(),text->getGroupName(),text->getDataName(),text->getValue());
 }
 
-void Window::labelChanged(QString /*value*/)
+void Window::labelChanged()
 {
   Label* label = qobject_cast<Label*>(sender());
+  QString actual_value;
   if(label!=Q_NULLPTR)
-    emit updateLabel(label->getClientName(),label->getGroupName(),label->getDataName(),label->getValue());
+    emit updateLabel(label->getClientName(),label->getGroupName(),label->getDataName(),label->getValue(),actual_value);
+  label->setValue(actual_value);
 }
 
 void Window::intSliderChanged(int /*value*/)

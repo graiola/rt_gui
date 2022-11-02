@@ -47,7 +47,7 @@ public slots:
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
     void textChanged(QString value);
-    void labelChanged(QString value);
+    void labelChanged();
     void buttonChanged();
     void intSliderChanged(int value);
     void doubleSliderChanged(double value);
@@ -58,7 +58,7 @@ public slots:
 
 signals:
     void updateText(QString client_name, QString group_name, QString data_name, QString value);
-    void updateLabel(QString client_name, QString group_name, QString data_name, QString value);
+    void updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString& actual_value);
     void updateButton(QString client_name, QString group_name, QString data_name);
     void updateDoubleSlider(QString client_name, QString group_name, QString data_name, double value);
     void updateIntSlider(QString client_name, QString group_name, QString data_name, int value);
