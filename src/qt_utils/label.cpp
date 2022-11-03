@@ -11,12 +11,17 @@ Label::Label(const QString &client_name, const QString &group_name, const QStrin
 
   setObjectName(data_name);
 
-  title_ = new QLabel(placeholder);
+  title_ = new QLabel(data_name);
+  QFont font = title_->font();
+  font.setWeight(QFont::Bold);
+  title_->setFont(font);
+  label_ = new QLabel(placeholder);
+  label_->setText(placeholder);
 
   QBoxLayout *widgets_layout = new QBoxLayout(QBoxLayout::TopToBottom);
   widgets_layout->addWidget(title_);
+  widgets_layout->addWidget(label_);
   setLayout(widgets_layout);
-
 
   QTimer *timer = new QTimer(this);
   connect(timer, SIGNAL(timeout()), this, SIGNAL(updateValue()));
@@ -25,7 +30,7 @@ Label::Label(const QString &client_name, const QString &group_name, const QStrin
 
 void Label::setValue(QString value)
 {
-  title_->setText(value);
+  label_->setText(value);
 }
 
 const QString &Label::getDataName() const

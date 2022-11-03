@@ -29,6 +29,7 @@ public slots:
 
 private:
   QLabel*           title_;
+  QLabel*           label_;
   QString           data_name_;
   QString           group_name_;
   QString           client_name_;
