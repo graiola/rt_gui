@@ -48,20 +48,25 @@ public:
       return false;
   }
 
-  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int data, std::function<void(int)> fun, bool sync = true)
-  {
-    if(check())
-      return int_h_->add(group_name,data_name,min,max,data,fun,sync);
-    else
-      return false;
-  }
-
   bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
   {
     if(check())
     {
       int init_value;
       if(loadFromServer(group_name,data_name,init_value) && int_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int init_value, std::function<void(int)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(int_h_->add(group_name,data_name,min,max,init_value,fun,sync))
         return true;
       else
         return false;
@@ -115,20 +120,25 @@ public:
       return false;
   }
 
-  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double data, std::function<void(double)> fun, bool sync = true)
-  {
-    if(check())
-      return double_h_->add(group_name,data_name,min,max,data,fun,sync);
-    else
-      return false;
-  }
-
   bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
   {
     if(check())
     {
-      int init_value;
+      double init_value;
       if(loadFromServer(group_name,data_name,init_value) && double_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double init_value, std::function<void(double)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(double_h_->add(group_name,data_name,min,max,init_value,fun,sync))
         return true;
       else
         return false;
@@ -185,6 +195,19 @@ public:
       return false;
   }
 
+  bool addBool(const std::string& group_name, const std::string& data_name, bool init_value, std::function<void(bool)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(bool_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
   bool addBool(const std::string& group_name, const std::string& data_name, bool* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     if(check())
@@ -231,6 +254,19 @@ public:
       return false;
   }
 
+  bool addList(const std::string& group_name, const std::string& data_name, std::string init_value, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(list_h_->add(group_name,data_name,list,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
   bool addText(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     if(check())
@@ -249,6 +285,19 @@ public:
     {
       std::string init_value;
       if(loadFromServer(group_name,data_name,init_value) && text_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addText(const std::string& group_name, const std::string& data_name, std::string init_value, std::function<void(std::string)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(text_h_->add(group_name,data_name,init_value,fun,sync))
         return true;
       else
         return false;
