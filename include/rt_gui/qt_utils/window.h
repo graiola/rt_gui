@@ -11,7 +11,7 @@ QT_END_NAMESPACE
 class DoubleSlider;
 class RadioButton;
 
-class WidgetsGroup : public QGroupBox
+class WidgetsGroup : public QScrollArea
 {
   Q_OBJECT
 
@@ -23,8 +23,13 @@ public:
 
   void remove(QWidget* widget);
 
+  QLayout* getLayout();
+
+  QSize sizeHint() const;
+
 private:
   QBoxLayout* layout_;
+  QGroupBox* group_;
 };
 
 class Window : public QWidget
@@ -73,7 +78,6 @@ private:
     widgets_group_map_t widgets_group_;
     QTabWidget* tabs_;
     QVBoxLayout* main_layout_;
-    QGroupBox* sliders_layout_;
 
 
 };

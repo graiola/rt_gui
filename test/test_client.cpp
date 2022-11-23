@@ -52,7 +52,23 @@ int main(int argc, char* argv[])
     RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("running"),&Controller_on);
     RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
     RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
-    RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status"),&status);
+    RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status1"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status2"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status3"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status4"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status5"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status6"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status7"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status8"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status9"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status10"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status11"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status12"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status13"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status14"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status15"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status16"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status17"),&status);
   }
 
   // Remove a widget example:
