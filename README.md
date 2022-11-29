@@ -15,4 +15,4 @@ check the tests for some examples in c++ and python: https://github.com/graiola/
 - [ ] add console gui
 - [ ] add console socket
 - [ ] api with templates
-- [ ] fix scroll area size
+- [x] fix scroll area size
