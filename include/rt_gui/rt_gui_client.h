@@ -353,9 +353,10 @@ public:
   bool init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
     std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
+    ros::NodeHandle global_nh;
     if(ros::service::waitForService(remove_service_name,timeout))
     {
-      remove_         = nh.serviceClient<rt_gui::Void>(remove_service_name);
+      remove_         = global_nh.serviceClient<rt_gui::Void>(remove_service_name);
       bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,server_name,client_name);
       list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,server_name,client_name);
       trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
