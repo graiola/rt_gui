@@ -326,6 +326,14 @@ public:
     return remove_.call(srv);
   }
 
+  bool remove(const std::string& group_name)
+  {
+    rt_gui::Void srv;
+    srv.request.data_name = "";
+    srv.request.group_name = group_name;
+    return remove_.call(srv);
+  }
+
   void sync()
   {
     if(init_)

@@ -242,7 +242,7 @@ void Window::removeWidget(const QString &/*client_name*/, const QString &group_n
       }
     }
   }
-  if(widgets_group_[group_name]->getLayout()->count() == 0)
+  if(widgets_group_[group_name]->getLayout()->count() == 0 || data_name.isEmpty())
     delete widgets_group_[group_name];
 }
 
