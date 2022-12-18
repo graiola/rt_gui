@@ -32,8 +32,8 @@ set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
 string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
 list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 
-find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
-find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
+find_package(Qt5Widgets ${MINIMUM_QT_VERSION} QUIET)
+find_package(Qwt ${MINIMUM_QT_VERSION} QUIET)
 find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
 catkin_python_setup()
@@ -62,75 +62,83 @@ include_directories(
     ${QWT_INCLUDE_DIRS}
 )
 
-## Compile qt_utils lib
-include(src/qt_utils/qt_utils.cmake)
+if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
 
-## Compile console lib
-add_library(console src/console/console_core.cpp src/console/console.cpp)
-target_link_libraries(console readline pthread)
+    message(STATUS "Compiling QT related code")
 
-## Compile server lib
-add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
-target_link_libraries(server qt_utils ${catkin_LIBRARIES})
+    ## Compile qt_utils lib
+    include(src/qt_utils/qt_utils.cmake)
 
-## Compile the server node
-add_executable(server_node src/server_node.cpp)
-add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
-target_link_libraries(server_node PRIVATE server)
+    ## Compile console lib
+    add_library(console src/console/console_core.cpp src/console/console.cpp)
+    target_link_libraries(console readline pthread)
 
-## Bindings
-find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
-find_package(pybind11 QUIET)
-message(STATUS "check for pybind11")
-if(${pybind11_FOUND})
-    message(STATUS "compiling python bindings")
-    # Server
-    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
-    target_link_libraries(py_server PRIVATE server)
-    install(TARGETS py_server
-            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    # Client
-    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
-    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
-    install(TARGETS py_client
-            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    # Tests
-    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
-                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-else()
-    message(STATUS "pybind not found")
+    ## Compile server lib
+    add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
+    target_link_libraries(server qt_utils ${catkin_LIBRARIES})
+
+    ## Compile the server node
+    add_executable(server_node src/server_node.cpp)
+    add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
+    target_link_libraries(server_node PRIVATE server)
+
+    ## Bindings
+    find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
+    find_package(pybind11 QUIET)
+    message(STATUS "check for pybind11")
+    if(${pybind11_FOUND})
+        message(STATUS "compiling python bindings")
+        # Server
+        pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
+        target_link_libraries(py_server PRIVATE server)
+        install(TARGETS py_server
+                DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+        # Client
+        pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
+        target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
+        install(TARGETS py_client
+                DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+        # Tests
+        catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
+                              DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+    else()
+        message(STATUS "pybind not found")
+    endif()
+
+    install(TARGETS server_node qt_utils server
+      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    )
+
+    ## Compile test
+    if (CATKIN_ENABLE_TESTING)
+        add_executable(test_qt test/test_qt.cpp)
+        target_link_libraries(test_qt PRIVATE qt_utils)
+
+        add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
+        add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
+        target_link_libraries(test_server PRIVATE server)
+
+        add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
+        add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
+        target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
+
+        add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
+        add_dependencies(test_client_1 ${rt_gui_EXPORTED_TARGETS})
+        target_link_libraries(test_client_1 PRIVATE qt_utils ${catkin_LIBRARIES})
+
+        add_executable(test_console test/test_console.cpp)
+        target_link_libraries(test_console PRIVATE console)
+    endif()
+
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
-install(TARGETS server_node qt_utils server
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   PATTERN ".svn" EXCLUDE)
 
-## Compile test
-if (CATKIN_ENABLE_TESTING)
-    add_executable(test_qt test/test_qt.cpp)
-    target_link_libraries(test_qt PRIVATE qt_utils)
 
-    add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
-    add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
-    target_link_libraries(test_server PRIVATE server)
-
-    add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
-    add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
-    target_link_libraries(test_client PRIVATE qt_utils ${catkin_LIBRARIES})
-
-    add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
-    add_dependencies(test_client_1 ${rt_gui_EXPORTED_TARGETS})
-    target_link_libraries(test_client_1 PRIVATE qt_utils ${catkin_LIBRARIES})
-
-    add_executable(test_console test/test_console.cpp)
-    target_link_libraries(test_console PRIVATE console)
-endif()
