@@ -17,7 +17,7 @@ public:
 
   typedef std::function<void(data_t)> fun_t;
 
-  InterfaceHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
+  InterfaceHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name, bool feedback = false)
   {
     add_srv_       = add_srv;
     update_srv_    = update_srv;
@@ -29,52 +29,12 @@ public:
     feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
 
     stop_feedback_thread_ = false;
-    feedback_thread_ = std::make_shared<std::thread>(&InterfaceHandler::feedbackLoop,this);
+    if(feedback)
+      feedback_thread_ = std::make_shared<std::thread>(&InterfaceHandler::feedbackLoop,this);
 
   }
 
-  virtual ~InterfaceHandler() { stop_feedback_thread_ = true; feedback_thread_->join(); }
-
-  virtual bool feedback()
-  {
-    if(feedback_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
-    {
-      srv_t srv;
-      for(auto tmp_map : buffer_.getBuffer())
-      {
-        auto group_name = tmp_map.first.first;
-        auto data_name = tmp_map.first.second;
-        if(buffer_.isDataChanged(group_name,data_name))
-        {
-          data_t value;
-          buffer_.getValue(group_name,data_name,value);
-          srv.request.value       = value;
-          srv.request.client_name = client_name_;
-          srv.request.group_name  = group_name;
-          srv.request.data_name   = data_name;
-          feedback_.call(srv);
-        }
-      }
-      return true;
-    }
-    else
-      return false;
-  }
-
-  void feedbackLoop()
-  {
-    while(!stop_feedback_thread_)
-    {
-      sync_mtx_.lock();
-      if(!feedback())
-      {
-         ROS_WARN("RtGuiServer::feedback service is not available!");
-         stop_feedback_thread_ = true;
-      }
-      sync_mtx_.unlock();
-      std::this_thread::sleep_for (std::chrono::seconds(1));
-    }
-  }
+  virtual ~InterfaceHandler() { stop_feedback_thread_ = true; if(feedback_thread_!=nullptr) feedback_thread_->join(); }
 
   bool update(typename srv_t::Request& req, typename srv_t::Response& res)
   {
@@ -163,6 +123,47 @@ public:
   }
 
 protected:
+
+  bool feedback()
+  {
+    if(feedback_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    {
+      srv_t srv;
+      for(auto tmp_map : buffer_.getBuffer())
+      {
+        auto group_name = tmp_map.first.first;
+        auto data_name = tmp_map.first.second;
+        if(buffer_.isDataChanged(group_name,data_name))
+        {
+          data_t value;
+          buffer_.getValue(group_name,data_name,value);
+          srv.request.value       = value;
+          srv.request.client_name = client_name_;
+          srv.request.group_name  = group_name;
+          srv.request.data_name   = data_name;
+          feedback_.call(srv);
+        }
+      }
+      return true;
+    }
+    else
+      return false;
+  }
+
+  void feedbackLoop()
+  {
+    while(!stop_feedback_thread_)
+    {
+      sync_mtx_.lock();
+      if(!feedback())
+      {
+         ROS_WARN("RtGuiServer::feedback service is not available!");
+         stop_feedback_thread_ = true;
+      }
+      sync_mtx_.unlock();
+      std::this_thread::sleep_for (std::chrono::seconds(1));
+    }
+  }
 
   bool addRawData(const std::string& group_name, const std::string& data_name, data_t* data_ptr, srv_t& srv, bool sync, bool read_only = false)
   {
@@ -369,7 +370,7 @@ public:
   typedef std::shared_ptr<LabelHandler> Ptr;
 
   LabelHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
-    :InterfaceHandler<rt_gui::Text,std::string>(node,add_srv,update_srv,feedback_srv,server_name,client_name) {}
+    :InterfaceHandler<rt_gui::Text,std::string>(node,add_srv,update_srv,feedback_srv,server_name,client_name,true) {}
 };
 
 } // namespace

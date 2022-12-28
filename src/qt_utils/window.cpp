@@ -108,6 +108,7 @@ void Window::addLabel(const QString& client_name, const QString& group_name, con
   {
     Label* label = new Label(client_name,group_name,data_name,placeholder);
     widgets_group_[group_name]->add(label);
+    // Old version with the QT timer in the widget
     //QObject::connect(label, SIGNAL(updateValue()),
     //                 this,   SLOT(labelChanged()));
     createTabs();

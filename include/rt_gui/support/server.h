@@ -33,7 +33,7 @@ public:
 
   virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
 
-  virtual bool feedback(typename srv_t::Request& /*req*/, typename srv_t::Response& /*res*/) {} // FIXME
+  virtual bool feedback(typename srv_t::Request& /*req*/, typename srv_t::Response& /*res*/) {}
 
   bool update(srv_t& srv)
   {
