@@ -51,6 +51,8 @@ public slots:
     void addRadioButton(const QString& client_name, const QString& group_name, const QString& data_name, const bool& init);
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
+    void labelFeedback(const QString& client_name, const QString& group_name, const QString& data_name, const QString& value);
+
     void textChanged(QString value);
     void labelChanged();
     void buttonChanged();
