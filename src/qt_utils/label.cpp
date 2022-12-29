@@ -23,9 +23,11 @@ Label::Label(const QString &client_name, const QString &group_name, const QStrin
   widgets_layout->addWidget(label_);
   setLayout(widgets_layout);
 
-  QTimer *timer = new QTimer(this);
-  connect(timer, SIGNAL(timeout()), this, SIGNAL(updateValue()));
-  timer->start(1000);
+  // Old version with a timer calling the update every second, this is
+  // consuming a lot of bandwidth
+  //QTimer *timer = new QTimer(this);
+  //connect(timer, SIGNAL(timeout()), this, SIGNAL(updateValue()));
+  //timer->start(1000);
 }
 
 void Label::setValue(QString value)

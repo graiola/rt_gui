@@ -108,8 +108,9 @@ void Window::addLabel(const QString& client_name, const QString& group_name, con
   {
     Label* label = new Label(client_name,group_name,data_name,placeholder);
     widgets_group_[group_name]->add(label);
-    QObject::connect(label, SIGNAL(updateValue()),
-                     this,   SLOT(labelChanged()));
+    // Old version with the QT timer in the widget
+    //QObject::connect(label, SIGNAL(updateValue()),
+    //                 this,   SLOT(labelChanged()));
     createTabs();
   }
 }
@@ -173,6 +174,19 @@ void Window::addComboBox(const QString& client_name, const QString& group_name, 
     QObject::connect(combo_box, SIGNAL(valueChanged(QString)),
                      this,   SLOT(comboBoxChanged(QString)));
     createTabs();
+  }
+}
+
+void Window::labelFeedback(const QString &/*client_name*/, const QString &group_name, const QString &data_name, const QString &value)
+{
+  if(widgets_group_.count(group_name) != 0)
+  {
+    for (int i = 0; i < widgets_group_[group_name]->getLayout()->count(); ++i)
+    {
+      QWidget *widget = widgets_group_[group_name]->getLayout()->itemAt(i)->widget();
+      if(widget != Q_NULLPTR && widget->objectName() == data_name)
+        qobject_cast<Label*>(widgets_group_[group_name]->getLayout()->itemAt(i)->widget())->setValue(value);
+    }
   }
 }
 

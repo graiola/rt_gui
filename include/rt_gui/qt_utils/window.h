@@ -43,6 +43,7 @@ public:
     Window(const QString& title, QWidget* parent = nullptr);
 
 public slots:
+    // Add slots
     void addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
     void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
     void addButton(const QString& client_name, const QString& group_name, const QString& data_name);
@@ -51,6 +52,10 @@ public slots:
     void addRadioButton(const QString& client_name, const QString& group_name, const QString& data_name, const bool& init);
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
+    // Feedback slots
+    void labelFeedback(const QString& client_name, const QString& group_name, const QString& data_name, const QString& value);
+
+    // Changed slots
     void textChanged(QString value);
     void labelChanged();
     void buttonChanged();
@@ -59,6 +64,7 @@ public slots:
     void radioButtonChanged(bool value);
     void comboBoxChanged(QString value);
 
+    // Remove slot
     void removeWidget(const QString& client_name, const QString& group_name, const QString& data_name);
 
 signals:

@@ -15,25 +15,29 @@ public:
 
   typedef std::shared_ptr<WindowServerHandler> Ptr;
 
-  WindowServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested)
+  WindowServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
   {
     //update_ = node.serviceClient<srv_t>("/"+client_name+"/"+srv_requested);
     //assert(!srv_provided_.empty());
     //assert(!srv_requested_.empty());
-    srv_provided_  = srv_provided;
-    srv_requested_ = srv_requested;
-    node_   = node;
-    add_    = node_.advertiseService(srv_provided, &WindowServerHandler::addWidget, this);
-    window_ = window;
+    add_srv_      = add_srv;
+    update_srv_   = update_srv;
+    feedback_srv_ = feedback_srv;
+    node_         = node;
+    add_          = node_.advertiseService(add_srv, &WindowServerHandler::addWidget, this);
+    feedback_     = node_.advertiseService(feedback_srv, &WindowServerHandler::feedback, this);
+    window_       = window;
   }
 
   virtual ~WindowServerHandler() {}
 
   virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
 
+  virtual bool feedback(typename srv_t::Request& /*req*/, typename srv_t::Response& /*res*/) {}
+
   bool update(srv_t& srv)
   {
-    std::string service = "/"+srv.request.client_name+"/"+srv_requested_;
+    std::string service = "/"+srv.request.client_name+"/"+update_srv_;
     if(ros::service::waitForService(service,ros::Duration(_ros_services.wait_service_secs)))
     {
       if(!ros::service::call(service,srv))
@@ -75,9 +79,11 @@ public:
 protected:
 
   ros::NodeHandle node_;
-  std::string srv_provided_;
-  std::string srv_requested_;
+  std::string add_srv_;
+  std::string update_srv_;
+  std::string feedback_srv_;
   ros::ServiceServer add_;
+  ros::ServiceServer feedback_;
   Window* window_;
 };
 
@@ -91,7 +97,7 @@ public:
 
   typedef std::shared_ptr<TriggerServerHandler> Ptr;
 
-  TriggerServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  TriggerServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res);
 
@@ -112,7 +118,7 @@ public:
 
   typedef std::shared_ptr<IntServerHandler> Ptr;
 
-  IntServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  IntServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Int::Request& req, rt_gui::Int::Response& res);
 
@@ -133,7 +139,7 @@ public:
 
   typedef std::shared_ptr<DoubleServerHandler> Ptr;
 
-  DoubleServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  DoubleServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Double::Request& req, rt_gui::Double::Response& res);
 
@@ -154,7 +160,7 @@ public:
 
   typedef std::shared_ptr<BoolServerHandler> Ptr;
 
-  BoolServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  BoolServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Bool::Request& req, rt_gui::Bool::Response& res);
 
@@ -175,7 +181,7 @@ public:
 
   typedef std::shared_ptr<ListServerHandler> Ptr;
 
-  ListServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  ListServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::List::Request& req, rt_gui::List::Response& res);
 
@@ -196,7 +202,7 @@ public:
 
   typedef std::shared_ptr<TextServerHandler> Ptr;
 
-  TextServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  TextServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
 
@@ -217,15 +223,18 @@ public:
 
   typedef std::shared_ptr<LabelServerHandler> Ptr;
 
-  LabelServerHandler(Window* window, ros::NodeHandle& node, std::string srv_provided, std::string srv_requested);
+  LabelServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
   bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+
+  bool feedback(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
 
 public slots:
   bool updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString& actual_value);
 
 signals:
   void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
+  void labelFeedback(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,13 +284,13 @@ public:
     remove_      = nh.advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
 
     handlers_                 = Handlers();
-    handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update    );
-    handlers_.int_h_          = std::make_shared<IntServerHandler>    ( window_,nh,  _ros_services.int_srvs.add    ,  _ros_services.int_srvs.update       );
-    handlers_.bool_h_         = std::make_shared<BoolServerHandler>   ( window_,nh,  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update      );
-    handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update      );
-    handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update   );
-    handlers_.text_h_         = std::make_shared<TextServerHandler>   ( window_,nh,  _ros_services.text_srvs.add   ,  _ros_services.text_srvs.update      );
-    handlers_.label_h_        = std::make_shared<LabelServerHandler>  ( window_,nh,  _ros_services.label_srvs.add  ,  _ros_services.label_srvs.update     );
+    handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );
+    handlers_.int_h_          = std::make_shared<IntServerHandler>    ( window_,nh,  _ros_services.int_srvs.add    ,  _ros_services.int_srvs.update     ,  _ros_services.int_srvs.feedback     );
+    handlers_.bool_h_         = std::make_shared<BoolServerHandler>   ( window_,nh,  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update    ,  _ros_services.bool_srvs.feedback    );
+    handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update    ,  _ros_services.list_srvs.feedback    );
+    handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update ,  _ros_services.trigger_srvs.feedback );
+    handlers_.text_h_         = std::make_shared<TextServerHandler>   ( window_,nh,  _ros_services.text_srvs.add   ,  _ros_services.text_srvs.update    ,  _ros_services.text_srvs.feedback    );
+    handlers_.label_h_        = std::make_shared<LabelServerHandler>  ( window_,nh,  _ros_services.label_srvs.add  ,  _ros_services.label_srvs.update   ,  _ros_services.label_srvs.feedback   );
 
     QObject::connect(this,       SIGNAL(removeWidget(const QString &, const QString &, const QString &)),
                      window_,    SLOT(removeWidget(const QString &, const QString &, const QString &)));

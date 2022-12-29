@@ -357,13 +357,13 @@ public:
     if(ros::service::waitForService(remove_service_name,timeout))
     {
       remove_         = global_nh.serviceClient<rt_gui::Void>(remove_service_name);
-      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,server_name,client_name);
-      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,server_name,client_name);
-      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
-      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
-      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
-      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,server_name,client_name);
-      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,server_name,client_name);
+      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
+      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,server_name,client_name);
+      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,server_name,client_name);
+      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,_ros_services.double_srvs.feedback,server_name,client_name);
+      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,_ros_services.int_srvs.feedback,server_name,client_name);
+      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,_ros_services.text_srvs.feedback,server_name,client_name);
+      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,_ros_services.label_srvs.feedback,server_name,client_name);
       init_           = true;
     }
     else
