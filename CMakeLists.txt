@@ -25,7 +25,7 @@ endif()
 ## Get custom path to QT from env
 message(STATUS "Searching QT in '${QT_PATH}'")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Get CMAKE_PREFIX_PATH from environment, and append QT_PATH
 set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
