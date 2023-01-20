@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
   bool Filter_on = false;
   bool Controller_on = true;
   int steps = 1;
+  std::string status = "Idle";
 
   std::vector<std::string> controller_list;
   controller_list.push_back("impedance");
@@ -48,9 +49,26 @@ int main(int argc, char* argv[])
     RtGuiClient::getIstance().addDouble(std::string("velocities"),std::string("V"),-100,100,&velocities);
     RtGuiClient::getIstance().addBool(std::string("velocities"),std::string("Filter"),&Filter_on);
     RtGuiClient::getIstance().addList(std::string("controllers"),std::string("type"),controller_list,&controller_type);
-    RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("status"),&Controller_on);
+    RtGuiClient::getIstance().addBool(std::string("controllers"),std::string("running"),&Controller_on);
     RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
     RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
+    RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status1"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status2"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status3"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status4"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status5"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status6"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status7"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status8"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status9"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status10"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status11"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status12"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status13"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status14"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status15"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status16"),&status);
+    //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status17"),&status);
   }
 
   // Remove a widget example:
@@ -59,13 +77,24 @@ int main(int argc, char* argv[])
   // Async example: update the data as soon as we receive the new data
   //RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps,false);
 
+  long long cnt = 0;
+
   while(ros::ok() && RtGuiClient::getIstance().isInitialized())
   {
     RtGuiClient::getIstance().sync();
 
     ROS_INFO_STREAM("Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
-                    <<" status: " <<(Controller_on ? "true" : "false") << " steps: " << steps );
+                    <<" Controller_on: " <<(Controller_on ? "true" : "false") << " steps: " << steps << " status: " << status );
 
+
+    if((cnt%100) == 0)
+    {
+      if(status == "Idle")
+        status = "Running";
+      else
+        status = "Idle";
+    }
+    cnt++;
 
     ros::Duration(0.1).sleep();
   }

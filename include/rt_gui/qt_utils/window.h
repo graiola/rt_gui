@@ -11,7 +11,7 @@ QT_END_NAMESPACE
 class DoubleSlider;
 class RadioButton;
 
-class WidgetsGroup : public QGroupBox
+class WidgetsGroup : public QScrollArea
 {
   Q_OBJECT
 
@@ -23,8 +23,13 @@ public:
 
   void remove(QWidget* widget);
 
+  QLayout* getLayout();
+
+  QSize sizeHint() const;
+
 private:
   QBoxLayout* layout_;
+  QGroupBox* group_;
 };
 
 class Window : public QWidget
@@ -38,24 +43,33 @@ public:
     Window(const QString& title, QWidget* parent = nullptr);
 
 public slots:
+    // Add slots
     void addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
+    void addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
     void addButton(const QString& client_name, const QString& group_name, const QString& data_name);
     void addDoubleSlider(const QString& client_name, const QString& group_name, const QString& data_name, const double& min, const double& max, const double& init);
     void addIntSlider(const QString& client_name, const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
     void addRadioButton(const QString& client_name, const QString& group_name, const QString& data_name, const bool& init);
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
 
+    // Feedback slots
+    void labelFeedback(const QString& client_name, const QString& group_name, const QString& data_name, const QString& value);
+
+    // Changed slots
     void textChanged(QString value);
+    void labelChanged();
     void buttonChanged();
     void intSliderChanged(int value);
     void doubleSliderChanged(double value);
     void radioButtonChanged(bool value);
     void comboBoxChanged(QString value);
 
+    // Remove slot
     void removeWidget(const QString& client_name, const QString& group_name, const QString& data_name);
 
 signals:
     void updateText(QString client_name, QString group_name, QString data_name, QString value);
+    void updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString& actual_value);
     void updateButton(QString client_name, QString group_name, QString data_name);
     void updateDoubleSlider(QString client_name, QString group_name, QString data_name, double value);
     void updateIntSlider(QString client_name, QString group_name, QString data_name, int value);
@@ -70,7 +84,6 @@ private:
     widgets_group_map_t widgets_group_;
     QTabWidget* tabs_;
     QVBoxLayout* main_layout_;
-    QGroupBox* sliders_layout_;
 
 
 };

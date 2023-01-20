@@ -5,18 +5,38 @@
 #include <rt_gui/qt_utils/combo_box.h>
 #include <rt_gui/qt_utils/button.h>
 #include <rt_gui/qt_utils/text.h>
+#include <rt_gui/qt_utils/label.h>
 
 WidgetsGroup::WidgetsGroup(const QString& /*title*/,
                            QWidget *parent)
-  : QGroupBox(parent)
+  : QScrollArea(parent)
 {
+
+  group_ = new QGroupBox(this);
+
   layout_ = new QBoxLayout(QBoxLayout::TopToBottom);
-  setLayout(layout_);
+  layout_->setSpacing(0);
+  layout_->setMargin(0);
+
+  setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  setWidgetResizable(true);
+  setWidget(group_);
+
+  group_->setLayout(layout_);
+}
+
+QSize WidgetsGroup::sizeHint() const {
+    QSize parentSize(QWidget::sizeHint());
+    return QSize(parentSize.width() + 500, parentSize.height() + 500);
 }
 
 void WidgetsGroup::add(QWidget *widget)
 {
+  widget->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding);
   layout_->addWidget(widget);
+
+  //adjustSize();
 }
 
 void WidgetsGroup::remove(QWidget *widget)
@@ -24,10 +44,17 @@ void WidgetsGroup::remove(QWidget *widget)
   layout_->removeWidget(widget);
 }
 
+QLayout *WidgetsGroup::getLayout()
+{
+  return group_->layout();
+}
+
 Window::Window(const QString& title, QWidget* parent)
   :QWidget (parent, Qt::Widget)
 {
   main_layout_ = new QVBoxLayout(this);
+  main_layout_->setSpacing(0);
+  main_layout_->setMargin(0);
   tabs_ = new QTabWidget(this);
   tabs_->setMovable(true);
 
@@ -47,9 +74,10 @@ bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& gr
     widgets_group_[group_name] = new WidgetsGroup(group_name);
 
   bool duplicated = false;
-  for (int i = 0; i < map[group_name]->layout()->count(); ++i)
+
+  for (int i = 0; i < map[group_name]->getLayout()->count(); ++i)
   {
-    QWidget *widget = map[group_name]->layout()->itemAt(i)->widget();
+    QWidget *widget = map[group_name]->getLayout()->itemAt(i)->widget();
     if(widget != Q_NULLPTR && widget->objectName() == data_name)
     {
       duplicated = true;
@@ -70,6 +98,19 @@ void Window::addText(const QString& client_name, const QString& group_name, cons
     widgets_group_[group_name]->add(text);
     QObject::connect(text, SIGNAL(valueChanged(QString)),
                      this,   SLOT(textChanged(QString)));
+    createTabs();
+  }
+}
+
+void Window::addLabel(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder)
+{
+  if(!checkIfDuplicated(widgets_group_,group_name,data_name))
+  {
+    Label* label = new Label(client_name,group_name,data_name,placeholder);
+    widgets_group_[group_name]->add(label);
+    // Old version with the QT timer in the widget
+    //QObject::connect(label, SIGNAL(updateValue()),
+    //                 this,   SLOT(labelChanged()));
     createTabs();
   }
 }
@@ -136,6 +177,19 @@ void Window::addComboBox(const QString& client_name, const QString& group_name, 
   }
 }
 
+void Window::labelFeedback(const QString &/*client_name*/, const QString &group_name, const QString &data_name, const QString &value)
+{
+  if(widgets_group_.count(group_name) != 0)
+  {
+    for (int i = 0; i < widgets_group_[group_name]->getLayout()->count(); ++i)
+    {
+      QWidget *widget = widgets_group_[group_name]->getLayout()->itemAt(i)->widget();
+      if(widget != Q_NULLPTR && widget->objectName() == data_name)
+        qobject_cast<Label*>(widgets_group_[group_name]->getLayout()->itemAt(i)->widget())->setValue(value);
+    }
+  }
+}
+
 void Window::buttonChanged()
 {
   Button* button = qobject_cast<Button*>(sender());
@@ -148,6 +202,15 @@ void Window::textChanged(QString /*value*/)
   Text* text = qobject_cast<Text*>(sender());
   if(text!=Q_NULLPTR)
     emit updateText(text->getClientName(),text->getGroupName(),text->getDataName(),text->getValue());
+}
+
+void Window::labelChanged()
+{
+  Label* label = qobject_cast<Label*>(sender());
+  QString actual_value;
+  if(label!=Q_NULLPTR)
+    emit updateLabel(label->getClientName(),label->getGroupName(),label->getDataName(),label->getValue(),actual_value);
+  label->setValue(actual_value);
 }
 
 void Window::intSliderChanged(int /*value*/)
@@ -182,9 +245,9 @@ void Window::removeWidget(const QString &/*client_name*/, const QString &group_n
 {
   if(widgets_group_.count(group_name) != 0)
   {
-    for (int i = 0; i < widgets_group_[group_name]->layout()->count(); ++i)
+    for (int i = 0; i < widgets_group_[group_name]->getLayout()->count(); ++i)
     {
-      QWidget *widget = widgets_group_[group_name]->layout()->itemAt(i)->widget();
+      QWidget *widget = widgets_group_[group_name]->getLayout()->itemAt(i)->widget();
       if(widget != Q_NULLPTR && widget->objectName() == data_name)
       {
         widgets_group_[group_name]->remove(widget);
@@ -193,7 +256,7 @@ void Window::removeWidget(const QString &/*client_name*/, const QString &group_n
       }
     }
   }
-  if(widgets_group_[group_name]->layout()->count() == 0)
+  if(widgets_group_[group_name]->getLayout()->count() == 0 || data_name.isEmpty())
     delete widgets_group_[group_name];
 }
 

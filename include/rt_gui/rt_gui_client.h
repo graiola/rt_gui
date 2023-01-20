@@ -48,20 +48,25 @@ public:
       return false;
   }
 
-  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int data, std::function<void(int)> fun, bool sync = true)
-  {
-    if(check())
-      return int_h_->add(group_name,data_name,min,max,data,fun,sync);
-    else
-      return false;
-  }
-
   bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
   {
     if(check())
     {
       int init_value;
       if(loadFromServer(group_name,data_name,init_value) && int_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int init_value, std::function<void(int)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(int_h_->add(group_name,data_name,min,max,init_value,fun,sync))
         return true;
       else
         return false;
@@ -115,20 +120,25 @@ public:
       return false;
   }
 
-  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double data, std::function<void(double)> fun, bool sync = true)
-  {
-    if(check())
-      return double_h_->add(group_name,data_name,min,max,data,fun,sync);
-    else
-      return false;
-  }
-
   bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
   {
     if(check())
     {
-      int init_value;
+      double init_value;
       if(loadFromServer(group_name,data_name,init_value) && double_h_->add(group_name,data_name,min,max,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double init_value, std::function<void(double)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(double_h_->add(group_name,data_name,min,max,init_value,fun,sync))
         return true;
       else
         return false;
@@ -185,6 +195,19 @@ public:
       return false;
   }
 
+  bool addBool(const std::string& group_name, const std::string& data_name, bool init_value, std::function<void(bool)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(bool_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
   bool addBool(const std::string& group_name, const std::string& data_name, bool* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     if(check())
@@ -231,6 +254,19 @@ public:
       return false;
   }
 
+  bool addList(const std::string& group_name, const std::string& data_name, std::string init_value, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(list_h_->add(group_name,data_name,list,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
   bool addText(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     if(check())
@@ -257,10 +293,43 @@ public:
       return false;
   }
 
+  bool addText(const std::string& group_name, const std::string& data_name, std::string init_value, std::function<void(std::string)> fun, bool sync = true)
+  {
+    if(check())
+    {
+      if(text_h_->add(group_name,data_name,init_value,fun,sync))
+        return true;
+      else
+        return false;
+    }
+    else
+      return false;
+  }
+
+  bool addLabel(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool load_init_from_server = false)
+  {
+    if(check())
+    {
+      if(load_init_from_server)
+        loadFromServer(group_name,data_name,*data_ptr);
+      return label_h_->add(group_name,data_name,data_ptr,false,true);
+    }
+    else
+      return false;
+  }
+
   bool remove(const std::string& group_name, const std::string& data_name)
   {
     rt_gui::Void srv;
     srv.request.data_name = data_name;
+    srv.request.group_name = group_name;
+    return remove_.call(srv);
+  }
+
+  bool remove(const std::string& group_name)
+  {
+    rt_gui::Void srv;
+    srv.request.data_name = "";
     srv.request.group_name = group_name;
     return remove_.call(srv);
   }
@@ -274,6 +343,7 @@ public:
       bool_h_->sync();
       list_h_->sync();
       text_h_->sync();
+      label_h_->sync();
     }
     else {
       ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
@@ -283,15 +353,17 @@ public:
   bool init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
     std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
+    ros::NodeHandle global_nh;
     if(ros::service::waitForService(remove_service_name,timeout))
     {
-      remove_         = nh.serviceClient<rt_gui::Void>(remove_service_name);
-      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,server_name,client_name);
-      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,server_name,client_name);
-      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,server_name,client_name);
-      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,server_name,client_name);
-      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,server_name,client_name);
-      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,server_name,client_name);
+      remove_         = global_nh.serviceClient<rt_gui::Void>(remove_service_name);
+      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
+      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,server_name,client_name);
+      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,server_name,client_name);
+      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,_ros_services.double_srvs.feedback,server_name,client_name);
+      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,_ros_services.int_srvs.feedback,server_name,client_name);
+      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,_ros_services.text_srvs.feedback,server_name,client_name);
+      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,_ros_services.label_srvs.feedback,server_name,client_name);
       init_           = true;
     }
     else
@@ -360,6 +432,7 @@ private:
   ListHandler::Ptr list_h_;
   TriggerHandler::Ptr trigger_h_;
   TextHandler::Ptr text_h_;
+  LabelHandler::Ptr label_h_;
   ros::ServiceClient remove_;
   bool init_;
 
