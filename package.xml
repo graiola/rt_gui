@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<package format="2">
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>rt_gui</name>
   <version>0.0.1</version>
   <description>The real time gui package</description>
@@ -8,9 +9,8 @@
 
   <license>Apache-2.0</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
-  <exec_depend>message_runtime</exec_depend>
-  <exec_depend>rospy</exec_depend>
+  <buildtool_depend condition="$ament_cmake_FOUND == true">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$catkin_FOUND == true">catkin</buildtool_depend>
+  <member_of_group condition="$ament_cmake_FOUND == true">rosidl_interface_packages</member_of_group>
 
 </package>
