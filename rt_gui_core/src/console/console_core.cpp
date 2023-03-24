@@ -1,4 +1,4 @@
-#include <rt_gui/console/console_core.h>
+#include <rt_gui_core/console/console_core.h>
 
 namespace newline {
 

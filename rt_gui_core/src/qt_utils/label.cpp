@@ -1,4 +1,4 @@
-#include <rt_gui/qt_utils/label.h>
+#include <rt_gui_core/qt_utils/label.h>
 #include <QStyle>
 #include <QTimer>
 

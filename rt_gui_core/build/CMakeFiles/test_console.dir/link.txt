@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++17 -Wmaybe-uninitialized -Wuninitialized   CMakeFiles/test_console.dir/test_console_autogen/mocs_compilation.cpp.o CMakeFiles/test_console.dir/test/test_console.cpp.o  -o test_console  libconsole.a -lreadline -lpthread 

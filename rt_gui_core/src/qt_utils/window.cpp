@@ -1,11 +1,11 @@
-#include <rt_gui/qt_utils/double_slider.h>
-#include <rt_gui/qt_utils/int_slider.h>
-#include <rt_gui/qt_utils/radio_button.h>
-#include <rt_gui/qt_utils/window.h>
-#include <rt_gui/qt_utils/combo_box.h>
-#include <rt_gui/qt_utils/button.h>
-#include <rt_gui/qt_utils/text.h>
-#include <rt_gui/qt_utils/label.h>
+#include <rt_gui_core/qt_utils/double_slider.h>
+#include <rt_gui_core/qt_utils/int_slider.h>
+#include <rt_gui_core/qt_utils/radio_button.h>
+#include <rt_gui_core/qt_utils/window.h>
+#include <rt_gui_core/qt_utils/combo_box.h>
+#include <rt_gui_core/qt_utils/button.h>
+#include <rt_gui_core/qt_utils/text.h>
+#include <rt_gui_core/qt_utils/label.h>
 
 WidgetsGroup::WidgetsGroup(const QString& /*title*/,
                            QWidget *parent)

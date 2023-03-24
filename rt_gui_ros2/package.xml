@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rt_gui</name>
+  <name>rt_gui_ros2</name>
   <version>0.0.1</version>
-  <description>The real time gui package</description>
+  <description>The ROS2 wrapper for the real time gui package</description>
 
   <maintainer email="gennaro.raiola@gmail.com">graiola</maintainer>
 
   <license>Apache-2.0</license>
 
-  <buildtool_depend condition="$ament_cmake_FOUND == true">ament_cmake</buildtool_depend>
-  <buildtool_depend condition="$catkin_FOUND == true">catkin</buildtool_depend>
-  <member_of_group condition="$ament_cmake_FOUND == true">rosidl_interface_packages</member_of_group>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>geometry_msgs</depend>
-  <depend>std_msgs</depend>
+  <depend>rclpy</depend>
+  <depend>rclcpp</depend>
+  <depend>rt_gui_msgs</depend>
+  <depend>rt_gui_core</depend>
 
-  <exec_depend condition="$catkin_FOUND == true">generate_messages</exec_depend>
-
+  <member_of_group>rosidl_interface_packages</member_of_group>
 
 </package>

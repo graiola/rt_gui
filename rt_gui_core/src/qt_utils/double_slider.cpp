@@ -1,4 +1,4 @@
-#include <rt_gui/qt_utils/double_slider.h>
+#include <rt_gui_core/qt_utils/double_slider.h>
 
 DoubleSlider::DoubleSlider(const QString &client_name, const QString &group_name, const QString &data_name, const double& min, const double& max, const double& init,
                QWidget *parent)

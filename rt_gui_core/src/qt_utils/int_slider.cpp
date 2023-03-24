@@ -1,4 +1,4 @@
-#include <rt_gui/qt_utils/int_slider.h>
+#include <rt_gui_core/qt_utils/int_slider.h>
 
 IntSlider::IntSlider(const QString &client_name, const QString &group_name, const QString &data_name, const int& min, const int& max, const int& init,
                QWidget *parent)

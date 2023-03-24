@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10.2)
-project(rt_gui)
+cmake_minimum_required(VERSION 3.5)
+project(rt_gui_core)
 
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
@@ -23,201 +23,71 @@ else()
 endif()
 
 ## Get custom path to QT from env
-message(STATUS "Searching QT in '${QT_PATH}'")
+#message(STATUS "Searching QT in '${QT_PATH}'")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Get CMAKE_PREFIX_PATH from environment, and append QT_PATH
-set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
-#FIXME string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
-list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
+#set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+#string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+#list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} QUIET)
 find_package(Qwt ${MINIMUM_QT_VERSION} QUIET)
-
-find_package(catkin QUIET)
-find_package(ament_cmake QUIET)
-
-if(${catkin_FOUND})
-
-    add_definitions(-DROS1)
-
-    find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
-
-    catkin_python_setup()
-
-    add_service_files(
-      FILES
-      Bool.srv
-      Double.srv
-      Int.srv
-      List.srv
-      Void.srv
-      Text.srv
-    )
-
-    generate_messages()
-
-    catkin_package(
-      INCLUDE_DIRS include
-      LIBRARIES qt_utils server
-      CATKIN_DEPENDS
-    )
-
-    include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
-        ${QWT_INCLUDE_DIRS}
-    )
-
-    set(LIB_DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-    set(INCLUDE_DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-    set(SHARE_DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-    set(BIN_DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    set(INCLUDE_DIR include/${PROJECT_NAME}/)
-    set(LIBRARIES ${catkin_LIBRARIES})
-
-elseif(${ament_cmake_FOUND})
-
-    add_definitions(-DROS2)
-
-    find_package(ament_cmake_python REQUIRED)
-
-    find_package(rclpy REQUIRED)
-    find_package(rclcpp REQUIRED)
-    find_package(std_msgs REQUIRED)
-    find_package(std_srvs REQUIRED)
-    find_package(rosidl_default_generators REQUIRED)
-
-    rosidl_generate_interfaces(${PROJECT_NAME}
-        "srv/Bool.srv"
-        "srv/Double.srv"
-        "srv/Int.srv"
-        "srv/List.srv"
-        "srv/Void.srv"
-        "srv/Text.srv"
-        DEPENDENCIES std_msgs std_srvs
-      )
-
-    # Install Python modules
-    ament_python_install_package(bindings/${PROJECT_NAME})
-
-    include_directories(
-        include
-        ${rclpy_INCLUDE_DIRS}
-        ${rclcpp_INCLUDE_DIRS}
-        ${std_msgs_INCLUDE_DIRS}
-        ${std_srvs_INCLUDE_DIRS}
-        ${QWT_INCLUDE_DIRS}
-    )
-
-    set(LIB_DESTINATION lib)
-    set(INCLUDE_DESTINATION include)
-    set(SHARE_DESTINATION share)
-    set(BIN_DESTINATION bin)
-    set(INCLUDE_DIR include/${PROJECT_NAME})
-    set(LIBRARIES rclcpp std_msgs std_srvs)
-
-    ament_export_include_directories(include)
-    ament_export_libraries(console server qt_utils)
-    ament_export_dependencies(rosidl_default_runtime)
-
-    ament_package()
-
-else()
-
-  set(LIB_DESTINATION /usr/local/lib)
-  set(INCLUDE_DESTINATION /usr/local/include)
-  set(SHARE_DESTINATION /usr/local/share)
-  set(BIN_DESTINATION /usr/local/bin)
-  set(INCLUDE_DIR include/${PROJECT_NAME}/)
-
-endif()
 
 if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
 
     message(STATUS "Compiling QT related code")
 
+    include_directories(
+        include
+        ${QWT_INCLUDE_DIRS}
+    )
+
     ## Compile qt_utils lib
-    include(src/qt_utils/qt_utils.cmake)
+    add_library(qt_utils SHARED
+        include/${PROJECT_NAME}/qt_utils/window.h
+        include/${PROJECT_NAME}/qt_utils/double_slider.h
+        include/${PROJECT_NAME}/qt_utils/int_slider.h
+        include/${PROJECT_NAME}/qt_utils/radio_button.h
+        include/${PROJECT_NAME}/qt_utils/combo_box.h
+        include/${PROJECT_NAME}/qt_utils/button.h
+        include/${PROJECT_NAME}/qt_utils/text.h
+        include/${PROJECT_NAME}/qt_utils/label.h
+        src/qt_utils/window.cpp
+        src/qt_utils/double_slider.cpp
+        src/qt_utils/int_slider.cpp
+        src/qt_utils/radio_button.cpp
+        src/qt_utils/combo_box.cpp
+        src/qt_utils/button.cpp
+        src/qt_utils/text.cpp
+        src/qt_utils/label.cpp
+        )
+    target_link_libraries(qt_utils PUBLIC Qt5::Widgets ${QWT_LIBRARIES})
 
     ## Compile console lib
     add_library(console src/console/console_core.cpp src/console/console.cpp)
-    target_link_libraries(console readline pthread)
+    target_link_libraries(console PUBLIC readline pthread)
 
-    ## Compile server lib
-    add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
-    target_link_libraries(server qt_utils ${LIBRARIES})
+    ## Compile test_qt
+    add_executable(test_qt test/test_qt.cpp)
+    target_link_libraries(test_qt PUBLIC qt_utils)
 
-    if(${catkin_FOUND})
-        add_dependencies(server ${rt_gui_EXPORTED_TARGETS})
-    elseif(${ament_cmake_FOUND})
-        rosidl_target_interfaces(server ${PROJECT_NAME} "rosidl_typesupport_cpp")
-    endif()
+    ## Compile test_console
+    add_executable(test_console test/test_console.cpp)
+    target_link_libraries(test_console PUBLIC console)
 
+    ## Install
+    install(
+      DIRECTORY include/${PROJECT_NAME}
+      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+    )
 
-    ## Compile the server node
-    #add_executable(server_node src/server_node.cpp)
-    #FIXME add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
-    #target_link_libraries(server_node PRIVATE server)
-
-    ## Bindings
-    #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
-    #find_package(pybind11 QUIET)
-    #message(STATUS "check for pybind11")
-    #if(${pybind11_FOUND})
-    #    message(STATUS "compiling python bindings")
-    #    # Server
-    #    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
-    #    target_link_libraries(py_server PRIVATE server)
-    #    install(TARGETS py_server
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Client
-    #    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
-    #    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
-    #    install(TARGETS py_client
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Tests
-    #    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
-    #                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    #else()
-    #    message(STATUS "pybind not found")
-    #endif()
-    #
-    #install(TARGETS server_node qt_utils server
-    #  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    #  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    #  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    #)
-
-    ## Compile test
-    #if (CATKIN_ENABLE_TESTING)
-    #    add_executable(test_qt test/test_qt.cpp)
-    #    target_link_libraries(test_qt PRIVATE qt_utils)
-    #
-    #    add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
-    #    add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_server PRIVATE server)
-    #
-    #    add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
-    #    add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_client PRIVATE qt_utils ${LIBRARIES})
-    #
-    #    add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
-    #    add_dependencies(test_client_1 ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_client_1 PRIVATE qt_utils ${LIBRARIES})
-    #
-    #    add_executable(test_console test/test_console.cpp)
-    #    target_link_libraries(test_console PRIVATE console)
-    #endif()
+    install(
+      TARGETS test_console test_qt console qt_utils
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    )
 
 endif()
-
-install(DIRECTORY ${INCLUDE_DIR}
-        DESTINATION ${INCLUDE_DESTINATION})
-
-install(DIRECTORY launch/
-  DESTINATION ${SHARE_DESTINATION}/launch
-  PATTERN ".svn" EXCLUDE)
-
-

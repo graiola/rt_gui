@@ -1,0 +1,2 @@
+/usr/bin/ar qc libconsole.a  CMakeFiles/console.dir/console_autogen/mocs_compilation.cpp.o CMakeFiles/console.dir/src/console/console_core.cpp.o CMakeFiles/console.dir/src/console/console.cpp.o
+/usr/bin/ranlib libconsole.a

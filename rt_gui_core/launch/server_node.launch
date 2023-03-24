@@ -1,4 +1,0 @@
-<?xml version="1.0" ?>
-<launch>
-    <node name="server_node" pkg="rt_gui" type="server_node" output="screen" />
-</launch>

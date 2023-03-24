@@ -1,4 +1,4 @@
-#include <rt_gui/qt_utils/text.h>
+#include <rt_gui_core/qt_utils/text.h>
 #include <QStyle>
 
 Text::Text(const QString &client_name, const QString &group_name, const QString &data_name, const QString &placeholder, QWidget *parent)
