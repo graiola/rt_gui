@@ -29,17 +29,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Get CMAKE_PREFIX_PATH from environment, and append QT_PATH
 set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
-string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
+#FIXME string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
 list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
 
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} QUIET)
 find_package(Qwt ${MINIMUM_QT_VERSION} QUIET)
-find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
 find_package(catkin QUIET)
 find_package(ament_cmake QUIET)
 
 if(${catkin_FOUND})
+
+    add_definitions(-DROS1)
 
     find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
@@ -78,15 +79,37 @@ if(${catkin_FOUND})
 
 elseif(${ament_cmake_FOUND})
 
-    # Install Python modules
+    add_definitions(-DROS2)
+
     find_package(ament_cmake_python REQUIRED)
 
     find_package(rclpy REQUIRED)
     find_package(rclcpp REQUIRED)
     find_package(std_msgs REQUIRED)
     find_package(std_srvs REQUIRED)
+    find_package(rosidl_default_generators REQUIRED)
 
-    ament_python_install_package(${PROJECT_NAME})
+    rosidl_generate_interfaces(${PROJECT_NAME}
+        "srv/Bool.srv"
+        "srv/Double.srv"
+        "srv/Int.srv"
+        "srv/List.srv"
+        "srv/Void.srv"
+        "srv/Text.srv"
+        DEPENDENCIES std_msgs std_srvs
+      )
+
+    # Install Python modules
+    ament_python_install_package(bindings/${PROJECT_NAME})
+
+    include_directories(
+        include
+        ${rclpy_INCLUDE_DIRS}
+        ${rclcpp_INCLUDE_DIRS}
+        ${std_msgs_INCLUDE_DIRS}
+        ${std_srvs_INCLUDE_DIRS}
+        ${QWT_INCLUDE_DIRS}
+    )
 
     set(LIB_DESTINATION lib)
     set(INCLUDE_DESTINATION include)
@@ -96,7 +119,8 @@ elseif(${ament_cmake_FOUND})
     set(LIBRARIES rclcpp std_msgs std_srvs)
 
     ament_export_include_directories(include)
-    ament_export_libraries(lidcam_2Dto3D artifacts_manager)
+    ament_export_libraries(console server qt_utils)
+    ament_export_dependencies(rosidl_default_runtime)
 
     ament_package()
 
@@ -125,10 +149,17 @@ if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
     add_library(server include/rt_gui/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
     target_link_libraries(server qt_utils ${LIBRARIES})
 
+    if(${catkin_FOUND})
+        add_dependencies(server ${rt_gui_EXPORTED_TARGETS})
+    elseif(${ament_cmake_FOUND})
+        rosidl_target_interfaces(server ${PROJECT_NAME} "rosidl_typesupport_cpp")
+    endif()
+
+
     ## Compile the server node
-    add_executable(server_node src/server_node.cpp)
-    add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
-    target_link_libraries(server_node PRIVATE server)
+    #add_executable(server_node src/server_node.cpp)
+    #FIXME add_dependencies(server_node ${rt_gui_EXPORTED_TARGETS})
+    #target_link_libraries(server_node PRIVATE server)
 
     ## Bindings
     #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)

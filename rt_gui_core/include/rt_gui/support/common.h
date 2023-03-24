@@ -1,14 +1,21 @@
 #ifndef RT_GUI_SUPPORT_COMMON_H
 #define RT_GUI_SUPPORT_COMMON_H
 
+#ifdef ROS1
 #include <ros/ros.h>
-
 #include <rt_gui/Bool.h>
 #include <rt_gui/Double.h>
 #include <rt_gui/Int.h>
 #include <rt_gui/List.h>
 #include <rt_gui/Void.h>
 #include <rt_gui/Text.h>
+#define ROS ros
+#else
+#include <rclcpp/rclcpp.hpp>
+#define ROS rclcpp
+#endif
+
+#include <rt_gui/srv/bool.hpp>
 
 #include <memory>
 #include <atomic>
@@ -199,8 +206,11 @@ struct
 
 } _ros_services;
 
+
+template <class ros_t>
 class RosNode
 {
+
 public:
   RosNode(const std::string& ros_node_name, const unsigned int& n_threads)
   {
@@ -217,7 +227,7 @@ public:
     int argc = 1;
     char* arg0 = strdup(ros_node_name.c_str());
     char* argv[] = {arg0, nullptr};
-    ros::init(argc, argv, ros_node_name,ros::init_options::NoSigintHandler);
+    ros_t::init(argc, argv, ros_node_name,ros::init_options::NoSigintHandler);
     free(arg0);
 
     if(ros::master::check())
@@ -244,7 +254,7 @@ public:
     }
   }
 
-  ros::NodeHandle& getNode()
+  ros_t::NodeHandle& getNode()
   {
     if(init_ == true)
       return *ros_nh_.get();
@@ -275,8 +285,8 @@ public:
 
 protected:
   bool init_;
-  std::shared_ptr<ros::NodeHandle> ros_nh_;
-  std::unique_ptr<ros::AsyncSpinner> spinner_;
+  std::shared_ptr<ros_t::NodeHandle> ros_nh_;
+  std::unique_ptr<ros_t::AsyncSpinner> spinner_;
 };
 
 } // namespace
