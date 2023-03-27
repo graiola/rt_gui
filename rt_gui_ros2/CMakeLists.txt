@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.5)
 project(rt_gui_ros2)
 
 include(CheckCXXCompilerFlag)

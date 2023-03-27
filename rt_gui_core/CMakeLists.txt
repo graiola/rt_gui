@@ -22,72 +22,67 @@ else()
     set(MINIMUM_QT_VERSION 5.5)
 endif()
 
-## Get custom path to QT from env
-#message(STATUS "Searching QT in '${QT_PATH}'")
-
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-# Get CMAKE_PREFIX_PATH from environment, and append QT_PATH
-#set(CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
-#string(REPLACE ":" ";" CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
-#list(APPEND CMAKE_PREFIX_PATH ${QT_PATH})
+find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
+find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
+find_package(catkin QUIET)
+find_package(ament_cmake QUIET)
 
-find_package(Qt5Widgets ${MINIMUM_QT_VERSION} QUIET)
-find_package(Qwt ${MINIMUM_QT_VERSION} QUIET)
-
-if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
-
-    message(STATUS "Compiling QT related code")
-
-    include_directories(
-        include
-        ${QWT_INCLUDE_DIRS}
-    )
-
-    ## Compile qt_utils lib
-    add_library(qt_utils SHARED
-        include/${PROJECT_NAME}/qt_utils/window.h
-        include/${PROJECT_NAME}/qt_utils/double_slider.h
-        include/${PROJECT_NAME}/qt_utils/int_slider.h
-        include/${PROJECT_NAME}/qt_utils/radio_button.h
-        include/${PROJECT_NAME}/qt_utils/combo_box.h
-        include/${PROJECT_NAME}/qt_utils/button.h
-        include/${PROJECT_NAME}/qt_utils/text.h
-        include/${PROJECT_NAME}/qt_utils/label.h
-        src/qt_utils/window.cpp
-        src/qt_utils/double_slider.cpp
-        src/qt_utils/int_slider.cpp
-        src/qt_utils/radio_button.cpp
-        src/qt_utils/combo_box.cpp
-        src/qt_utils/button.cpp
-        src/qt_utils/text.cpp
-        src/qt_utils/label.cpp
-        )
-    target_link_libraries(qt_utils PUBLIC Qt5::Widgets ${QWT_LIBRARIES})
-
-    ## Compile console lib
-    add_library(console src/console/console_core.cpp src/console/console.cpp)
-    target_link_libraries(console PUBLIC readline pthread)
-
-    ## Compile test_qt
-    add_executable(test_qt test/test_qt.cpp)
-    target_link_libraries(test_qt PUBLIC qt_utils)
-
-    ## Compile test_console
-    add_executable(test_console test/test_console.cpp)
-    target_link_libraries(test_console PUBLIC console)
-
-    ## Install
-    install(
-      DIRECTORY include/${PROJECT_NAME}
-      DESTINATION ${CMAKE_INSTALL_PREFIX}/include
-    )
-
-    install(
-      TARGETS test_console test_qt console qt_utils
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
-      RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-    )
-
+if(${catkin_FOUND})
+    catkin_package(INCLUDE_DIRS include LIBRARIES qt_utils console DEPENDS pthread readline Qwt Qt5Widgets)
+elseif(${ament_cmake_FOUND})
+    ament_package()
 endif()
+
+include_directories(
+    include
+    ${QWT_INCLUDE_DIRS}
+    ${Qt5Widgets_INCLUDE_DIRS}
+)
+
+## Compile qt_utils lib
+add_library(qt_utils SHARED
+    include/${PROJECT_NAME}/qt_utils/window.h
+    include/${PROJECT_NAME}/qt_utils/double_slider.h
+    include/${PROJECT_NAME}/qt_utils/int_slider.h
+    include/${PROJECT_NAME}/qt_utils/radio_button.h
+    include/${PROJECT_NAME}/qt_utils/combo_box.h
+    include/${PROJECT_NAME}/qt_utils/button.h
+    include/${PROJECT_NAME}/qt_utils/text.h
+    include/${PROJECT_NAME}/qt_utils/label.h
+    src/qt_utils/window.cpp
+    src/qt_utils/double_slider.cpp
+    src/qt_utils/int_slider.cpp
+    src/qt_utils/radio_button.cpp
+    src/qt_utils/combo_box.cpp
+    src/qt_utils/button.cpp
+    src/qt_utils/text.cpp
+    src/qt_utils/label.cpp
+    )
+target_link_libraries(qt_utils PUBLIC Qt5::Widgets ${QWT_LIBRARIES})
+
+## Compile console lib
+add_library(console src/console/console_core.cpp src/console/console.cpp)
+target_link_libraries(console PUBLIC readline pthread)
+
+## Compile test_qt
+add_executable(test_qt test/test_qt.cpp)
+target_link_libraries(test_qt PUBLIC qt_utils)
+
+## Compile test_console
+add_executable(test_console test/test_console.cpp)
+target_link_libraries(test_console PUBLIC console)
+
+## Install
+install(
+  DIRECTORY include/${PROJECT_NAME}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+)
+
+install(
+  TARGETS test_console test_qt console qt_utils
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+)
