@@ -6,6 +6,10 @@ int main(int argc, char **argv)
 
   rt_gui::RosNode node("test_rosnode",3);
 
+  rt_gui_msgs::srv::Void srv;
+
+  srv::Request.group_name = "pippo";
+
  //rclcpp::Service<example_interfaces::srv::AddTwoInts>::SharedPtr service =
  //  node->create_service<example_interfaces::srv::AddTwoInts>("add_two_ints", &add);
  //

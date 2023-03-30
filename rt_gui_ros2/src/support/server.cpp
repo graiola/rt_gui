@@ -1,11 +1,12 @@
 #include <rt_gui_ros2/support/server.h>
+#include <chrono>
 
 using namespace rt_gui;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TriggerServerHandler::TriggerServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Void,bool>(window,node,add_srv,update_srv,feedback_srv)
+TriggerServerHandler::TriggerServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Void,bool>(window,node,add_srv,update_srv,feedback_srv)
 {
 
   QObject::connect(this,    SIGNAL(addButton(const QString&, const QString&, const QString&)),
@@ -15,32 +16,38 @@ TriggerServerHandler::TriggerServerHandler(Window* window, ros::NodeHandle& node
                    this,    SLOT(updateButton(QString, QString, QString)));
 }
 
-bool TriggerServerHandler::addWidget(rt_gui_msgs::Void::Request& req, rt_gui_msgs::Void::Response& /*res*/)
+bool TriggerServerHandler::addWidget(rt_gui_msgs::srv::Void::Request::Ptr req, rt_gui_msgs::srv::Void::Response::Ptr /*res*/)
 {
-  emit addButton(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
+  emit addButton(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name));
   // FIXME add a proper error handling
   return true;
 }
 
 bool TriggerServerHandler::updateButton(QString client_name, QString group_name, QString data_name)
 {
-  rt_gui_msgs::Void srv;
-  srv.request.client_name = client_name.toStdString();
-  srv.request.data_name   = data_name.toStdString();
-  srv.request.group_name  = group_name.toStdString();
 
-  std::string service = "/"+srv.request.client_name+"/"+update_srv_;
-  if(ros::service::waitForService(service,ros::Duration(_ros_services.wait_service_secs)))
+  auto srv_req = std::make_shared<rt_gui_msgs::srv::Void::Request>();
+  srv_req->client_name = client_name.toStdString();
+  srv_req->data_name   = data_name.toStdString();
+  srv_req->group_name  = group_name.toStdString();
+
+  std::string service = "/"+srv_req->client_name+"/"+update_srv_;
+
+  rclcpp::Client<rt_gui_msgs::srv::Void>::SharedPtr client =
+      node_->create_client<rt_gui_msgs::srv::Void>(service);
+
+  if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
   {
-    if(!ros::service::call(service,srv))
-    {
-      ROS_WARN("RtGuiClient::update::resp is false!");
-      return false;
-    }
+    auto result = client->async_send_request(srv_req);
+    //if(!result)
+    //{
+    //  RCLCPP_WARN("RtGuiClient::update::resp is false!");
+    //  return false;
+    //}
   }
   else
   {
-    ROS_WARN("RtGuiClient::update service is not available!");
+     //RCLCPP_WARN("RtGuiClient::update service is not available!");
     return false;
   }
   return true;
@@ -48,8 +55,8 @@ bool TriggerServerHandler::updateButton(QString client_name, QString group_name,
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-IntServerHandler::IntServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Int,int>(window,node,add_srv,update_srv,feedback_srv)
+IntServerHandler::IntServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Int,int>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addIntSlider(const QString&, const QString&, const QString&, const int&, const int&, const int&)),
                    window_, SLOT(addIntSlider(const QString&, const QString&, const QString&, const int&, const int&, const int&)));
@@ -58,9 +65,9 @@ IntServerHandler::IntServerHandler(Window* window, ros::NodeHandle& node, std::s
                    this,    SLOT(updateIntSlider(QString, QString, QString, int)));
 }
 
-bool IntServerHandler::addWidget(rt_gui_msgs::Int::Request& req, rt_gui_msgs::Int::Response& /*res*/)
+bool IntServerHandler::addWidget(rt_gui_msgs::srv::Int::Request::Ptr req, rt_gui_msgs::srv::Int::Response::Ptr /*res*/)
 {
-  emit addIntSlider(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
+  emit addIntSlider(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),req->min,req->max,req->value);
   // FIXME add a proper error handling
   return true;
 }
@@ -73,8 +80,8 @@ bool IntServerHandler::updateIntSlider(QString client_name, QString group_name, 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DoubleServerHandler::DoubleServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Double,double>(window,node,add_srv,update_srv,feedback_srv)
+DoubleServerHandler::DoubleServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Double,double>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addDoubleSlider(const QString&, const QString&, const QString&, const double&, const double&, const double&)),
                    window_, SLOT(addDoubleSlider(const QString&, const QString&, const QString&, const double&, const double&, const double&)));
@@ -83,9 +90,9 @@ DoubleServerHandler::DoubleServerHandler(Window* window, ros::NodeHandle& node, 
                    this,    SLOT(updateDoubleSlider(QString, QString, QString, double)));
 }
 
-bool DoubleServerHandler::addWidget(rt_gui_msgs::Double::Request& req, rt_gui_msgs::Double::Response& /*res*/)
+bool DoubleServerHandler::addWidget(rt_gui_msgs::srv::Double::Request::Ptr req, rt_gui_msgs::srv::Double::Response::Ptr /*res*/)
 {
-  emit addDoubleSlider(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.min,req.max,req.value);
+  emit addDoubleSlider(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),req->min,req->max,req->value);
   // FIXME add a proper error handling
   return true;
 }
@@ -97,8 +104,8 @@ bool DoubleServerHandler::updateDoubleSlider(QString client_name, QString group_
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-BoolServerHandler::BoolServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Bool,bool>(window,node,add_srv,update_srv,feedback_srv)
+BoolServerHandler::BoolServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Bool,bool>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addRadioButton(const QString&, const QString&, const QString&, const bool&)),
                    window_, SLOT(addRadioButton(const QString&, const QString&, const QString&, const bool&)));
@@ -107,9 +114,9 @@ BoolServerHandler::BoolServerHandler(Window* window, ros::NodeHandle& node, std:
                    this,    SLOT(updateRadioButton(QString, QString, QString, bool)));
 }
 
-bool BoolServerHandler::addWidget(rt_gui_msgs::Bool::Request& req, rt_gui_msgs::Bool::Response& /*res*/)
+bool BoolServerHandler::addWidget(rt_gui_msgs::srv::Bool::Request::Ptr req, rt_gui_msgs::srv::Bool::Response::Ptr /*res*/)
 {
-  emit addRadioButton(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),req.value);
+  emit addRadioButton(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),req->value);
   // FIXME add a proper error handling
   return true;
 }
@@ -121,8 +128,8 @@ bool BoolServerHandler::updateRadioButton(QString client_name, QString group_nam
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ListServerHandler::ListServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::List,std::string>(window,node,add_srv,update_srv,feedback_srv)
+ListServerHandler::ListServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::List,std::string>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addComboBox(const QString&, const QString&, const QString&, const QStringList&, const QString&)),
                    window_, SLOT(addComboBox(const QString&, const QString&, const QString&, const QStringList&, const QString&)));
@@ -131,12 +138,12 @@ ListServerHandler::ListServerHandler(Window* window, ros::NodeHandle& node, std:
                    this,    SLOT(updateComboBox(QString, QString, QString, QString)));
 }
 
-bool ListServerHandler::addWidget(rt_gui_msgs::List::Request& req, rt_gui_msgs::List::Response& /*res*/)
+bool ListServerHandler::addWidget(rt_gui_msgs::srv::List::Request::Ptr req, rt_gui_msgs::srv::List::Response::Ptr /*res*/)
 {
   QStringList list;
-  for(unsigned int i=0;i<req.list.size();i++)
-    list.push_back(QString::fromStdString(req.list[i]));
-  emit addComboBox(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,QString::fromStdString(req.value));
+  for(unsigned int i=0;i<req->list.size();i++)
+    list.push_back(QString::fromStdString(req->list[i]));
+  emit addComboBox(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),list,QString::fromStdString(req->value));
   // FIXME add a proper error handling
   return true;
 }
@@ -148,8 +155,8 @@ bool ListServerHandler::updateComboBox(QString client_name, QString group_name, 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TextServerHandler::TextServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Text,std::string>(window,node,add_srv,update_srv,feedback_srv)
+TextServerHandler::TextServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Text,std::string>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addText(const QString&, const QString&, const QString&, const QString&)),
                    window_, SLOT(addText(const QString&, const QString&, const QString&, const QString&)));
@@ -158,9 +165,9 @@ TextServerHandler::TextServerHandler(Window* window, ros::NodeHandle& node, std:
                    this,    SLOT(updateText(QString, QString, QString, QString)));
 }
 
-bool TextServerHandler::addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& /*res*/)
+bool TextServerHandler::addWidget(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr /*res*/)
 {
-  emit addText(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),QString::fromStdString(req.value));
+  emit addText(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),QString::fromStdString(req->value));
   // FIXME add a proper error handling
   return true;
 }
@@ -172,8 +179,8 @@ bool TextServerHandler::updateText(QString client_name, QString group_name, QStr
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LabelServerHandler::LabelServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
-  :WindowServerHandler<rt_gui_msgs::Text,std::string>(window,node,add_srv,update_srv,feedback_srv)
+LabelServerHandler::LabelServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::srv::Text,std::string>(window,node,add_srv,update_srv,feedback_srv)
 {
   QObject::connect(this,    SIGNAL(addLabel(const QString&, const QString&, const QString&, const QString&)),
                    window_, SLOT(addLabel(const QString&, const QString&, const QString&, const QString&)));
@@ -185,16 +192,16 @@ LabelServerHandler::LabelServerHandler(Window* window, ros::NodeHandle& node, st
                    this,    SLOT(updateLabel(QString, QString, QString, QString, QString&)));
 }
 
-bool LabelServerHandler::addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& /*res*/)
+bool LabelServerHandler::addWidget(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr /*res*/)
 {
-  emit addLabel(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),QString::fromStdString(req.value));
+  emit addLabel(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),QString::fromStdString(req->value));
   // FIXME add a proper error handling
   return true;
 }
 
-bool LabelServerHandler::feedback(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& /*res*/)
+bool LabelServerHandler::feedback(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr /*res*/)
 {
-  emit labelFeedback(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),QString::fromStdString(req.value));
+  emit labelFeedback(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name),QString::fromStdString(req->value));
   // FIXME add a proper error handling
   return true;
 }

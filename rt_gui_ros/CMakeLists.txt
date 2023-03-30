@@ -46,7 +46,7 @@ if (${catkin_FOUND})
     )
 
     ## Compile server lib
-    add_library(${PROJECT_NAME}_server
+    add_library(${PROJECT_NAME}_server SHARED
         include/${PROJECT_NAME}/support/ros_node.h
         include/${PROJECT_NAME}/support/server.h
         include/${PROJECT_NAME}/rt_gui_server.h

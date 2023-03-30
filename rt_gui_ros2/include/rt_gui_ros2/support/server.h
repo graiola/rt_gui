@@ -5,8 +5,14 @@
 #include <rt_gui_core/support/common.h>
 #include <rt_gui_core/qt_utils/window.h>
 
+#include <memory>
+#include <functional>
+
+
 namespace rt_gui
 {
+
+using namespace std::placeholders;
 
 template<typename srv_t, typename data_t>
 class WindowServerHandler
@@ -16,40 +22,42 @@ public:
 
   typedef std::shared_ptr<WindowServerHandler> Ptr;
 
-  WindowServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  WindowServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv)
   {
-    //update_ = node.serviceClient<srv_t>("/"+client_name+"/"+srv_requested);
-    //assert(!srv_provided_.empty());
-    //assert(!srv_requested_.empty());
     add_srv_      = add_srv;
     update_srv_   = update_srv;
     feedback_srv_ = feedback_srv;
     node_         = node;
-    add_          = node_.advertiseService(add_srv, &WindowServerHandler::addWidget, this);
-    feedback_     = node_.advertiseService(feedback_srv, &WindowServerHandler::feedback, this);
+    add_          = node_->create_service<srv_t>(add_srv, std::bind(&WindowServerHandler::addWidget, this, _1, _2));
+    feedback_     = node_->create_service<srv_t>(feedback_srv, std::bind(&WindowServerHandler::feedback, this, _1, _2));
     window_       = window;
   }
 
   virtual ~WindowServerHandler() {}
 
-  virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
+  virtual bool addWidget(typename srv_t::Request::Ptr req, typename srv_t::Response::Ptr res) = 0;
 
-  virtual bool feedback(typename srv_t::Request& /*req*/, typename srv_t::Response& /*res*/) {}
+  virtual bool feedback(typename srv_t::Request::Ptr /*req*/, typename srv_t::Response::Ptr /*res*/) {}
 
-  bool update(srv_t& srv)
+  bool update(typename srv_t::Request srv)
   {
-    std::string service = "/"+srv.request.client_name+"/"+update_srv_;
-    if(ros::service::waitForService(service,ros::Duration(_ros_services.wait_service_secs)))
+
+    std::string service = "/"+srv.client_name+"/"+update_srv_;
+
+    typename rclcpp::Client<srv_t>::SharedPtr client = node_->create_client<srv_t>(service);
+
+    if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
     {
-      if(!ros::service::call(service,srv))
-      {
-        ROS_WARN("RtGuiClient::update::resp is false!");
-        return false;
-      }
+      auto result = client->async_send_request(std::make_shared<typename srv_t::Request>(srv));
+      //if(!result)
+      //{
+      //  RCLCPP_WARN("RtGuiClient::update::resp is false!");
+      //  return false;
+      //}
     }
     else
     {
-      ROS_WARN("RtGuiClient::update service is not available!");
+       //RCLCPP_WARN("RtGuiClient::update service is not available!");
       return false;
     }
     return true;
@@ -57,39 +65,40 @@ public:
 
   bool update(const std::string& client_name, const std::string& group_name, const std::string& data_name, data_t value)
   {
-    srv_t srv;
-    srv.request.client_name = client_name;
-    srv.request.data_name   = data_name;
-    srv.request.group_name  = group_name;
-    srv.request.value       = value;
-    return update(srv);
+    typename srv_t::Request srv_req;
+    srv_req.client_name = client_name;
+    srv_req.data_name   = data_name;
+    srv_req.group_name  = group_name;
+    srv_req.value       = value;
+    return update(srv_req);
   }
 
   bool update(const std::string& client_name, const std::string& group_name, const std::string& data_name, data_t value, data_t& actual_value)
   {
-    srv_t srv;
-    srv.request.client_name = client_name;
-    srv.request.data_name   = data_name;
-    srv.request.group_name  = group_name;
-    srv.request.value       = value;
-    bool res                = update(srv);
-    actual_value            = srv.response.resp;
+    typename srv_t::Request  srv_req;
+    typename srv_t::Response srv_resp;
+    srv_req.client_name = client_name;
+    srv_req.data_name   = data_name;
+    srv_req.group_name  = group_name;
+    srv_req.value       = value;
+    bool res            = update(srv_req);
+    actual_value        = srv_resp.resp;
     return res;
   }
 
 protected:
 
-  ros::NodeHandle node_;
+  std::shared_ptr<rclcpp::Node> node_;
   std::string add_srv_;
   std::string update_srv_;
   std::string feedback_srv_;
-  ros::ServiceServer add_;
-  ros::ServiceServer feedback_;
+  typename rclcpp::Service<srv_t>::SharedPtr add_;
+  typename rclcpp::Service<srv_t>::SharedPtr feedback_;
   Window* window_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TriggerServerHandler : public QObject, WindowServerHandler<rt_gui::Void,bool>
+class TriggerServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Void,bool>
 {
 
   Q_OBJECT
@@ -98,9 +107,9 @@ public:
 
   typedef std::shared_ptr<TriggerServerHandler> Ptr;
 
-  TriggerServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  TriggerServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Void::Request::Ptr req, rt_gui_msgs::srv::Void::Response::Ptr res);
 
 private slots:
   bool updateButton(QString client_name, QString group_name, QString data_name);
@@ -110,7 +119,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class IntServerHandler : public QObject, WindowServerHandler<rt_gui::Int,int>
+class IntServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Int,int>
 {
 
   Q_OBJECT
@@ -119,9 +128,9 @@ public:
 
   typedef std::shared_ptr<IntServerHandler> Ptr;
 
-  IntServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  IntServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Int::Request& req, rt_gui::Int::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Int::Request::Ptr req, rt_gui_msgs::srv::Int::Response::Ptr res);
 
 public slots:
   bool updateIntSlider(QString client_name, QString group_name, QString data_name, int value);
@@ -131,7 +140,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class DoubleServerHandler : public QObject, WindowServerHandler<rt_gui::Double,double>
+class DoubleServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Double,double>
 {
 
   Q_OBJECT
@@ -140,9 +149,9 @@ public:
 
   typedef std::shared_ptr<DoubleServerHandler> Ptr;
 
-  DoubleServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  DoubleServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Double::Request& req, rt_gui::Double::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Double::Request::Ptr req, rt_gui_msgs::srv::Double::Response::Ptr res);
 
 public slots:
   bool updateDoubleSlider(QString client_name, QString group_name, QString data_name, double value);
@@ -152,7 +161,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class BoolServerHandler : public QObject, WindowServerHandler<rt_gui::Bool,bool>
+class BoolServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Bool,bool>
 {
 
   Q_OBJECT
@@ -161,9 +170,9 @@ public:
 
   typedef std::shared_ptr<BoolServerHandler> Ptr;
 
-  BoolServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  BoolServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Bool::Request& req, rt_gui::Bool::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Bool::Request::Ptr req, rt_gui_msgs::srv::Bool::Response::Ptr res);
 
 public slots:
   bool updateRadioButton(QString client_name, QString group_name, QString data_name, bool value);
@@ -173,7 +182,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ListServerHandler : public QObject, WindowServerHandler<rt_gui::List,std::string>
+class ListServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::List,std::string>
 {
 
   Q_OBJECT
@@ -182,9 +191,9 @@ public:
 
   typedef std::shared_ptr<ListServerHandler> Ptr;
 
-  ListServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  ListServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::List::Request& req, rt_gui::List::Response& res);
+  bool addWidget(rt_gui_msgs::srv::List::Request::Ptr req, rt_gui_msgs::srv::List::Response::Ptr res);
 
 public slots:
   bool updateComboBox(QString client_name, QString group_name, QString data_name, QString value);
@@ -194,7 +203,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class TextServerHandler : public QObject, WindowServerHandler<rt_gui::Text,std::string>
+class TextServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Text,std::string>
 {
 
   Q_OBJECT
@@ -203,9 +212,9 @@ public:
 
   typedef std::shared_ptr<TextServerHandler> Ptr;
 
-  TextServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  TextServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr res);
 
 public slots:
   bool updateText(QString client_name, QString group_name, QString data_name, QString value);
@@ -215,7 +224,7 @@ signals:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class LabelServerHandler : public QObject, WindowServerHandler<rt_gui::Text,std::string>
+class LabelServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::srv::Text,std::string>
 {
 
   Q_OBJECT
@@ -224,11 +233,11 @@ public:
 
   typedef std::shared_ptr<LabelServerHandler> Ptr;
 
-  LabelServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+  LabelServerHandler(Window* window, std::shared_ptr<rclcpp::Node> node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+  bool addWidget(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr res);
 
-  bool feedback(rt_gui::Text::Request& req, rt_gui::Text::Response& res);
+  bool feedback(rt_gui_msgs::srv::Text::Request::Ptr req, rt_gui_msgs::srv::Text::Response::Ptr res);
 
 public slots:
   bool updateLabel(QString client_name, QString group_name, QString data_name, QString value, QString& actual_value);
@@ -278,11 +287,12 @@ public:
   {
   }
 
-  void init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
+  void init(std::shared_ptr<rclcpp::Node> nh, const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
 
     window_      = new Window(QString::fromStdString(server_name),parent);
-    remove_      = nh.advertiseService(_ros_services.remove_service, &RosServerNode::removeWidget, this);
+
+    remove_ = nh->create_service<rt_gui_msgs::srv::Void>(_ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
 
     handlers_                 = Handlers();
     handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );
@@ -300,14 +310,14 @@ public:
   void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
     ros_node_.reset(new RosNode(server_name,_ros_services.n_threads));
-    init(ros_node_->getNode(),server_name,parent);
+    init(ros_node_->getNodePtr(),server_name,parent);
   }
 
-  bool removeWidget(rt_gui::Void::Request& req, rt_gui::Void::Response& res)
+  bool removeWidgetCb(rt_gui_msgs::srv::Void::Request::Ptr req, rt_gui_msgs::srv::Void::Response::Ptr res)
   {
-    emit removeWidget(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name));
-    res.resp = true;
-    return res.resp;
+    emit removeWidget(QString::fromStdString(req->client_name),QString::fromStdString(req->group_name),QString::fromStdString(req->data_name));
+    res->resp = true;
+    return res->resp;
   }
 
 signals:
@@ -320,8 +330,8 @@ private:
 
   Window* window_;
   std::unique_ptr<RosNode> ros_node_;
-  ros::ServiceServer remove_;
-  ros::ServiceServer add_client_;
+  rclcpp::Service<rt_gui_msgs::srv::Void>::SharedPtr remove_;
+  rclcpp::Service<rt_gui_msgs::srv::Void>::SharedPtr add_client_;
   Handlers handlers_;
 };
 

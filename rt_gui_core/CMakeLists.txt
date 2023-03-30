@@ -34,6 +34,7 @@ if(${catkin_FOUND})
     catkin_package(INCLUDE_DIRS include LIBRARIES qt_utils console DEPENDS pthread readline Qwt Qt5Core Qt5Widgets)
 elseif(${ament_cmake_FOUND})
     ament_export_include_directories(include)
+    ament_export_libraries(qt_utils console)
     ament_package()
 endif()
 

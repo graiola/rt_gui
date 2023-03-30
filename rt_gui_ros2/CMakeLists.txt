@@ -24,12 +24,13 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+
 find_package(Qt5Core ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 
-find_package(ament_cmake_python QUIET)
+find_package(ament_cmake QUIET)
 
-if (${ament_cmake_python_FOUND})
+if (${ament_cmake_FOUND})
 
     find_package(rclpy REQUIRED)
     find_package(rclcpp REQUIRED)
@@ -49,28 +50,41 @@ if (${ament_cmake_python_FOUND})
         ${Qt5Widgets_INCLUDE_DIRS}
     )
 
-    ament_export_include_directories(include)
-
-    ament_package()
-
-    message("----------------------------")
-    message(${rt_gui_core_INCLUDE_DIRS})
-
     ## Compile server lib
-    add_library(${PROJECT_NAME}_server
+    add_library(${PROJECT_NAME}_server SHARED
         include/${PROJECT_NAME}/support/ros_node.h
         include/${PROJECT_NAME}/support/server.h
         include/${PROJECT_NAME}/rt_gui_server.h
         src/support/server.cpp)
-    target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rclcpp_LIBRARIES} ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} Qt5::Core Qt5::Widgets)
+    target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} Qt5::Core Qt5::Widgets)
 
-    ## Compile server lib
-    #add_library(server include/rt_gui_ros2/rt_gui_server.h include/rt_gui/support/server.h src/support/server.cpp)
-    #target_link_libraries(server qt_utils ${LIBRARIES})
-    #rosidl_target_interfaces(server ${PROJECT_NAME} "rosidl_typesupport_cpp")
+    ## Compile the server node
+    add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
+    target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
 
-    #add_executable(test_rosnode test/test_rosnode.cpp)
-    #target_link_libraries(test_rosnode ${rclcpp_LIBRARIES})
+
+    ## Export information to downstream packages
+    ament_export_dependencies(
+      rclcpp
+      rt_gui_core
+      rt_gui_msgs
+    )
+    ament_export_include_directories(include)
+    ament_export_libraries(${PROJECT_NAME}_server)
+    ament_package()
+
+    ## Install
+    install(
+      DIRECTORY include/
+      DESTINATION include
+    )
+
+    install(
+      TARGETS ${PROJECT_NAME}_server ${PROJECT_NAME}_server_node
+      ARCHIVE DESTINATION lib
+      LIBRARY DESTINATION lib
+      RUNTIME DESTINATION bin
+    )
 
 else()
   message("ament not found, skipping ${PROJECT_NAME} package")

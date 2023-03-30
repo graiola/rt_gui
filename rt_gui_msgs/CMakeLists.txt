@@ -48,6 +48,7 @@ elseif(${ament_cmake_FOUND})
         "srv/Void.srv"
         "srv/Text.srv"
         DEPENDENCIES std_msgs std_srvs
+        LIBRARY_NAME ${PROJECT_NAME}
       )
 
     ament_export_dependencies(rosidl_default_runtime)
