@@ -15,6 +15,7 @@
 
   <depend>readline</depend>
   <depend>pthread</depend>
+  <depend>Qt5Core</depend>
   <depend>Qt5Widgets</depend>
   <depend>Qwt</depend>
 

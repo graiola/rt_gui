@@ -24,20 +24,23 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
+find_package(Qt5Core ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(Qwt ${MINIMUM_QT_VERSION} REQUIRED)
 find_package(catkin QUIET)
 find_package(ament_cmake QUIET)
 
 if(${catkin_FOUND})
-    catkin_package(INCLUDE_DIRS include LIBRARIES qt_utils console DEPENDS pthread readline Qwt Qt5Widgets)
+    catkin_package(INCLUDE_DIRS include LIBRARIES qt_utils console DEPENDS pthread readline Qwt Qt5Core Qt5Widgets)
 elseif(${ament_cmake_FOUND})
+    ament_export_include_directories(include)
     ament_package()
 endif()
 
 include_directories(
     include
     ${QWT_INCLUDE_DIRS}
+    ${Qt5Core_INCLUDE_DIRS}
     ${Qt5Widgets_INCLUDE_DIRS}
 )
 
@@ -60,7 +63,7 @@ add_library(qt_utils SHARED
     src/qt_utils/text.cpp
     src/qt_utils/label.cpp
     )
-target_link_libraries(qt_utils PUBLIC Qt5::Widgets ${QWT_LIBRARIES})
+target_link_libraries(qt_utils PUBLIC Qt5::Core Qt5::Widgets ${QWT_LIBRARIES})
 
 ## Compile console lib
 add_library(console src/console/console_core.cpp src/console/console.cpp)

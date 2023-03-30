@@ -19,7 +19,6 @@
 #ifndef RT_GUI_ROS_RT_GUI_CLIENT_H
 #define RT_GUI_ROS_RT_GUI_CLIENT_H
 
-#include <rt_gui_ros/support/common.h>
 #include <rt_gui_ros/support/client.h>
 #include <eigen3/Eigen/Core>
 

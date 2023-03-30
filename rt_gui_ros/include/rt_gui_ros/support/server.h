@@ -1,7 +1,8 @@
 #ifndef RT_GUI_ROS_SUPPORT_SERVER_H
 #define RT_GUI_ROS_SUPPORT_SERVER_H
 
-#include <rt_gui_ros/support/common.h>
+#include <rt_gui_ros/support/ros_node.h>
+#include <rt_gui_core/support/common.h>
 #include <rt_gui_core/qt_utils/window.h>
 
 namespace rt_gui
@@ -99,7 +100,9 @@ public:
 
   TriggerServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Void::Request& req, rt_gui_msgs::Void::Response& res);
+  //virtual ~TriggerServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Void::Request& req, rt_gui_msgs::Void::Response& res);
 
 private slots:
   bool updateButton(QString client_name, QString group_name, QString data_name);
@@ -120,7 +123,9 @@ public:
 
   IntServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Int::Request& req, rt_gui_msgs::Int::Response& res);
+  //virtual ~IntServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Int::Request& req, rt_gui_msgs::Int::Response& res);
 
 public slots:
   bool updateIntSlider(QString client_name, QString group_name, QString data_name, int value);
@@ -141,7 +146,9 @@ public:
 
   DoubleServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Double::Request& req, rt_gui_msgs::Double::Response& res);
+  //virtual ~DoubleServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Double::Request& req, rt_gui_msgs::Double::Response& res);
 
 public slots:
   bool updateDoubleSlider(QString client_name, QString group_name, QString data_name, double value);
@@ -162,7 +169,9 @@ public:
 
   BoolServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Bool::Request& req, rt_gui_msgs::Bool::Response& res);
+  //virtual ~BoolServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Bool::Request& req, rt_gui_msgs::Bool::Response& res);
 
 public slots:
   bool updateRadioButton(QString client_name, QString group_name, QString data_name, bool value);
@@ -183,7 +192,9 @@ public:
 
   ListServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::List::Request& req, rt_gui_msgs::List::Response& res);
+  //virtual ~ListServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::List::Request& req, rt_gui_msgs::List::Response& res);
 
 public slots:
   bool updateComboBox(QString client_name, QString group_name, QString data_name, QString value);
@@ -204,7 +215,9 @@ public:
 
   TextServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& res);
+  //virtual ~TextServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& res);
 
 public slots:
   bool updateText(QString client_name, QString group_name, QString data_name, QString value);
@@ -225,7 +238,9 @@ public:
 
   LabelServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
 
-  bool addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& res);
+  //virtual ~LabelServerHandler() {}
+
+  virtual bool addWidget(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& res);
 
   bool feedback(rt_gui_msgs::Text::Request& req, rt_gui_msgs::Text::Response& res);
 
@@ -273,7 +288,7 @@ public:
   {
   }
 
-  ~RosServerNode()
+  virtual ~RosServerNode()
   {
   }
 
@@ -324,8 +339,6 @@ private:
   Handlers handlers_;
 };
 
-
 } // namespace
-
 
 #endif

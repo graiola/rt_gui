@@ -1,7 +1,8 @@
 #ifndef RT_GUI_ROS_SUPPORT_CLIENT_H
 #define RT_GUI_ROS_SUPPORT_CLIENT_H
 
-#include <rt_gui_ros/support/common.h>
+#include <rt_gui_ros/support/ros_node.h>
+#include <rt_gui_core/support/common.h>
 #include <type_traits>
 
 namespace rt_gui
