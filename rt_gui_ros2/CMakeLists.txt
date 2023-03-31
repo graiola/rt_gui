@@ -62,6 +62,9 @@ if (${ament_cmake_FOUND})
     add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
     target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
 
+    ## Compile the test
+    add_executable(test_rosnode test/test_rosnode.cpp)
+    target_link_libraries(test_rosnode PRIVATE ${PROJECT_NAME}_server)
 
     ## Export information to downstream packages
     ament_export_dependencies(

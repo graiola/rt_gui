@@ -3,6 +3,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/utilities.hpp>
+#include <rclcpp/init_options.hpp>
 
 #include <rt_gui_msgs/srv/bool.hpp>
 #include <rt_gui_msgs/srv/double.hpp>
@@ -40,23 +41,27 @@ public:
     char* arg0 = strdup(ros_node_name.c_str());
     char* argv[] = {arg0, nullptr};
     rclcpp::init(argc, argv);
+    rclcpp::uninstall_signal_handlers();
     free(arg0);
 
     ros_nh_.reset(new rclcpp::Node(ros_node_name));
 
     //spinner_.reset(new rclcpp::executors::MultiThreadedExecutor(n_threads));
-    spinner_.reset(new rclcpp::executors::MultiThreadedExecutor());
+    spinner_.reset(new rclcpp::executors::MultiThreadedExecutor(rclcpp::ExecutorOptions(),n_threads));
     spinner_->add_node(ros_nh_);
 
     init_ = true;
+
+    spinner_thread_.reset(new std::thread(std::bind(&rclcpp::executors::MultiThreadedExecutor::spin, spinner_.get())));
+    spinner_thread_->detach();
   }
 
   ~RosNode()
   {
     if(init_ == true)
     {
+      spinner_thread_->join();
       rclcpp::shutdown();
-      //spinner_->stop();
     }
   }
 
@@ -76,20 +81,16 @@ public:
       throw std::runtime_error("RosNode not initialized");
   }
 
-  bool reset()
+  void reset()
   {
     if(init_ == true)
     {
+      spinner_thread_->join();
       rclcpp::shutdown();
-      //spinner_->stop();
       init_ = false;
-      return true;
     }
     else
-    {
       throw std::runtime_error("RosNode not initialized");
-      return false;
-    }
   }
 
   bool initDone()
@@ -101,6 +102,7 @@ protected:
   bool init_;
   std::shared_ptr<rclcpp::Node> ros_nh_;
   std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> spinner_;
+  std::shared_ptr<std::thread> spinner_thread_;
 };
 
 } // namespace
