@@ -147,6 +147,7 @@ protected:
           srv_req.group_name  = group_name;
           srv_req.data_name   = data_name;
           auto result = feedback_->async_send_request(std::make_shared<typename srv_t::Request>(srv_req));
+          result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
           //if (rclcpp::spin_until_future_complete(node_, result) != rclcpp::FutureReturnCode::SUCCESS)
           //     return false;
         }
@@ -177,6 +178,7 @@ protected:
     //if(this->add_->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
     //{
       auto result = add_->async_send_request(std::make_shared<typename srv_t::Request>(srv_req));
+      result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
       //if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS)
       //{
         buffer_.add(group_name,data_name,data_ptr,sync,read_only);
@@ -199,6 +201,7 @@ protected:
     //if(add_->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
     //{
       auto result = add_->async_send_request(std::make_shared<typename srv_t::Request>(srv));
+      result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
 
       //if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS)
       //{
@@ -282,6 +285,7 @@ public:
     //if(this->add_->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
     //{
       auto result = add_->async_send_request(std::make_shared<rt_gui_msgs::srv::Void::Request>(srv_req));
+      result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
       //if (rclcpp::spin_until_future_complete(node_, result) != rclcpp::FutureReturnCode::SUCCESS)
       //     return false;
     //}

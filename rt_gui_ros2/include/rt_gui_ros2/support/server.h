@@ -48,6 +48,7 @@ public:
     //if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
     //{
       auto result = client->async_send_request(std::make_shared<typename srv_t::Request>(srv));
+      result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
       // FIXME
       //if(!result)
       //{
