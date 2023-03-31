@@ -27,9 +27,6 @@ public:
     feedback_srv_  = feedback_srv;
     server_name_   = server_name;
     client_name_   = client_name;
-    //update_        = node.advertiseService(update_srv, &InterfaceHandler::update, this);
-    //add_           = node.serviceClient<srv_t>("/"+server_name+"/"+add_srv);
-    //feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
     update_        = node->create_service<srv_t>("/"+client_name+"/"+update_srv, std::bind(&InterfaceHandler::update, this, _1, _2));
     add_           = node->create_client<srv_t>("/"+server_name+"/"+add_srv);
     feedback_      = node->create_client<srv_t>("/"+server_name+"/"+feedback_srv);
@@ -165,7 +162,7 @@ protected:
       sync_mtx_.lock();
       if(!feedback())
       {
-         //ROS_WARN("RtGuiServer::feedback service is not available!");
+         RCLCPP_WARN(node_->get_logger(),"RtGuiServer::feedback service is not available!");
          stop_feedback_thread_ = true;
       }
       sync_mtx_.unlock();
@@ -269,9 +266,6 @@ public:
     update_        = node_->create_service<rt_gui_msgs::srv::Void>("/"+client_name+"/"+update_srv_, std::bind(&TriggerHandler::update, this, _1, _2));
     add_           = node_->create_client<rt_gui_msgs::srv::Void>("/"+server_name+"/"+add_srv);
     feedback_      = node_->create_client<rt_gui_msgs::srv::Void>("/"+server_name+"/"+feedback_srv);
-    //update_        = node.advertiseService(update_srv, &TriggerHandler::update, this);
-    //add_           = node.serviceClient<rt_gui_msgs::srv::Void>("/"+server_name+"/"+add_srv);
-    //feedback_      = node.serviceClient<rt_gui_msgs::srv::Void>("/"+server_name+"/"+feedback_srv);
   }
 
   bool add(const std::string& group_name, const std::string& data_name, fun_t fun)

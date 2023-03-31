@@ -39,6 +39,7 @@ bool TriggerServerHandler::updateButton(QString client_name, QString group_name,
   //if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
   //{
     auto result = client->async_send_request(srv_req);
+    result.wait_for(std::chrono::duration<double>(_ros_services.wait_service_secs));
     //if(!result)
     //{
     //  RCLCPP_WARN("RtGuiClient::update::resp is false!");

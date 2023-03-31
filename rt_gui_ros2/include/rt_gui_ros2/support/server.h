@@ -292,7 +292,7 @@ public:
   {
 
     window_      = new Window(QString::fromStdString(server_name),parent);
-    remove_      = nh->create_service<rt_gui_msgs::srv::Void>(_ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
+    remove_      = nh->create_service<rt_gui_msgs::srv::Void>("/" + server_name + "/" + _ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
 
     handlers_                 = Handlers();
     handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );
