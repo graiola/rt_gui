@@ -8,7 +8,6 @@
 #include <memory>
 #include <functional>
 
-
 namespace rt_gui
 {
 
@@ -28,8 +27,8 @@ public:
     update_srv_   = update_srv;
     feedback_srv_ = feedback_srv;
     node_         = node;
-    add_          = node_->create_service<srv_t>(add_srv, std::bind(&WindowServerHandler::addWidget, this, _1, _2));
-    feedback_     = node_->create_service<srv_t>(feedback_srv, std::bind(&WindowServerHandler::feedback, this, _1, _2));
+    add_          = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + add_srv, std::bind(&WindowServerHandler::addWidget, this, _1, _2));
+    feedback_     = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + feedback_srv, std::bind(&WindowServerHandler::feedback, this, _1, _2));
     window_       = window;
   }
 
@@ -46,20 +45,21 @@ public:
 
     typename rclcpp::Client<srv_t>::SharedPtr client = node_->create_client<srv_t>(service);
 
-    if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
-    {
+    //if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
+    //{
       auto result = client->async_send_request(std::make_shared<typename srv_t::Request>(srv));
+      // FIXME
       //if(!result)
       //{
       //  RCLCPP_WARN("RtGuiClient::update::resp is false!");
       //  return false;
       //}
-    }
-    else
-    {
-       //RCLCPP_WARN("RtGuiClient::update service is not available!");
-      return false;
-    }
+    //}
+    //else
+    //{
+    //  RCLCPP_WARN(node_->get_logger(),"RtGuiClient::update service is not available!");
+    //  return false;
+    //}
     return true;
   }
 
@@ -291,8 +291,7 @@ public:
   {
 
     window_      = new Window(QString::fromStdString(server_name),parent);
-
-    remove_ = nh->create_service<rt_gui_msgs::srv::Void>(_ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
+    remove_      = nh->create_service<rt_gui_msgs::srv::Void>(_ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
 
     handlers_                 = Handlers();
     handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );

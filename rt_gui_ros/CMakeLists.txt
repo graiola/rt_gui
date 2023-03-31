@@ -81,25 +81,18 @@ if (${catkin_FOUND})
     #endif()
 
     ## Compile test
-    #if (CATKIN_ENABLE_TESTING)
-    #    add_executable(test_qt test/test_qt.cpp)
-    #    target_link_libraries(test_qt PRIVATE qt_utils)
-    #
-    #    add_executable(test_server include/rt_gui/rt_gui_server.h test/test_server.cpp)
-    #    add_dependencies(test_server ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_server PRIVATE server)
-    #
-    #    add_executable(test_client include/rt_gui/rt_gui_client.h test/test_client.cpp)
-    #    add_dependencies(test_client ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_client PRIVATE qt_utils ${LIBRARIES})
-    #
-    #    add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
-    #    add_dependencies(test_client_1 ${rt_gui_EXPORTED_TARGETS})
-    #    target_link_libraries(test_client_1 PRIVATE qt_utils ${LIBRARIES})
-    #
-    #    add_executable(test_console test/test_console.cpp)
-    #    target_link_libraries(test_console PRIVATE console)
-    #endif()
+    if (CATKIN_ENABLE_TESTING)
+
+        add_executable(test_server include/${PROJECT_NAME}/rt_gui_server.h test/test_server.cpp)
+        target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
+
+        add_executable(test_client include/${PROJECT_NAME}/rt_gui_client.h test/test_client.cpp)
+        target_link_libraries(test_client PRIVATE ${catkin_LIBRARIES})
+
+        add_executable(test_client_1 include/${PROJECT_NAME}/rt_gui_client.h test/test_client_1.cpp)
+        target_link_libraries(test_client_1 PRIVATE ${catkin_LIBRARIES})
+
+    endif()
 
     ## Install
     install(TARGETS ${PROJECT_NAME}_server ${PROJECT_NAME}_server_node

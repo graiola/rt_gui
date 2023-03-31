@@ -14,7 +14,7 @@ int main(int argc, char **argv)
   while(rclcpp::ok())
   {
     std::cout << "Test..." << std::endl;
-    usleep(3000000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   return 0;

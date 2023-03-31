@@ -38,7 +38,7 @@ public:
   void init(const std::string& ros_node_name, const unsigned int& n_threads)
   {
     int argc = 1;
-    char* arg0 = strdup(ros_node_name.c_str());
+    char* arg0 = strdup("");//strdup(ros_node_name.c_str());
     char* argv[] = {arg0, nullptr};
     rclcpp::init(argc, argv);
     rclcpp::uninstall_signal_handlers();

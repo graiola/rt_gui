@@ -1,16 +1,18 @@
-#include <rt_gui_ros/rt_gui_client.h>
+#include <rt_gui_ros2/rt_gui_client.h>
+
+#include <unistd.h>
 
 using namespace rt_gui;
 
 bool stopController()
 {
-  ROS_WARN("Stopping the controller!");
+  //ROS_WARN("Stopping the controller!");
   return true;
 }
 
 bool setForceY(const double& Fy)
 {
-  ROS_WARN_STREAM("Fy:"<<Fy);
+  //ROS_WARN_STREAM("Fy:"<<Fy);
   return true;
 }
 
@@ -53,6 +55,7 @@ int main(int argc, char* argv[])
     RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
     RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
     RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status1"),&status);
+
     //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status2"),&status);
     //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status3"),&status);
     //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status4"),&status);
@@ -79,12 +82,15 @@ int main(int argc, char* argv[])
 
   long long cnt = 0;
 
-  while(ros::ok() && RtGuiClient::getIstance().isInitialized())
+  while(rclcpp::ok() && RtGuiClient::getIstance().isInitialized())
   {
     RtGuiClient::getIstance().sync();
 
-    ROS_INFO_STREAM("Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
-                    <<" Controller_on: " <<(Controller_on ? "true" : "false") << " steps: " << steps << " status: " << status );
+    //ROS_INFO_STREAM("Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
+    //                <<" Controller_on: " <<(Controller_on ? "true" : "false") << " steps: " << steps << " status: " << status );
+
+    std::cout << "Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
+                    <<" Controller_on: " <<(Controller_on ? "true" : "false") << " steps: " << steps << " status: " << status << std::endl;
 
 
     if((cnt%100) == 0)
@@ -96,7 +102,8 @@ int main(int argc, char* argv[])
     }
     cnt++;
 
-    ros::Duration(0.1).sleep();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
   }
   return 0;
 }

@@ -78,8 +78,8 @@ public:
   {
     if(check())
     {
-      if(load_init_from_server)
-        loadFromServer(group_name,data_name,*data_ptr);
+      //if(load_init_from_server)
+      //  loadFromServer(group_name,data_name,*data_ptr); FIXME
       bool res = true;
       for(unsigned int i=0;i<data_ptr->size();i++)
         res = res && int_h_->add(group_name,data_name+"["+std::to_string(i)+"]",min,max,&data_ptr->at(i),sync);
@@ -94,8 +94,8 @@ public:
     if(check())
     {
       std::vector<int> std_v;
-      if(load_init_from_server)
-        loadFromServer(group_name,data_name,std_v);
+      //if(load_init_from_server) FIXME
+      //  loadFromServer(group_name,data_name,std_v);
       bool res = true;
       for(unsigned int i=0;i<std_v.size();i++) // Copy
         data_ptr->operator[](i) = std_v[i];
@@ -319,18 +319,20 @@ public:
 
   bool remove(const std::string& group_name, const std::string& data_name)
   {
-    rt_gui::Void srv;
-    srv.request.data_name = data_name;
-    srv.request.group_name = group_name;
-    return remove_.call(srv);
+    rt_gui_msgs::srv::Void::Request srv_req;
+    srv_req.data_name  = data_name;
+    srv_req.group_name = group_name;
+    remove_->async_send_request(std::make_shared<rt_gui_msgs::srv::Void::Request>(srv_req));
+    return true;
   }
 
   bool remove(const std::string& group_name)
   {
-    rt_gui::Void srv;
-    srv.request.data_name = "";
-    srv.request.group_name = group_name;
-    return remove_.call(srv);
+    rt_gui_msgs::srv::Void::Request srv_req;
+    srv_req.data_name  = "";
+    srv_req.group_name = group_name;
+    remove_->async_send_request(std::make_shared<rt_gui_msgs::srv::Void::Request>(srv_req));
+    return true;
   }
 
   void sync()
@@ -345,17 +347,20 @@ public:
       label_h_->sync();
     }
     else {
-      ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
+      //ROS_WARN_ONCE("RtGuiClient has not been initialized, please call the init() function before using sync().");
     }
   }
 
-  bool init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
+  bool init(std::shared_ptr<rclcpp::Node> nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double timeout = 30.0)
   {
-    std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
-    ros::NodeHandle global_nh;
-    if(ros::service::waitForService(remove_service_name,timeout))
-    {
-      remove_         = global_nh.serviceClient<rt_gui::Void>(remove_service_name);
+    std::string remove_service_name = "/" + server_name + "/" + _ros_services.remove_service;
+    //ros::NodeHandle global_nh; // FIXME
+
+    remove_ = nh->create_client<rt_gui_msgs::srv::Void>(remove_service_name);
+
+    // FIXME
+    //if(remove_->wait_for_service(std::chrono::duration<double>(timeout)))
+    //{
       bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
       list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,server_name,client_name);
       trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,server_name,client_name);
@@ -364,19 +369,20 @@ public:
       text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,_ros_services.text_srvs.feedback,server_name,client_name);
       label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,_ros_services.label_srvs.feedback,server_name,client_name);
       init_           = true;
-    }
-    else
-    {
-      ROS_WARN_STREAM("RtGuiClient could not find "<< server_name << ", please select the right server_name when calling init().");
-      init_ = false;
-    }
+    //}
+    //else
+    //{
+    //  //RCLCPP_WARN(nh->get_logger(), "Incoming request: logger '%s', severity '%s'");
+    //  //ROS_WARN_STREAM("RtGuiClient could not find "<< server_name << ", please select the right server_name when calling init().");
+    //  init_ = false;
+    //}
     return init_;
   }
 
-  bool init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
+  bool init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double timeout = 30.0)
   {
     ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
-    return init(ros_node_->getNode(),server_name,client_name,timeout);
+    return init(ros_node_->getNodePtr(),server_name,client_name,timeout);
   }
 
   bool isInitialized()
@@ -395,7 +401,7 @@ private:
   {
     if(!init_ || !ros_node_ || !ros_node_->initDone())
     {
-      ROS_WARN("RtGuiClient not initialized, please call init() function before adding widgets.");
+      //ROS_WARN("RtGuiClient not initialized, please call init() function before adding widgets.");
       return false;
     }
     else
@@ -408,18 +414,21 @@ private:
     bool res = true;
     data_t init_value;
     std::string ns = "/"+group_name+"/"+data_name;
-    if (!ros::param::get(ns, init_value))
+    //rclcpp::Parameter init_value;
+    if (!ros_node_->getNodePtr()->get_parameter(ns,init_value))
     {
-      ROS_WARN("No initial value given in namespace %s",ns.c_str());
+      //ROS_WARN("No initial value given in namespace %s",ns.c_str());
       res = false;
     }
     else
     {
+      //value = static_cast<data_t>(init_value.get_value<data_t>());
       value = init_value;
       res = true;
     }
     return res;
   }
+
 
   RtGuiClient(const RtGuiClient&)= delete;
   RtGuiClient& operator=(const RtGuiClient&)= delete;
@@ -432,7 +441,7 @@ private:
   TriggerHandler::Ptr trigger_h_;
   TextHandler::Ptr text_h_;
   LabelHandler::Ptr label_h_;
-  ros::ServiceClient remove_;
+  rclcpp::Client<rt_gui_msgs::srv::Void>::SharedPtr remove_;
   bool init_;
 
 };

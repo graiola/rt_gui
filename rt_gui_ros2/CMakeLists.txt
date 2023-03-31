@@ -66,6 +66,15 @@ if (${ament_cmake_FOUND})
     add_executable(test_rosnode test/test_rosnode.cpp)
     target_link_libraries(test_rosnode PRIVATE ${PROJECT_NAME}_server)
 
+    add_executable(test_server include/${PROJECT_NAME}/rt_gui_server.h test/test_server.cpp)
+    target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
+
+    add_executable(test_client include/${PROJECT_NAME}/rt_gui_client.h test/test_client.cpp)
+    target_link_libraries(test_client PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
+    #add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
+    #target_link_libraries(test_client_1 PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
     ## Export information to downstream packages
     ament_export_dependencies(
       rclcpp

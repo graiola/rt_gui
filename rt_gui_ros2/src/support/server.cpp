@@ -36,20 +36,20 @@ bool TriggerServerHandler::updateButton(QString client_name, QString group_name,
   rclcpp::Client<rt_gui_msgs::srv::Void>::SharedPtr client =
       node_->create_client<rt_gui_msgs::srv::Void>(service);
 
-  if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
-  {
+  //if(!client->wait_for_service(std::chrono::duration<double>(_ros_services.wait_service_secs)))
+  //{
     auto result = client->async_send_request(srv_req);
     //if(!result)
     //{
     //  RCLCPP_WARN("RtGuiClient::update::resp is false!");
     //  return false;
     //}
-  }
-  else
-  {
-     //RCLCPP_WARN("RtGuiClient::update service is not available!");
-    return false;
-  }
+  //}
+  //else
+  //{
+  //  RCLCPP_WARN(node_->get_logger(),"RtGuiClient::update service is not available!");
+  //  return false;
+  //}
   return true;
 }
 
