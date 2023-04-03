@@ -17,5 +17,9 @@
   <depend>rt_gui_core</depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
+  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 
 </package>
