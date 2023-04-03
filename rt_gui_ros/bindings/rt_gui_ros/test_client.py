@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import rosparam
-from rt_gui import py_client
+from rt_gui_ros import py_client
 
 def set_int(v):
     print(v)

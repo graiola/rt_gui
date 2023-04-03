@@ -58,27 +58,27 @@ if (${catkin_FOUND})
     target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
 
     ## Bindings
-    #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
-    #find_package(pybind11 QUIET)
-    #message(STATUS "check for pybind11")
-    #if(${pybind11_FOUND})
-    #    message(STATUS "compiling python bindings")
-    #    # Server
-    #    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
-    #    target_link_libraries(py_server PRIVATE server)
-    #    install(TARGETS py_server
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Client
-    #    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
-    #    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
-    #    install(TARGETS py_client
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Tests
-    #    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
-    #                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    #else()
-    #    message(STATUS "pybind not found")
-    #endif()
+    find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
+    find_package(pybind11 QUIET)
+    message(STATUS "check for pybind11")
+    if(${pybind11_FOUND})
+        message(STATUS "compiling python bindings")
+        # Server
+        pybind11_add_module(py_server bindings/${PROJECT_NAME}/py_server.cpp)
+        target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
+        install(TARGETS py_server
+                DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+        # Client
+        pybind11_add_module(py_client bindings/${PROJECT_NAME}/py_client.cpp)
+        target_link_libraries(py_client PRIVATE ${catkin_LIBRARIES})
+        install(TARGETS py_client
+                DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
+        # Tests
+        catkin_install_python(PROGRAMS bindings/${PROJECT_NAME}/test_server.py bindings/${PROJECT_NAME}/test_client.py
+                              DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+    else()
+        message(STATUS "pybind not found")
+    endif()
 
     ## Compile test
     if (CATKIN_ENABLE_TESTING)

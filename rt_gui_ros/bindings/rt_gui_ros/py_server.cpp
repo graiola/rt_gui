@@ -1,6 +1,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <rt_gui/rt_gui_server.h>
+#include <rt_gui_ros/rt_gui_server.h>
 #include <csignal>
 
 namespace py = pybind11;

@@ -1,7 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
-#include <rt_gui/rt_gui_client.h>
+#include <rt_gui_ros/rt_gui_client.h>
 
 namespace py = pybind11;
 

@@ -1,7 +1,7 @@
 from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 d = generate_distutils_setup(
-    packages=['rt_gui'],
+    packages=['rt_gui_ros'],
     package_dir={'': 'bindings'}
 )
 setup(**d)

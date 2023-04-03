@@ -58,11 +58,6 @@ private:
   {
   }
 
-  virtual ~RtGuiServer()
-  {
-  }
-
-
   RtGuiServer(const RtGuiServer&)= delete;
   RtGuiServer& operator=(const RtGuiServer&)= delete;
 
