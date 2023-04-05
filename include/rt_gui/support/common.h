@@ -220,9 +220,16 @@ public:
     ros::init(argc, argv, ros_node_name,ros::init_options::NoSigintHandler);
     free(arg0);
 
+    // Search for the substring in string
+    std::string ros_node_name_fix = ros_node_name;
+    std::string arg = "__name:=";
+    size_t idx = ros_node_name_fix.find(arg);
+    if (idx != std::string::npos)
+        ros_node_name_fix.erase(idx, arg.length());
+
     if(ros::master::check())
     {
-      ros_nh_.reset(new ros::NodeHandle(ros_node_name));
+      ros_nh_.reset(new ros::NodeHandle(ros_node_name_fix));
     }
     else
     {
