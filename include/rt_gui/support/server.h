@@ -29,7 +29,9 @@ public:
     window_       = window;
   }
 
-  virtual ~WindowServerHandler() {}
+  virtual ~WindowServerHandler()
+  {
+  }
 
   virtual bool addWidget(typename srv_t::Request& req, typename srv_t::Response& res) = 0;
 
@@ -271,6 +273,11 @@ public:
 
   RosServerNode()
   {
+    //QFormBuilder builder;
+    //QFile file("/tmp/myWidget.ui");
+    //file.open(QFile::ReadOnly);
+    //window_ = (Window*)builder.load(&file);
+    //file.close();
   }
 
   ~RosServerNode()
@@ -323,7 +330,6 @@ private:
   ros::ServiceServer add_client_;
   Handlers handlers_;
 };
-
 
 } // namespace
 

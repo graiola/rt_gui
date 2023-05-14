@@ -23,6 +23,8 @@ public:
   const QString& getGroupName() const;
   const QString& getClientName() const;
 
+  friend QDataStream &operator<<(QDataStream &out, DoubleSlider* widget);
+
 signals:
   void valueChanged(double value);
 

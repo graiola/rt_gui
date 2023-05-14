@@ -21,6 +21,8 @@ public:
 
   QString getValue();
 
+  friend QDataStream &operator<<(QDataStream &out, Label* widget);
+
 signals:
   void updateValue();
 

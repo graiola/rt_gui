@@ -66,6 +66,84 @@ Window::Window(const QString& title, QWidget* parent)
     setLayout(main_layout_);
   }
   setWindowTitle(title);
+  setAttribute(Qt::WA_DeleteOnClose);
+
+  file_.setFileName("/tmp/test.dat");
+  if(file_.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    out_.setDevice(&file_);
+
+
+  QGroupBox* group = new QGroupBox();
+  QHBoxLayout* h_layout = new QHBoxLayout(this);
+  h_layout->setSpacing(0);
+  QString button_style = "QPushButton{border:none;background-color:rgba(255, 255, 255,100);}";
+  QPushButton *save_button = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_ArrowDown),"");
+  save_button->setStyleSheet(button_style); // Style sheet
+  save_button->setIconSize(QSize(25,25));
+  save_button->setMinimumSize(25,25);
+  save_button->setMaximumSize(25,25);
+  h_layout->addWidget(save_button);
+
+  QPushButton *load_button = new QPushButton(QApplication::style()->standardIcon(QStyle::SP_ArrowUp),"");
+  load_button->setStyleSheet(button_style); // Style sheet
+  load_button->setIconSize(QSize(25,25));
+  load_button->setMinimumSize(25,25);
+  load_button->setMaximumSize(25,25);
+  h_layout->addWidget(load_button);
+
+  group->setLayout(h_layout);
+  main_layout_->addWidget(group,0,Qt::AlignRight);
+
+  //QMenu* menu = new QMenu(this);
+  //menu->setVisible(true);
+  //main_layout_->addWidget(menu);
+  //auto menu   = addMenu("Menu");
+  //auto action = new QWidgetAction(menu);
+  //auto widget = new QLabel("Lol");
+  //action->setDefaultWidget(widget);
+  //menu->addAction(action);
+}
+
+Window::~Window()
+{
+  qInfo() << "Saving...";
+  //QFile file("/tmp/test.dat");
+  //if(file_.open(QIODevice::WriteOnly|QIODevice::Truncate))
+  //{
+  //  //QDataStream out(&file);
+  //  //const auto& map = getWidgets().toStdMap();
+  //  //for(auto tmp : map)
+  //  //{
+  //  //  for (int i = 0; i < tmp.second->getLayout()->count(); ++i)
+  //  //  {
+  //  //    QWidget *widget = tmp.second->getLayout()->itemAt(i)->widget();
+  //  //    if(widget != Q_NULLPTR)
+  //  //    {
+  //  //      qInfo() << widget;
+  //  //      out << widget;
+  //  //
+  //  //    //out << tmp.second << " ";
+  //  //
+  //  //    }
+  //  //  }
+  //  //}
+  //  //file.close();
+  //  file_.close();
+  //}
+  file_.close();
+  qInfo() << "...done!";
+
+  //QFormBuilder builder;
+  //QFile file("/tmp/myWidget.ui");
+  //file.open(QFile::WriteOnly);
+  ////QWidget *myWidget = builder.load(&file, this);
+  //builder.save(&file,this);
+  //file.close();
+}
+
+const Window::widgets_group_map_t& Window::getWidgets() const
+{
+  return widgets_group_;
 }
 
 bool Window::checkIfDuplicated(const widgets_group_map_t& map, const QString& group_name, const QString& data_name)
@@ -94,11 +172,12 @@ void Window::addText(const QString& client_name, const QString& group_name, cons
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    Text* text = new Text(client_name,group_name,data_name,placeholder);
-    widgets_group_[group_name]->add(text);
-    QObject::connect(text, SIGNAL(valueChanged(QString)),
+    Text* widget = new Text(client_name,group_name,data_name,placeholder);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged(QString)),
                      this,   SLOT(textChanged(QString)));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -106,12 +185,13 @@ void Window::addLabel(const QString& client_name, const QString& group_name, con
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    Label* label = new Label(client_name,group_name,data_name,placeholder);
-    widgets_group_[group_name]->add(label);
+    Label* widget = new Label(client_name,group_name,data_name,placeholder);
+    widgets_group_[group_name]->add(widget);
     // Old version with the QT timer in the widget
     //QObject::connect(label, SIGNAL(updateValue()),
     //                 this,   SLOT(labelChanged()));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -119,11 +199,12 @@ void Window::addButton(const QString& client_name, const QString& group_name, co
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    Button* button = new Button(client_name,group_name,data_name);
-    widgets_group_[group_name]->add(button);
-    QObject::connect(button, SIGNAL(valueChanged()),
+    Button* widget = new Button(client_name,group_name,data_name);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged()),
                      this,   SLOT(buttonChanged()));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -132,11 +213,12 @@ void Window::addIntSlider(const QString& client_name, const QString& group_name,
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    IntSlider* int_slider = new IntSlider(client_name,group_name,data_name,min,max,init);
-    widgets_group_[group_name]->add(int_slider);
-    QObject::connect(int_slider, SIGNAL(valueChanged(int)),
+    IntSlider* widget = new IntSlider(client_name,group_name,data_name,min,max,init);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged(int)),
                      this,   SLOT(intSliderChanged(int)));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -145,11 +227,12 @@ void Window::addDoubleSlider(const QString& client_name, const QString& group_na
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    DoubleSlider* double_slider = new DoubleSlider(client_name,group_name,data_name,min,max,init);
-    widgets_group_[group_name]->add(double_slider);
-    QObject::connect(double_slider, SIGNAL(valueChanged(double)),
+    DoubleSlider* widget = new DoubleSlider(client_name,group_name,data_name,min,max,init);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged(double)),
                      this,   SLOT(doubleSliderChanged(double)));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -157,11 +240,12 @@ void Window::addRadioButton(const QString& client_name, const QString &group_nam
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    RadioButton* radio_button = new RadioButton(client_name,group_name,data_name,init);
-    widgets_group_[group_name]->add(radio_button);
-    QObject::connect(radio_button, SIGNAL(valueChanged(bool)),
+    RadioButton* widget = new RadioButton(client_name,group_name,data_name,init);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged(bool)),
                      this,   SLOT(radioButtonChanged(bool)));
     createTabs();
+    out_ << widget;
   }
 }
 
@@ -169,11 +253,12 @@ void Window::addComboBox(const QString& client_name, const QString& group_name, 
 {
   if(!checkIfDuplicated(widgets_group_,group_name,data_name))
   {
-    ComboBox* combo_box = new ComboBox(client_name,group_name,data_name,list,init);
-    widgets_group_[group_name]->add(combo_box);
-    QObject::connect(combo_box, SIGNAL(valueChanged(QString)),
+    ComboBox* widget = new ComboBox(client_name,group_name,data_name,list,init);
+    widgets_group_[group_name]->add(widget);
+    QObject::connect(widget, SIGNAL(valueChanged(QString)),
                      this,   SLOT(comboBoxChanged(QString)));
     createTabs();
+    out_ << widget;
   }
 }
 

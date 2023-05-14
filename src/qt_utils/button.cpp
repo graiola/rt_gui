@@ -37,3 +37,13 @@ const QString &Button::getClientName() const
 {
   return client_name_;
 }
+
+QDataStream &operator<<(QDataStream &out, Button* widget)
+{
+  QString s(QString(widget->metaObject()->className())+','
+            +widget->data_name_+','
+            +widget->group_name_+','
+            +widget->client_name_+'\n');
+  out << s;
+  return out;
+}

@@ -24,6 +24,8 @@ public:
   const QString& getGroupName() const;
   const QString& getClientName() const;
 
+  friend QDataStream &operator<<(QDataStream &out, IntSlider* widget);
+
 signals:
   void valueChanged(int value);
 

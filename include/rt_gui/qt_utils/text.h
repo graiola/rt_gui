@@ -24,6 +24,8 @@ public:
 
   QString getValue();
 
+  friend QDataStream &operator<<(QDataStream &out, Text* widget);
+
 signals:
   void valueChanged(QString value);
 

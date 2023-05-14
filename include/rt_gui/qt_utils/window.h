@@ -42,6 +42,10 @@ public:
 
     Window(const QString& title, QWidget* parent = nullptr);
 
+    ~Window();
+
+    const widgets_group_map_t &getWidgets() const;
+
 public slots:
     // Add slots
     void addText(const QString& client_name, const QString& group_name, const QString& data_name, const QString& placeholder);
@@ -84,8 +88,8 @@ private:
     widgets_group_map_t widgets_group_;
     QTabWidget* tabs_;
     QVBoxLayout* main_layout_;
-
-
+    QFile file_;
+    QDataStream out_;
 };
 
 #endif

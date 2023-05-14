@@ -54,3 +54,14 @@ QString Label::getValue()
 {
   return value_;
 }
+
+QDataStream &operator<<(QDataStream &out, Label* widget)
+{
+  //out << typeid(*widget).name() << " ";
+  //out << widget->group_name_ << " ";
+  //out << widget->data_name_ << " ";
+  //out << widget->client_name_ << " ";
+  //out << "/n";
+  return out;
+}
+

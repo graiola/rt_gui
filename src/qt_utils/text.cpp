@@ -59,3 +59,13 @@ const QString &Text::getClientName() const
 {
   return client_name_;
 }
+
+QDataStream &operator<<(QDataStream &out, Text* widget)
+{
+  //out << typeid(*widget).name() << " ";
+  //out << widget->group_name_ << " ";
+  //out << widget->data_name_ << " ";
+  //out << widget->client_name_ << " ";
+  //out << "/n";
+  return out;
+}

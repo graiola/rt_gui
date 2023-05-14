@@ -21,6 +21,8 @@ public:
   const QString& getGroupName() const;
   const QString& getClientName() const;
 
+  friend QDataStream &operator<<(QDataStream &out, RadioButton* widget);
+
 signals:
   void valueChanged(bool value);
 

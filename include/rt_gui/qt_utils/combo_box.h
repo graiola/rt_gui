@@ -22,6 +22,8 @@ public:
   const QString& getGroupName() const;
   const QString& getClientName() const;
 
+  friend QDataStream &operator<<(QDataStream &out, ComboBox* widget);
+
 signals:
   void valueChanged(QString value);
 
