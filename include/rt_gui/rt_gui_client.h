@@ -203,13 +203,20 @@ public:
 
   void init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
-    ack_ = std::thread(std::bind(&RtGuiClient::_init,this,nh,server_name,client_name,timeout));
-    requests_ = std::thread(&RtGuiClient::_requests,this);
+    if(!ack_.joinable() && !requests_.joinable())
+    {
+      ack_ = std::thread(std::bind(&RtGuiClient::_init,this,nh,server_name,client_name,timeout));
+      requests_ = std::thread(&RtGuiClient::_requests,this);
+    }
+    else {
+       ROS_WARN_STREAM("RtGuiClient has been already initialized! You are calling the same instance twice!");
+    }
   }
 
   void init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
   {
-    ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
+    if(ros_node_==nullptr)
+      ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
     init(ros_node_->getNode(),server_name,client_name,timeout);
   }
 
