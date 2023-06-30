@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from rt_gui import py_server
+from rt_gui_server_py import RtGuiServer
 
 if __name__ == '__main__':
-    server = py_server.RtGuiServer
+    server = RtGuiServer
     server.run() 

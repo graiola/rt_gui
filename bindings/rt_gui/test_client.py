@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import rosparam
-from rt_gui import py_client
+from rt_gui_client_py import RtGuiClient
 
 def set_int(v):
     print(v)
@@ -17,7 +17,7 @@ def set_list(v):
   
 if __name__ == '__main__':
     rospy.init_node('test_client')
-    client = py_client.RtGuiClient
+    client = RtGuiClient
     
     rosparam.set_param_raw('test/int',2)
     rosparam.set_param_raw('test/double',3.0)

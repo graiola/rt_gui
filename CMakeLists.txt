@@ -36,7 +36,7 @@ find_package(Qt5Widgets ${MINIMUM_QT_VERSION} QUIET)
 find_package(Qwt ${MINIMUM_QT_VERSION} QUIET)
 find_package(catkin REQUIRED roscpp rospy std_msgs message_generation)
 
-catkin_python_setup()
+#catkin_python_setup()
 
 add_service_files(
   FILES
@@ -53,7 +53,7 @@ generate_messages()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES qt_utils server
-  CATKIN_DEPENDS
+  CATKIN_DEPENDS pybind11_catkin
 )
 
 include_directories(
@@ -84,26 +84,28 @@ if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
 
     ## Bindings
     #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
-    #find_package(pybind11 QUIET)
-    #message(STATUS "check for pybind11")
-    #if(${pybind11_FOUND})
-    #    message(STATUS "compiling python bindings")
-    #    # Server
-    #    pybind11_add_module(py_server bindings/rt_gui/py_server.cpp)
-    #    target_link_libraries(py_server PRIVATE server)
-    #    install(TARGETS py_server
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Client
-    #    pybind11_add_module(py_client bindings/rt_gui/py_client.cpp)
-    #    target_link_libraries(py_client PRIVATE qt_utils ${catkin_LIBRARIES})
-    #    install(TARGETS py_client
-    #            DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-    #    # Tests
-    #    catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
-    #                          DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    #else()
-    #    message(STATUS "pybind not found")
-    #endif()
+    find_package(pybind11_catkin QUIET)
+    message(STATUS "check for pybind11_catkin")
+    if(${pybind11_catkin_FOUND})
+        message(STATUS "compiling python bindings")
+        # Server
+        pybind_add_module(rt_gui_server_py bindings/rt_gui/py_server.cpp)
+        target_link_libraries(rt_gui_server_py PRIVATE server)
+
+        # Client
+        pybind_add_module(rt_gui_client_py bindings/rt_gui/py_client.cpp)
+        target_link_libraries(rt_gui_client_py PRIVATE qt_utils ${catkin_LIBRARIES})
+
+        install(TARGETS rt_gui_server_py
+                        rt_gui_client_py
+                        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+        # Tests
+        catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
+                              DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+    else()
+        message(STATUS "pybind not found")
+    endif()
 
     install(TARGETS server_node qt_utils server
       ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

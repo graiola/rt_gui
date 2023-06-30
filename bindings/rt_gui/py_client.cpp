@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(py_client, m) {
+PYBIND11_MODULE(rt_gui_client_py, m) {
 
     // optional module docstring
     m.doc() = "pybind11 rt_gui_client plugin";
@@ -46,6 +46,10 @@ PYBIND11_MODULE(py_client, m) {
         .def_static("addList", [](const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
         {
           rt_gui::RtGuiClient::getIstance().addList(group_name,data_name,list,fun,sync);
+        })
+        .def_static("addList", [](const std::string& group_name, const std::string& data_name, const std::string& init_value, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
+        {
+          rt_gui::RtGuiClient::getIstance().addList(group_name,data_name,init_value,list,fun,sync);
         })
         .def_static("remove", [](const std::string& group_name, const std::string& data_name)
         {
