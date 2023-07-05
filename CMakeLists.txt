@@ -96,9 +96,19 @@ if (${QWT_FOUND} AND ${Qt5Widgets_FOUND})
         pybind_add_module(rt_gui_client_py bindings/rt_gui/py_client.cpp)
         target_link_libraries(rt_gui_client_py PRIVATE qt_utils ${catkin_LIBRARIES})
 
+        set_target_properties(rt_gui_server_py PROPERTIES
+                PREFIX ""
+                LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+                )
+
+        set_target_properties(rt_gui_client_py PROPERTIES
+                PREFIX ""
+                LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
+                )
+
         install(TARGETS rt_gui_server_py
                         rt_gui_client_py
-                        LIBRARY DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+                        DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
 
         # Tests
         catkin_install_python(PROGRAMS bindings/rt_gui/test_server.py bindings/rt_gui/test_client.py
