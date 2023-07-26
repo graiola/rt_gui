@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
   long long cnt = 0;
 
-  while(ros::ok() && RtGuiClient::getIstance().isInitialized())
+  while(ros::ok())
   {
     RtGuiClient::getIstance().sync();
 
