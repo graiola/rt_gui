@@ -38,7 +38,7 @@ class Window : public QWidget
 
 public:
 
-    typedef QMap<QString,WidgetsGroup* > widgets_group_map_t;
+    typedef QMap<QString, QMap<QString,WidgetsGroup*> > widgets_group_map_t;
 
     Window(const QString& title, QWidget* parent = nullptr);
 
@@ -79,10 +79,11 @@ signals:
 private:
     void createTabs();
 
-    bool checkIfDuplicated(const widgets_group_map_t& map, const QString& group_name, const QString& data_name);
+    bool checkIfDuplicated(const widgets_group_map_t& map, const QString &client_name, const QString& group_name, const QString& data_name);
 
     widgets_group_map_t widgets_group_;
-    QTabWidget* tabs_;
+    QTabWidget* client_tabs_;
+    QMap<QString,QTabWidget*> group_tabs_;
     QVBoxLayout* main_layout_;
 
 
