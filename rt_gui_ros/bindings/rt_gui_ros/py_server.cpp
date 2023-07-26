@@ -12,7 +12,7 @@ void catch_signals() {
   signal(SIGKILL, handler);
 }
 
-PYBIND11_MODULE(py_server, m) {
+PYBIND11_MODULE(rt_gui_ros_server, m) {
 
     // optional module docstring
     m.doc() = "pybind11 rt_gui_server plugin";
@@ -29,13 +29,13 @@ PYBIND11_MODULE(py_server, m) {
         .def_static("run", [](const std::string& server_name) {
         catch_signals();
         int argc = 2;
-        char* argv[] = {strdup("py_server"), strdup(server_name.c_str())};
+        char* argv[] = {strdup("rt_gui_ros_server"), strdup(server_name.c_str())};
         return rt_gui::RtGuiServer::getIstance().run(argc, argv);
     })
         .def_static("run", []() {
         catch_signals();
         int argc = 2;
-        char* argv[] = {strdup("py_server"), strdup(RT_GUI_SERVER_NAME)};
+        char* argv[] = {strdup("rt_gui_ros_server"), strdup(RT_GUI_SERVER_NAME)};
         return rt_gui::RtGuiServer::getIstance().run(argc, argv);
     })
         .def_static("stop", []() {
