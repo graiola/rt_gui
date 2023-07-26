@@ -37,7 +37,7 @@ public:
     int argc = 1;
     char* arg0 = strdup(ros_node_name.c_str());
     char* argv[] = {arg0, nullptr};
-    ros::init(argc, argv, ros_node_name, ros::init_options::NoSigintHandler);
+    ros::init(argc, argv, "rt_gui_ros_node", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
     free(arg0);
 
     // Search for the substring in string
