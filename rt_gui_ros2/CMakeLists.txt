@@ -37,9 +37,6 @@ if (${ament_cmake_FOUND})
     find_package(rt_gui_core REQUIRED)
     find_package(rt_gui_msgs REQUIRED)
 
-    # Install Python modules
-    #ament_python_install_package(bindings/${PROJECT_NAME})
-
     include_directories(
         include
         ${rclpy_INCLUDE_DIRS}
@@ -58,6 +55,37 @@ if (${ament_cmake_FOUND})
         src/support/server.cpp)
     target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} Qt5::Core Qt5::Widgets)
 
+    ## Bindings
+    #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
+    find_package(pybind11 QUIET)
+    message(STATUS "check for pybind11")
+    if(${pybind11_FOUND})
+        message(STATUS "compiling python bindings")
+        # Server
+        pybind11_add_module(py_server bindings/${PROJECT_NAME}/py_server.cpp)
+        target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
+
+        # Client
+        pybind11_add_module(py_client bindings/${PROJECT_NAME}/py_client.cpp)
+        target_link_libraries(py_client PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
+        # Install
+        ament_python_install_package(bindings/${PROJECT_NAME})
+
+        install(TARGETS py_server py_client
+          DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
+        )
+
+        #install(PROGRAMS
+        #  bindings/${PROJECT_NAME}/test_client.py
+        #  bindings/${PROJECT_NAME}/test_server.py
+        #  DESTINATION lib/${PROJECT_NAME}
+        #)
+
+    else()
+        message(STATUS "pybind not found")
+    endif()
+
     ## Compile the server node
     add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
     target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
@@ -66,14 +94,14 @@ if (${ament_cmake_FOUND})
     add_executable(test_rosnode test/test_rosnode.cpp)
     target_link_libraries(test_rosnode PRIVATE ${PROJECT_NAME}_server)
 
-    add_executable(test_server include/${PROJECT_NAME}/rt_gui_server.h test/test_server.cpp)
+    add_executable(test_server test/test_server.cpp)
     target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
 
-    add_executable(test_client include/${PROJECT_NAME}/rt_gui_client.h test/test_client.cpp)
+    add_executable(test_client test/test_client.cpp)
     target_link_libraries(test_client PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
 
-    #add_executable(test_client_1 include/rt_gui/rt_gui_client.h test/test_client_1.cpp)
-    #target_link_libraries(test_client_1 PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+    add_executable(test_client_1 test/test_client_1.cpp)
+    target_link_libraries(test_client_1 PRIVATE ${rclcpp_LIBRARIES} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
 
     ## Export information to downstream packages
     ament_export_dependencies(
@@ -91,12 +119,12 @@ if (${ament_cmake_FOUND})
       DESTINATION include
     )
 
-    install(
-      TARGETS ${PROJECT_NAME}_server ${PROJECT_NAME}_server_node
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      RUNTIME DESTINATION bin
-    )
+    install(TARGETS ${PROJECT_NAME}_server_node test_client test_client_1
+           DESTINATION lib/${PROJECT_NAME})
+
+    install(TARGETS ${PROJECT_NAME}_server
+           EXPORT export_${PROJECT_NAME}_server
+           DESTINATION lib)
 
 else()
   message("ament not found, skipping ${PROJECT_NAME} package")
