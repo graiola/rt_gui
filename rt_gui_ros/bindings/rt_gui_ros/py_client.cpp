@@ -5,10 +5,10 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(rt_gui_ros_client, m) {
+PYBIND11_MODULE(py_client, m) {
 
     // optional module docstring
-    m.doc() = "pybind11 rt_gui_client plugin";
+    m.doc() = "pybind11 py_client plugin";
 
     py::class_<rt_gui::RtGuiClient>(m,"RtGuiClient")
         .def_static("init", []()
