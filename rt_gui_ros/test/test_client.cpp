@@ -31,7 +31,6 @@ int main(int argc, char* argv[])
 
   std::vector<double> velocities(3);
 
-  bool init = false;
   std::string server_name, client_name;
   if(argc == 3)
   {
