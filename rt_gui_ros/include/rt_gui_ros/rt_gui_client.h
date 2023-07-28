@@ -269,10 +269,7 @@ private:
   bool check()
   {
     if(!init_ || !ros_node_ || !ros_node_->initDone())
-    {
-      ROS_WARN("RtGuiClient not initialized, please call init() function before adding widgets.");
       return false;
-    }
     else
       return true;
   }

@@ -270,10 +270,7 @@ private:
   bool check()
   {
     if(!init_ || !ros_node_ || !ros_node_->initDone())
-    {
-      RCLCPP_WARN(ros_node_->getNodePtr()->get_logger(), "RtGuiClient not initialized, please call init() function before adding widgets.");
       return false;
-    }
     else
       return true;
   }
