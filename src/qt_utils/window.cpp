@@ -3,6 +3,7 @@
 #include <rt_gui/qt_utils/radio_button.h>
 #include <rt_gui/qt_utils/window.h>
 #include <rt_gui/qt_utils/combo_box.h>
+#include <rt_gui/qt_utils/check_box.h>
 #include <rt_gui/qt_utils/button.h>
 #include <rt_gui/qt_utils/text.h>
 #include <rt_gui/qt_utils/label.h>
@@ -179,6 +180,18 @@ void Window::addComboBox(const QString& client_name, const QString& group_name, 
   }
 }
 
+void Window::addCheckBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QVector<bool>& init)
+{
+  if(!checkIfDuplicated(widgets_group_,client_name,group_name,data_name))
+  {
+    CheckBox* check_box = new CheckBox(client_name,group_name,data_name,list,init);
+    widgets_group_[client_name][group_name]->add(check_box);
+    QObject::connect(check_box, SIGNAL(valueChanged(QVector<bool>)),
+                     this,   SLOT(checkBoxChanged(QVector<bool>)));
+    createTabs();
+  }
+}
+
 void Window::labelFeedback(const QString &client_name, const QString &group_name, const QString &data_name, const QString &value)
 {
   if(widgets_group_.count(client_name) != 0)
@@ -241,6 +254,13 @@ void Window::comboBoxChanged(QString /*value*/)
   ComboBox* combo = qobject_cast<ComboBox*>(sender());
   if(combo!=Q_NULLPTR)
     emit updateComboBox(combo->getClientName(),combo->getGroupName(),combo->getDataName(),combo->getValue());
+}
+
+void Window::checkBoxChanged(QVector<bool> /*value*/)
+{
+  CheckBox* check = qobject_cast<CheckBox*>(sender());
+  if(check!=Q_NULLPTR)
+    emit updateCheckBox(check->getClientName(),check->getGroupName(),check->getDataName(),check->getValue());
 }
 
 void Window::removeWidget(const QString &client_name, const QString &group_name, const QString &data_name)
