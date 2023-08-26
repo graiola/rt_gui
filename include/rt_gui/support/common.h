@@ -7,6 +7,7 @@
 #include <rt_gui/Double.h>
 #include <rt_gui/Int.h>
 #include <rt_gui/List.h>
+#include <rt_gui/Check.h>
 #include <rt_gui/Void.h>
 #include <rt_gui/Text.h>
 
@@ -170,6 +171,13 @@ struct
     std::string update   = "update_list";
     std::string feedback = "feedback_list";
   } list_srvs;
+
+  struct
+  {
+    std::string add      = "add_check";
+    std::string update   = "update_check";
+    std::string feedback = "feedback_check";
+  } check_srvs;
 
   struct
   {

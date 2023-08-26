@@ -44,6 +44,7 @@ add_service_files(
   Double.srv
   Int.srv
   List.srv
+  Check.srv
   Void.srv
   Text.srv
 )

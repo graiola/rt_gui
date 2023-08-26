@@ -302,6 +302,114 @@ protected:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class srv_t, class data_t>
+class VectorHandler
+{
+
+public:
+
+  typedef std::shared_ptr<VectorHandler> Ptr;
+
+  VectorHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
+  {
+    add_srv_       = add_srv;
+    update_srv_    = update_srv;
+    feedback_srv_  = feedback_srv;
+    server_name_   = server_name;
+    client_name_   = client_name;
+    update_        = node.advertiseService(update_srv, &VectorHandler::update, this);
+    add_           = node.serviceClient<srv_t>("/"+server_name+"/"+add_srv);
+    feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
+  }
+
+  bool add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<data_t*> item_data, bool sync)
+  {
+
+    if(item_data.size() != item_names.size())
+    {
+      ROS_WARN("RtGuiServer::add item_data.size()!=item_names.size()!");
+      return false;
+    }
+
+    // Save the item names because they do not change over time
+    item_names_ = item_names;
+
+    srv_t srv;
+    srv.request.client_name = client_name_;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    for(unsigned int i=0;i<item_names.size();i++)
+    {
+      srv.request.list.push_back(item_names[i]);
+      srv.request.value.push_back(*item_data[i]);
+    }
+    if(this->add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    {
+      if(!this->add_.call(srv))
+      {
+        ROS_WARN("RtGuiServer::add call response is false!");
+        return false;
+      }
+      else
+      {
+        for(unsigned int i=0;i<item_names.size();i++)
+          buffer_.add(group_name,data_name+"_"+item_names[i],item_data[i],sync);
+      }
+    }
+    else
+    {
+      ROS_WARN("RtGuiServer::add service is not available!");
+      return false;
+    }
+    return true;
+  }
+
+  bool update(typename srv_t::Request& req, typename srv_t::Response& res)
+  {
+    for(unsigned int i=0; i<req.value.size(); i++)
+      res.resp = updateBuffer(req.group_name,req.data_name+"_"+item_names_[i],req.value[i]);
+    return true;
+  }
+
+  bool sync()
+  {
+    bool res = true;
+    if(sync_mtx_.try_lock())
+    {
+      res = res && buffer_.sync();
+      sync_mtx_.unlock();
+    }
+
+    return res;
+  }
+
+protected:
+
+  data_t updateBuffer(const std::string& group_name, const std::string& data_name, const data_t& value)
+  {
+    sync_mtx_.lock();
+    data_t actual_value = buffer_.update(group_name,data_name,value);
+    sync_mtx_.unlock();
+    return actual_value;
+  }
+
+  std::string update_srv_;
+  std::string add_srv_;
+  std::string feedback_srv_;
+  std::string server_name_;
+  std::string client_name_;
+
+  srv_t srv_;
+  std::vector<std::string> item_names_;
+
+  ros::ServiceServer update_;
+  ros::ServiceClient feedback_;
+  ros::ServiceClient add_;
+  CallbackBuffer<data_t> buffer_;
+  std::mutex sync_mtx_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class IntHandler : public InterfaceHandler<rt_gui::Int,int>
 {
 
@@ -347,6 +455,18 @@ public:
 
   ListHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
     :InterfaceHandler<rt_gui::List,std::string>(node,add_srv,update_srv,feedback_srv,server_name,client_name) {}
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class CheckHandler : public VectorHandler<rt_gui::Check,bool>
+{
+
+public:
+
+  typedef std::shared_ptr<CheckHandler> Ptr;
+
+  CheckHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
+    :VectorHandler<rt_gui::Check,bool>(node,add_srv,update_srv,feedback_srv,server_name,client_name) {}
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,7 @@
+bool[] value
+string[] list
+string client_name
+string group_name
+string data_name
+---
+bool resp
