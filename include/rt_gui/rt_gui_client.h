@@ -137,6 +137,12 @@ public:
               ,this,group_name,data_name,item_names,item_data,sync));
   }
 
+  void addCheckList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::vector<bool>,std::function<void(std::vector<bool>)>,bool)>(&RtGuiClient::_addCheck)
+              ,this,group_name,data_name,item_names,item_data,fun,sync));
+  }
+
   void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::string*,bool,bool)>(&RtGuiClient::_addList)
@@ -510,6 +516,14 @@ private:
   {
     if(check())
       return check_h_->add(group_name,data_name,item_names,item_data,sync);
+    else
+      return false;
+  }
+
+  bool _addCheck(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    if(check())
+      return check_h_->add(group_name,data_name,item_names,item_data,fun,sync);
     else
       return false;
   }

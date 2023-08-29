@@ -47,6 +47,10 @@ PYBIND11_MODULE(rt_gui_client_py, m) {
         {
           rt_gui::RtGuiClient::getIstance().addList(group_name,data_name,list,fun,sync);
         })
+        .def_static("addCheckList", [](const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+        {
+          rt_gui::RtGuiClient::getIstance().addCheckList(group_name,data_name,item_names,item_data,fun,sync);
+        })
         .def_static("addList", [](const std::string& group_name, const std::string& data_name, const std::string& init_value, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
         {
           rt_gui::RtGuiClient::getIstance().addList(group_name,data_name,init_value,list,fun,sync);

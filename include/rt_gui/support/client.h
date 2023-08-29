@@ -310,6 +310,8 @@ public:
 
   typedef std::shared_ptr<VectorHandler> Ptr;
 
+  typedef std::function<void(std::vector<data_t>)> fun_t;
+
   VectorHandler(ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv, std::string server_name, std::string client_name)
   {
     add_srv_       = add_srv;
@@ -322,6 +324,59 @@ public:
     feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
   }
 
+  bool add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<data_t> item_data, fun_t fun, bool sync)
+  {
+
+    if(item_data.size() != item_names.size())
+    {
+      ROS_WARN("RtGuiServer::add item_data.size()!=item_names.size()!");
+      return false;
+    }
+
+    assert(fun);
+    funs_[key_t(group_name,data_name)] = fun;
+    // Save the item names because they do not change over time
+    item_names_[key_t(group_name,data_name)] = item_names;
+    item_data_[key_t(group_name,data_name)].resize(item_names.size());
+    item_data_ptr_[key_t(group_name,data_name)].resize(item_names.size());
+
+    // Initial values
+    for(unsigned int i=0; i<item_data.size(); i++)
+    {
+      item_data_[key_t(group_name,data_name)][i] = item_data[i];
+      item_data_ptr_[key_t(group_name,data_name)][i] = new data_t(item_data[i]);
+    }
+
+    srv_t srv;
+    srv.request.client_name = client_name_;
+    srv.request.group_name = group_name;
+    srv.request.data_name = data_name;
+    for(unsigned int i=0;i<item_names.size();i++)
+    {
+      srv.request.list.push_back(item_names[i]);
+      srv.request.value.push_back(item_data[i]);
+    }
+    if(this->add_.waitForExistence(ros::Duration(_ros_services.wait_service_secs)))
+    {
+      if(!this->add_.call(srv))
+      {
+        ROS_WARN("RtGuiServer::add call response is false!");
+        return false;
+      }
+      else
+      {
+        for(unsigned int i=0;i<item_names.size();i++)
+          buffer_.add(group_name,data_name+"_"+item_names[i],item_data_ptr_[key_t(group_name,data_name)][i],sync);
+      }
+    }
+    else
+    {
+      ROS_WARN("RtGuiServer::add service is not available!");
+      return false;
+    }
+    return true;
+  }
+
   bool add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<data_t*> item_data, bool sync)
   {
 
@@ -332,7 +387,9 @@ public:
     }
 
     // Save the item names because they do not change over time
-    item_names_ = item_names;
+    item_names_[key_t(group_name,data_name)] = item_names;
+    item_data_[key_t(group_name,data_name)].resize(item_names.size());
+    item_data_ptr_[key_t(group_name,data_name)].resize(item_names.size());
 
     srv_t srv;
     srv.request.client_name = client_name_;
@@ -367,16 +424,20 @@ public:
   bool update(typename srv_t::Request& req, typename srv_t::Response& res)
   {
     for(unsigned int i=0; i<req.value.size(); i++)
-      res.resp = updateBuffer(req.group_name,req.data_name+"_"+item_names_[i],req.value[i]);
+      res.resp = updateBuffer(req.group_name,req.data_name+"_"+item_names_[key_t(req.group_name,req.data_name)][i],req.value[i]);
     return true;
   }
 
   bool sync()
   {
     bool res = true;
+
     if(sync_mtx_.try_lock())
     {
       res = res && buffer_.sync();
+
+      updateCallback();
+
       sync_mtx_.unlock();
     }
 
@@ -385,10 +446,22 @@ public:
 
 protected:
 
+  void updateCallback()
+  {
+    for (auto& tmp : funs_)
+    {
+      for(unsigned int i=0;i<item_data_ptr_[key_t(tmp.first.first,tmp.first.second)].size();i++)
+        item_data_[key_t(tmp.first.first,tmp.first.second)][i] = *item_data_ptr_[key_t(tmp.first.first,tmp.first.second)][i];
+
+      funs_[key_t(tmp.first.first,tmp.first.second)](item_data_[key_t(tmp.first.first,tmp.first.second)]);
+    }
+  }
+
   data_t updateBuffer(const std::string& group_name, const std::string& data_name, const data_t& value)
   {
     sync_mtx_.lock();
     data_t actual_value = buffer_.update(group_name,data_name,value);
+    updateCallback();
     sync_mtx_.unlock();
     return actual_value;
   }
@@ -400,11 +473,14 @@ protected:
   std::string client_name_;
 
   srv_t srv_;
-  std::vector<std::string> item_names_;
+  std::map<key_t,std::vector<std::string> > item_names_;
+  std::map<key_t,std::vector<data_t*> > item_data_ptr_;
+  std::map<key_t,std::vector<data_t> > item_data_;
 
   ros::ServiceServer update_;
   ros::ServiceClient feedback_;
   ros::ServiceClient add_;
+  std::map<key_t,fun_t> funs_;
   CallbackBuffer<data_t> buffer_;
   std::mutex sync_mtx_;
 };
