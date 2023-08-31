@@ -31,9 +31,13 @@ PYBIND11_MODULE(rt_gui_client_py, m) {
         {
           rt_gui::RtGuiClient::getIstance().addInt(group_name,data_name,min,max,fun,sync);
         })
-        .def_static("addDouble", [](const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(double)> fun, bool sync = true)
+        .def_static("addDouble", [](const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
         {
           rt_gui::RtGuiClient::getIstance().addDouble(group_name,data_name,min,max,fun,sync);
+        })
+         .def_static("addDouble", [](const std::string& group_name, const std::string& data_name, const double& min, const double& max, const double& init_value, std::function<void(double)> fun, bool sync = true)
+        {
+          rt_gui::RtGuiClient::getIstance().addDouble(group_name,data_name,min,max,init_value,fun,sync);
         })
         .def_static("addBool", [](const std::string& group_name, const std::string& data_name, std::function<void(bool)> fun, bool sync = true)
         {
