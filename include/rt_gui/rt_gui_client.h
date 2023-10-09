@@ -131,6 +131,18 @@ public:
               ,this,group_name,data_name,fun));
   }
 
+  void addCheckList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool*> item_data, bool sync = true)
+  {
+    collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::vector<bool*>,bool)>(&RtGuiClient::_addCheck)
+              ,this,group_name,data_name,item_names,item_data,sync));
+  }
+
+  void addCheckList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::vector<bool>,std::function<void(std::vector<bool>)>,bool)>(&RtGuiClient::_addCheck)
+              ,this,group_name,data_name,item_names,item_data,fun,sync));
+  }
+
   void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::string*,bool,bool)>(&RtGuiClient::_addList)
@@ -193,6 +205,7 @@ public:
       int_h_->sync();
       bool_h_->sync();
       list_h_->sync();
+      check_h_->sync();
       text_h_->sync();
       label_h_->sync();
     }
@@ -237,6 +250,7 @@ private:
       remove_         = global_nh.serviceClient<rt_gui::Void>(remove_service_name);
       bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
       list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,server_name,client_name);
+      check_h_        = std::make_shared<CheckHandler>  (nh,_ros_services.check_srvs.add,_ros_services.check_srvs.update,_ros_services.check_srvs.feedback,server_name,client_name);
       trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,server_name,client_name);
       double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,_ros_services.double_srvs.feedback,server_name,client_name);
       int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,_ros_services.int_srvs.feedback,server_name,client_name);
@@ -498,6 +512,22 @@ private:
       return false;
   }
 
+  bool _addCheck(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool*> item_data, bool sync = true)
+  {
+    if(check())
+      return check_h_->add(group_name,data_name,item_names,item_data,sync);
+    else
+      return false;
+  }
+
+  bool _addCheck(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    if(check())
+      return check_h_->add(group_name,data_name,item_names,item_data,fun,sync);
+    else
+      return false;
+  }
+
   bool _addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
   {
     if(check())
@@ -600,6 +630,7 @@ private:
   DoubleHandler::Ptr double_h_;
   BoolHandler::Ptr bool_h_;
   ListHandler::Ptr list_h_;
+  CheckHandler::Ptr check_h_;
   TriggerHandler::Ptr trigger_h_;
   TextHandler::Ptr text_h_;
   LabelHandler::Ptr label_h_;

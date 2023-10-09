@@ -29,6 +29,19 @@ int main(int argc, char* argv[])
   controller_list.push_back("torque");
   std::string controller_type = "torque";
 
+  std::vector<std::string> options_list;
+  options_list.push_back("option1");
+  options_list.push_back("option2");
+  options_list.push_back("option3");
+  std::vector<bool*> options_values;
+  bool option1 = true;
+  bool option2 = true;
+  bool option3 = false;
+  options_values.push_back(&option1);
+  options_values.push_back(&option2);
+  options_values.push_back(&option3);
+
+
   std::vector<double> velocities(3);
 
   std::string server_name, client_name;
@@ -50,6 +63,7 @@ int main(int argc, char* argv[])
   RtGuiClient::getIstance().addTrigger(std::string("controllers"),std::string("stop"),&stopController);
   RtGuiClient::getIstance().addInt(std::string("controllers"),std::string("steps"),0,10,&steps);
   RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status1"),&status);
+  RtGuiClient::getIstance().addCheckList(std::string("controllers"),std::string("options"),options_list,options_values);
   //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status2"),&status);
   //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status3"),&status);
   //RtGuiClient::getIstance().addLabel(std::string("controllers"),std::string("status4"),&status);
@@ -79,8 +93,15 @@ int main(int argc, char* argv[])
   {
     RtGuiClient::getIstance().sync();
 
-    ROS_INFO_STREAM("Fx: " << Fx <<" "<< "Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] << " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type
-                    <<" Controller_on: " <<(Controller_on ? "true" : "false") << " steps: " << steps << " status: " << status );
+    ROS_INFO_STREAM(" Fx: " << Fx  <<
+                    " Vx: "<<velocities[0] << " Vy: "<< velocities[1] << " Vz: "<< velocities[2] <<
+                    " Filter_on: "<<(Filter_on ? "true" : "false") << " Controller: " << controller_type <<
+                    " Controller_on: " <<(Controller_on ? "true" : "false") <<
+                    " Steps: "   << steps  <<
+                    " Status: "  << status <<
+                    " Option1: " << (option1 ? "true" : "false") << " "
+                    " Option2: " << (option2 ? "true" : "false") << " "
+                    " Option3: " << (option3 ? "true" : "false") << " ");
 
     if((cnt%100) == 0)
     {

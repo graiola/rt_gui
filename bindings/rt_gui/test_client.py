@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import rosparam
-from rt_gui_client_py import RtGuiClient
+from rt_gui.rt_gui_client_py import RtGuiClient
 
 def set_int(v):
     print(v)
@@ -13,6 +13,9 @@ def set_bool(v):
     print(v)
 
 def set_list(v):
+    print(v)
+
+def set_checklist(v):
     print(v)
   
 if __name__ == '__main__':
@@ -29,6 +32,7 @@ if __name__ == '__main__':
     client.addDouble('test','double',1,5,set_double,True)
     client.addBool('test','bool',set_bool,True)
     client.addList('test','list',['a', 'b', 'c', 'd', 'e'],set_list,True)
+    client.addCheckList('test','checklist',['a', 'b', 'c', 'd', 'e'],[True, False, False, False, False],set_checklist,True)
     
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
