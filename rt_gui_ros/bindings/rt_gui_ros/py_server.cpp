@@ -12,7 +12,7 @@ void catch_signals() {
   signal(SIGKILL, handler);
 }
 
-PYBIND11_MODULE(py_server, m) {
+PYBIND11_MODULE(rt_gui_server_py, m) {
 
     // optional module docstring
     m.doc() = "pybind11 py_server plugin";

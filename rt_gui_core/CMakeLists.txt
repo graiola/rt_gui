@@ -49,6 +49,7 @@ include_directories(
 add_library(qt_utils SHARED
     include/${PROJECT_NAME}/qt_utils/window.h
     include/${PROJECT_NAME}/qt_utils/double_slider.h
+    include/${PROJECT_NAME}/qt_utils/check_box.h
     include/${PROJECT_NAME}/qt_utils/int_slider.h
     include/${PROJECT_NAME}/qt_utils/radio_button.h
     include/${PROJECT_NAME}/qt_utils/combo_box.h
@@ -57,6 +58,7 @@ add_library(qt_utils SHARED
     include/${PROJECT_NAME}/qt_utils/label.h
     src/qt_utils/window.cpp
     src/qt_utils/double_slider.cpp
+    src/qt_utils/check_box.cpp
     src/qt_utils/int_slider.cpp
     src/qt_utils/radio_button.cpp
     src/qt_utils/combo_box.cpp

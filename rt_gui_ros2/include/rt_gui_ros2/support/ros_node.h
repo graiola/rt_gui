@@ -6,6 +6,7 @@
 #include <rclcpp/init_options.hpp>
 
 #include <rt_gui_msgs/srv/bool.hpp>
+#include <rt_gui_msgs/srv/check.hpp>
 #include <rt_gui_msgs/srv/double.hpp>
 #include <rt_gui_msgs/srv/int.hpp>
 #include <rt_gui_msgs/srv/list.hpp>

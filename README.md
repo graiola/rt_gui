@@ -8,7 +8,7 @@ check the tests for some examples in c++ and python: https://github.com/graiola/
 
 ## dependencies
 
-`sudo apt-get update && sudo apt-get install libreadline-dev libqwt-qt5-dev -y`
+`sudo apt-get update && sudo apt-get install libreadline-dev qtbase5-dev libqwt-qt5-dev ros-${ROS_DISTRO}-pybind11-catkin -y`
 
 ## todo
 

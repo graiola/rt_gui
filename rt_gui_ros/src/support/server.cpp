@@ -148,6 +148,36 @@ bool ListServerHandler::updateComboBox(QString client_name, QString group_name, 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+CheckServerHandler::CheckServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
+  :WindowServerHandler<rt_gui_msgs::Check,bool>(window,node,add_srv,update_srv,feedback_srv)
+{
+  QObject::connect(this,    SIGNAL(addCheckBox(const QString&, const QString&, const QString&, const QStringList&, const QVector<bool>&)),
+                   window_, SLOT(addCheckBox(const QString&, const QString&, const QString&, const QStringList&, const QVector<bool>&)));
+
+  QObject::connect(window_, SIGNAL(updateCheckBox(QString, QString, QString, QVector<bool>)),
+                   this,    SLOT(updateCheckBox(QString, QString, QString, QVector<bool>)));
+}
+
+bool CheckServerHandler::addWidget(rt_gui_msgs::Check::Request& req, rt_gui_msgs::Check::Response& /*res*/)
+{
+  QStringList list;
+  QVector<bool> value;
+  for(unsigned int i=0;i<req.value.size();i++)
+  {
+    list.push_back(QString::fromStdString(req.list[i]));
+    value.push_back(req.value[i]);
+  }
+  emit addCheckBox(QString::fromStdString(req.client_name),QString::fromStdString(req.group_name),QString::fromStdString(req.data_name),list,value);
+  return true;
+}
+
+bool CheckServerHandler::updateCheckBox(QString client_name, QString group_name, QString data_name, QVector<bool> value)
+{
+  return update(client_name.toStdString(),group_name.toStdString(),data_name.toStdString(),value.toStdVector());
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 TextServerHandler::TextServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv)
   :WindowServerHandler<rt_gui_msgs::Text,std::string>(window,node,add_srv,update_srv,feedback_srv)
 {

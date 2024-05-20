@@ -48,140 +48,152 @@ public:
   void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const int&,const int&,int*,bool,bool)>(&RtGuiClient::_addInt)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::function<void(int)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const int&, const int&,std::function<void(int)>,bool)>(&RtGuiClient::_addInt)
-              ,this,group_name,data_name,min,max,fun,sync));
+                              ,this,group_name,data_name,min,max,fun,sync));
   }
 
   void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, int init_value, std::function<void(int)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const int&,const int&,int,std::function<void(int)>,bool)>(&RtGuiClient::_addInt)
-              ,this,group_name,data_name,min,max,init_value,fun,sync));
+                              ,this,group_name,data_name,min,max,init_value,fun,sync));
   }
 
   void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, std::vector<int>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const int&,const int&,std::vector<int>*,bool,bool)>(&RtGuiClient::_addInt)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   void addInt(const std::string& group_name, const std::string& data_name, const int& min, const int& max, Eigen::VectorXi* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const int&,const int&,Eigen::VectorXi*,bool,bool)>(&RtGuiClient::_addInt)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const double&,const double&,double*,bool,bool)>(&RtGuiClient::_addDouble)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::function<void(double)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const double&,const double&,std::function<void(double)>,bool)>(&RtGuiClient::_addDouble)
-              ,this,group_name,data_name,min,max,fun,sync));
+                              ,this,group_name,data_name,min,max,fun,sync));
   }
 
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, double init_value, std::function<void(double)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const double&,const double&,double,std::function<void(double)>,bool)>(&RtGuiClient::_addDouble)
-              ,this,group_name,data_name,min,max,init_value,fun,sync));
+                              ,this,group_name,data_name,min,max,init_value,fun,sync));
   }
 
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, std::vector<double>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const double&,const double&,std::vector<double>*,bool,bool)>(&RtGuiClient::_addDouble)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   template<typename Derived>
   void addDouble(const std::string& group_name, const std::string& data_name, const double& min, const double& max, Eigen::MatrixBase<Derived>* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const double&,const double&,Eigen::MatrixBase<Derived>*,bool,bool)>(&RtGuiClient::_addDouble)
-              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,min,max,data_ptr,sync,load_init_from_server));
   }
 
   void addBool(const std::string& group_name, const std::string& data_name, std::function<void(bool)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::function<void(bool)>,bool)>(&RtGuiClient::_addBool)
-              ,this,group_name,data_name,fun,sync));
+                              ,this,group_name,data_name,fun,sync));
   }
 
   void addBool(const std::string& group_name, const std::string& data_name, bool init_value, std::function<void(bool)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,bool,std::function<void(bool)>,bool)>(&RtGuiClient::_addBool)
-              ,this,group_name,data_name,init_value,fun,sync));
+                              ,this,group_name,data_name,init_value,fun,sync));
   }
 
   void addBool(const std::string& group_name, const std::string& data_name, bool* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,bool*,bool,bool)>(&RtGuiClient::_addBool)
-              ,this,group_name,data_name,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,data_ptr,sync,load_init_from_server));
   }
 
   void addTrigger(const std::string& group_name, const std::string& data_name, std::function<void()> fun)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::function<void()>)>(&RtGuiClient::_addTrigger)
-              ,this,group_name,data_name,fun));
+                              ,this,group_name,data_name,fun));
+  }
+
+  void addCheckList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool*> item_data, bool sync = true)
+  {
+    collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::vector<bool*>,bool)>(&RtGuiClient::_addCheck)
+                              ,this,group_name,data_name,item_names,item_data,sync));
+  }
+
+  void addCheckList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::vector<bool>,std::function<void(std::vector<bool>)>,bool)>(&RtGuiClient::_addCheck)
+                              ,this,group_name,data_name,item_names,item_data,fun,sync));
   }
 
   void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::string*,bool,bool)>(&RtGuiClient::_addList)
-              ,this,group_name,data_name,list,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,list,data_ptr,sync,load_init_from_server));
   }
 
   void addList(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,const std::vector<std::string>&,std::function<void(std::string)>,bool)>(&RtGuiClient::_addList)
-              ,this,group_name,data_name,list,fun,sync));
+                              ,this,group_name,data_name,list,fun,sync));
   }
 
   void addList(const std::string& group_name, const std::string& data_name, std::string init_value, const std::vector<std::string>& list, std::function<void(std::string)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::string,const std::vector<std::string>&,std::function<void(std::string)>,bool)>(&RtGuiClient::_addList)
-              ,this,group_name,data_name,init_value,list,fun,sync));
+                              ,this,group_name,data_name,init_value,list,fun,sync));
   }
 
   void addText(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::string*,bool,bool)>(&RtGuiClient::_addText)
-              ,this,group_name,data_name,data_ptr,sync,load_init_from_server));
+                              ,this,group_name,data_name,data_ptr,sync,load_init_from_server));
   }
 
   void addText(const std::string& group_name, const std::string& data_name, std::function<void(std::string)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::function<void(std::string)>,bool)>(&RtGuiClient::_addText)
-              ,this,group_name,data_name,fun,sync));
+                              ,this,group_name,data_name,fun,sync));
   }
 
   void addText(const std::string& group_name, const std::string& data_name, std::string init_value, std::function<void(std::string)> fun, bool sync = true)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::string,std::function<void(std::string)>,bool)>(&RtGuiClient::_addText)
-              ,this,group_name,data_name,init_value,fun,sync));
+                              ,this,group_name,data_name,init_value,fun,sync));
   }
 
   void addLabel(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool load_init_from_server = false)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&,std::string*,bool)>(&RtGuiClient::_addLabel)
-              ,this,group_name,data_name,data_ptr,load_init_from_server));
+                              ,this,group_name,data_name,data_ptr,load_init_from_server));
   }
 
   void remove(const std::string& group_name, const std::string& data_name)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&,const std::string&)>(&RtGuiClient::_remove)
-              ,this,group_name,data_name));
+                              ,this,group_name,data_name));
   }
 
   void remove(const std::string& group_name)
   {
     collector_.push(std::bind(static_cast<bool(RtGuiClient::*)(const std::string&)>(&RtGuiClient::_remove)
-              ,this,group_name));
+                              ,this,group_name));
   }
 
   void sync()
@@ -208,7 +220,7 @@ public:
       requests_ = std::thread(&RtGuiClient::_requests,this);
     }
     else {
-       ROS_WARN_STREAM("RtGuiClient has been already initialized! You are calling the same instance twice!");
+      ROS_WARN_STREAM("RtGuiClient has been already initialized! You are calling the same instance twice!");
     }
   }
 
@@ -524,6 +536,22 @@ private:
       return false;
   }
 
+  bool _addCheck(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool*> item_data, bool sync = true)
+  {
+    if(check())
+      return check_h_->add(group_name,data_name,item_names,item_data,sync);
+    else
+      return false;
+  }
+
+  bool _addCheck(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<bool> item_data, std::function<void(std::vector<bool>)> fun, bool sync = true)
+  {
+    if(check())
+      return check_h_->add(group_name,data_name,item_names,item_data,fun,sync);
+    else
+      return false;
+  }
+
   bool _addText(const std::string& group_name, const std::string& data_name, std::string* data_ptr, bool sync = true, bool load_init_from_server = false)
   {
     if(check())
@@ -599,6 +627,7 @@ private:
   DoubleHandler::Ptr double_h_;
   BoolHandler::Ptr bool_h_;
   ListHandler::Ptr list_h_;
+  CheckHandler::Ptr check_h_;
   TriggerHandler::Ptr trigger_h_;
   TextHandler::Ptr text_h_;
   LabelHandler::Ptr label_h_;

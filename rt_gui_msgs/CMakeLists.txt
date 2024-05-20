@@ -23,6 +23,7 @@ if(${catkin_FOUND})
     add_service_files(
       FILES
       Bool.srv
+      Check.srv
       Double.srv
       Int.srv
       List.srv
@@ -42,6 +43,7 @@ elseif(${ament_cmake_FOUND})
 
     rosidl_generate_interfaces(${PROJECT_NAME}
         "srv/Bool.srv"
+        "srv/Check.srv"
         "srv/Double.srv"
         "srv/Int.srv"
         "srv/List.srv"

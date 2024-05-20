@@ -51,6 +51,7 @@ public slots:
     void addIntSlider(const QString& client_name, const QString& group_name, const QString& data_name, const int& min, const int& max, const int& init);
     void addRadioButton(const QString& client_name, const QString& group_name, const QString& data_name, const bool& init);
     void addComboBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QString& init);
+    void addCheckBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QVector<bool>& init);
 
     // Feedback slots
     void labelFeedback(const QString& client_name, const QString& group_name, const QString& data_name, const QString& value);
@@ -63,6 +64,7 @@ public slots:
     void doubleSliderChanged(double value);
     void radioButtonChanged(bool value);
     void comboBoxChanged(QString value);
+    void checkBoxChanged(QVector<bool> value);
 
     // Remove slot
     void removeWidget(const QString& client_name, const QString& group_name, const QString& data_name);
@@ -75,6 +77,7 @@ signals:
     void updateIntSlider(QString client_name, QString group_name, QString data_name, int value);
     void updateRadioButton(QString client_name, QString group_name, QString data_name, bool value);
     void updateComboBox(QString client_name, QString group_name, QString data_name, QString value);
+    void updateCheckBox(QString client_name, QString group_name, QString data_name, QVector<bool> value);
 
 private:
     void createTabs();

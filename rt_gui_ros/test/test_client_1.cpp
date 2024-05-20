@@ -5,7 +5,6 @@ using namespace rt_gui;
 int main(int argc, char* argv[])
 {
   double Fz = 0.0;
-  bool init = false;
   std::string map_path = "/tmp/map.map";
   std::string server_name, client_name;
   if(argc == 3)

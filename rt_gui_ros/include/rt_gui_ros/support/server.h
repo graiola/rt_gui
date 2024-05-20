@@ -65,6 +65,18 @@ public:
     return update(srv);
   }
 
+  bool update(const std::string& client_name, const std::string& group_name, const std::string& data_name, std::vector<data_t> value)
+  {
+    srv_t srv;
+    srv.request.client_name = client_name;
+    srv.request.data_name   = data_name;
+    srv.request.group_name  = group_name;
+    srv.request.value.resize(value.size());
+    for(unsigned int i=0; i<value.size(); i++)
+      srv.request.value[i] = value[i];
+    return update(srv);
+  }
+
   bool update(const std::string& client_name, const std::string& group_name, const std::string& data_name, data_t value, data_t& actual_value)
   {
     srv_t srv;
@@ -109,6 +121,27 @@ private slots:
 
 signals:
   void addButton(const QString& client_name, const QString& group_name, const QString& data_name);
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class CheckServerHandler : public QObject, WindowServerHandler<rt_gui_msgs::Check,bool>
+{
+
+  Q_OBJECT
+
+public:
+
+  typedef std::shared_ptr<CheckServerHandler> Ptr;
+
+  CheckServerHandler(Window* window, ros::NodeHandle& node, std::string add_srv, std::string update_srv, std::string feedback_srv);
+
+  bool addWidget(rt_gui_msgs::Check::Request& req, rt_gui_msgs::Check::Response& res);
+
+private slots:
+  bool updateCheckBox(QString client_name, QString group_name, QString data_name, QVector<bool> value);
+
+signals:
+  void addCheckBox(const QString& client_name, const QString& group_name, const QString& data_name, const QStringList& list, const QVector<bool>& init);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -262,6 +295,7 @@ public:
     ,int_h_(nullptr)
     ,bool_h_(nullptr)
     ,list_h_(nullptr)
+    ,check_h_(nullptr)
     ,trigger_h_(nullptr)
     ,text_h_(nullptr)
     ,label_h_(nullptr)
@@ -271,6 +305,7 @@ public:
   IntServerHandler::Ptr int_h_;
   BoolServerHandler::Ptr bool_h_;
   ListServerHandler::Ptr list_h_;
+  CheckServerHandler::Ptr check_h_;
   TriggerServerHandler::Ptr trigger_h_;
   TextServerHandler::Ptr text_h_;
   LabelServerHandler::Ptr label_h_;
@@ -303,6 +338,7 @@ public:
     handlers_.int_h_          = std::make_shared<IntServerHandler>    ( window_,nh,  _ros_services.int_srvs.add    ,  _ros_services.int_srvs.update     ,  _ros_services.int_srvs.feedback     );
     handlers_.bool_h_         = std::make_shared<BoolServerHandler>   ( window_,nh,  _ros_services.bool_srvs.add   ,  _ros_services.bool_srvs.update    ,  _ros_services.bool_srvs.feedback    );
     handlers_.list_h_         = std::make_shared<ListServerHandler>   ( window_,nh,  _ros_services.list_srvs.add   ,  _ros_services.list_srvs.update    ,  _ros_services.list_srvs.feedback    );
+    handlers_.check_h_        = std::make_shared<CheckServerHandler>  ( window_,nh,  _ros_services.check_srvs.add  ,  _ros_services.check_srvs.update   ,  _ros_services.check_srvs.feedback   );
     handlers_.trigger_h_      = std::make_shared<TriggerServerHandler>( window_,nh,  _ros_services.trigger_srvs.add,  _ros_services.trigger_srvs.update ,  _ros_services.trigger_srvs.feedback );
     handlers_.text_h_         = std::make_shared<TextServerHandler>   ( window_,nh,  _ros_services.text_srvs.add   ,  _ros_services.text_srvs.update    ,  _ros_services.text_srvs.feedback    );
     handlers_.label_h_        = std::make_shared<LabelServerHandler>  ( window_,nh,  _ros_services.label_srvs.add  ,  _ros_services.label_srvs.update   ,  _ros_services.label_srvs.feedback   );

@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 
 #include <rt_gui_msgs/Bool.h>
+#include <rt_gui_msgs/Check.h>
 #include <rt_gui_msgs/Double.h>
 #include <rt_gui_msgs/Int.h>
 #include <rt_gui_msgs/List.h>

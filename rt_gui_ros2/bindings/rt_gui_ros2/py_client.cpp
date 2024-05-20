@@ -5,7 +5,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(py_client, m) {
+PYBIND11_MODULE(rt_gui_client_py, m) {
 
     // optional module docstring
     m.doc() = "pybind11 py_client plugin";

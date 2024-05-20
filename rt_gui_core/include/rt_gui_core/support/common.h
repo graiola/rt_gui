@@ -163,6 +163,13 @@ struct
 
   struct
   {
+    std::string add      = "add_check";
+    std::string update   = "update_check";
+    std::string feedback = "feedback_check";
+  } check_srvs;
+
+  struct
+  {
     std::string add      = "add_trigger";
     std::string update   = "update_trigger";
     std::string feedback = "feedback_trigger";

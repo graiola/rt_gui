@@ -4,6 +4,7 @@ add_library(qt_utils SHARED
     include/rt_gui/qt_utils/int_slider.h
     include/rt_gui/qt_utils/radio_button.h
     include/rt_gui/qt_utils/combo_box.h
+    include/rt_gui/qt_utils/check_box.h
     include/rt_gui/qt_utils/button.h
     include/rt_gui/qt_utils/text.h
     include/rt_gui/qt_utils/label.h
@@ -12,6 +13,7 @@ add_library(qt_utils SHARED
     src/qt_utils/int_slider.cpp
     src/qt_utils/radio_button.cpp
     src/qt_utils/combo_box.cpp
+    src/qt_utils/check_box.cpp
     src/qt_utils/button.cpp
     src/qt_utils/text.cpp
     src/qt_utils/label.cpp

@@ -12,6 +12,10 @@ int main(int argc, char *argv[])
   list.push_back("impedance");
   list.push_back("admittance");
   list.push_back("position");
+  QVector<bool> list_bool;
+  list_bool.push_back(true);
+  list_bool.push_back(true);
+  list_bool.push_back(false);
 
   window.addDoubleSlider(QString("test_qt"),QString("forces"),QString("Fx"),-10.5,10.5,0.0);
   window.addDoubleSlider(QString("test_qt"),QString("forces"),QString("Fy"),-10.5,10.5,0.0);
@@ -21,6 +25,7 @@ int main(int argc, char *argv[])
   window.addButton(QString("test_qt"),QString("main"),QString("stop"));
   window.addIntSlider(QString("test_qt"),QString("main"),QString("steps"),0,5,1);
   window.addText(QString("test_qt"),QString("main"),QString("map"),QString("map path"));
+  window.addCheckBox(QString("test_qt"),QString("controllers"),QString("activated"),list,list_bool);
 
   //window.removeWidget(QString("velocities"),QString("Filter"));
 

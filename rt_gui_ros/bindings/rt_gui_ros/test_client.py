@@ -14,6 +14,9 @@ def set_bool(v):
 
 def set_list(v):
     print(v)
+
+def set_checklist(v):
+    print(v)
   
 if __name__ == '__main__':
     rospy.init_node('test_client')
@@ -29,6 +32,7 @@ if __name__ == '__main__':
     client.addDouble('test','double',1,5,set_double,True)
     client.addBool('test','bool',set_bool,True)
     client.addList('test','list',['a', 'b', 'c', 'd', 'e'],set_list,True)
+    client.addCheckList('test','checklist',['a', 'b', 'c', 'd', 'e'],[True, False, False, False, False],set_checklist,True)
     
     rate = rospy.Rate(10) # 10hz
     while not rospy.is_shutdown():
