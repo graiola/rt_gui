@@ -6,11 +6,14 @@
 #include <thread>
 #include <mutex>
 #include <tuple>
+#include <map>
+#include <string>
+#include <functional>
 
 namespace rt_gui
 {
 
-typedef std::pair<std::string,std::string> key_t;
+using key_t = std::pair<std::string, std::string>;
 
 template <class data_t>
 class CallbackBuffer {
@@ -18,176 +21,138 @@ class CallbackBuffer {
 public:
 
   using callback_t = std::function<void(data_t)>;
+  using value_t = std::tuple<data_t*, data_t, callback_t, bool, bool>;
+  using buffer_t = std::map<key_t, value_t>;
 
-  CallbackBuffer() {}
-  //                   0       1         2       3   4 - 0 client data, 1 buffer data, 2 callback, 3 sync, 4 read only data
-  typedef std::tuple<data_t*,data_t,callback_t,bool,bool> value_t;
-  typedef std::map<key_t,value_t> buffer_t;
+  CallbackBuffer() = default;
 
+  // Method to add data with callback
   bool add(const std::string& key1, const std::string& key2, data_t data, callback_t callback, bool sync = true)
   {
-    if(callback!=nullptr)
-    {
-      buffer_[key_t(key1,key2)] = value_t(nullptr,data,callback,sync,false);
-      old_values_[key_t(key1,key2)] = data;
+    if (callback) {
+      key_t key{key1, key2};
+      buffer_.emplace(key, value_t(nullptr, data, std::move(callback), sync, false));
+      old_values_[key] = data;
       return true;
     }
-    else
-      return false;
+    return false;
   }
 
+  // Method to add data by pointer
   bool add(const std::string& key1, const std::string& key2, data_t* data_ptr, bool sync = true, bool read_only = false)
   {
-    if(data_ptr!=nullptr)
-    {
-      buffer_[key_t(key1,key2)] = value_t(data_ptr,*data_ptr,nullptr,sync,read_only);
-      old_values_[key_t(key1,key2)] = *data_ptr;
+    if (data_ptr) {
+      key_t key{key1, key2};
+      buffer_.emplace(key, value_t(data_ptr, *data_ptr, nullptr, sync, read_only));
+      old_values_[key] = *data_ptr;
       return true;
     }
-    else
-      return false;
+    return false;
   }
 
+  // Method to update buffer data
   data_t update(const std::string& key1, const std::string& key2, const data_t& value)
   {
-    data_t actual_value;
-    if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // get the actual value from the buffer before writing it with the new one
-      actual_value = *std::get<0>(buffer_[key_t(key1,key2)]);
-    else
-      actual_value = value;
+    key_t key{key1, key2};
+    auto it = buffer_.find(key);
+    if (it == buffer_.end()) {
+      throw std::runtime_error("Key not found in buffer!");
+    }
 
-    if(!std::get<4>(buffer_[key_t(key1,key2)])) // read_only - If not read only, copy the data from buffer to pointer
-    {
-      if(std::get<3>(buffer_[key_t(key1,key2)])) // sync - copy the new data in the buffer
-        std::get<1>(buffer_[key_t(key1,key2)]) = value;
-      else // copy the data directly into the raw data or call the callback
-      {
-        if (std::get<0>(buffer_[key_t(key1,key2)])!=nullptr) // data pointer still exists
-          *std::get<0>(buffer_[key_t(key1,key2)]) = value;
-        else if(std::get<2>(buffer_[key_t(key1,key2)])!=nullptr) // callback still exists
-          std::get<2>(buffer_[key_t(key1,key2)])(value);
-        else
-          throw std::runtime_error("Missing pointer in buffer!");
+    data_t actual_value = std::get<0>(it->second) ? *std::get<0>(it->second) : value;
+
+    if (!std::get<4>(it->second)) { // if not read-only
+      if (std::get<3>(it->second)) { // if sync is true
+        std::get<1>(it->second) = value;
+      } else {
+        auto* data_ptr = std::get<0>(it->second);
+        if (data_ptr) {
+          *data_ptr = value;
+        } else if (auto& callback = std::get<2>(it->second)) {
+          callback(value);
+        } else {
+          throw std::runtime_error("Missing pointer and callback in buffer!");
+        }
       }
     }
-    //old_values_[key_t(key1,key2)] = actual_value;
     return actual_value;
   }
 
+  // Sync buffer data
   bool sync()
   {
-    for(auto tmp_map : buffer_)
-    {
-      if(std::get<3>(tmp_map.second)) // Sync
-      {
-        if (std::get<0>(tmp_map.second)!=nullptr) // data pointer still exists
-        {
-          //old_values_[key_t(tmp_map.first.first,tmp_map.first.second)] = *std::get<0>(tmp_map.second);
-          *std::get<0>(tmp_map.second) = std::get<1>(tmp_map.second);
-        }
-        else if (std::get<2>(tmp_map.second)!=nullptr) // callback still exists
-          std::get<2>(tmp_map.second)(std::get<1>(tmp_map.second));
-        else
+    for (auto& [key, val] : buffer_) {
+      if (std::get<3>(val)) { // sync
+        auto* data_ptr = std::get<0>(val);
+        if (data_ptr) {
+          *data_ptr = std::get<1>(val);
+        } else if (auto& callback = std::get<2>(val)) {
+          callback(std::get<1>(val));
+        } else {
           return false;
-
+        }
       }
     }
     return true;
   }
 
+  // Retrieve value from buffer
   bool getValue(const std::string& key1, const std::string& key2, data_t& value)
   {
-    if(std::get<0>(buffer_[key_t(key1,key2)])!=nullptr)
-    {
-      value = *std::get<0>(buffer_[key_t(key1,key2)]);
+    key_t key{key1, key2};
+    auto it = buffer_.find(key);
+    if (it != buffer_.end() && std::get<0>(it->second)) {
+      value = *std::get<0>(it->second);
       return true;
     }
-    else
-      return false;
+    return false;
   }
 
+  // Check if data has changed
   bool isDataChanged(const std::string& key1, const std::string& key2)
   {
-    bool changed = false;
-    if(std::get<0>(buffer_[key_t(key1,key2)])!=nullptr)
-      if(old_values_[key_t(key1,key2)] != *std::get<0>(buffer_[key_t(key1,key2)]))
-      {
-        changed = true;
-        old_values_[key_t(key1,key2)] = *std::get<0>(buffer_[key_t(key1,key2)]);
+    key_t key{key1, key2};
+    auto it = buffer_.find(key);
+    if (it != buffer_.end() && std::get<0>(it->second)) {
+      if (old_values_[key] != *std::get<0>(it->second)) {
+        old_values_[key] = *std::get<0>(it->second);
+        return true;
       }
-    return changed;
+    }
+    return false;
   }
 
-  const buffer_t& getBuffer()
+  // Accessor for the buffer
+  const buffer_t& getBuffer() const
   {
     return buffer_;
   }
 
 private:
   buffer_t buffer_;
-  std::map<key_t,data_t> old_values_;
+  std::map<key_t, data_t> old_values_;
 };
 
 #define RT_GUI_SERVER_NAME "rt_gui_server"
 #define RT_GUI_CLIENT_NAME "rt_gui_client"
 
+// Define ros service names using a struct
 struct
 {
-  struct
-  {
-    std::string add      = "add_double";
-    std::string update   = "update_double";
-    std::string feedback = "feedback_double";
-  } double_srvs;
+  struct ServiceGroup {
+    std::string add;
+    std::string update;
+    std::string feedback;
+  };
 
-  struct
-  {
-    std::string add      = "add_int";
-    std::string update   = "update_int";
-    std::string feedback = "feedback_int";
-  } int_srvs;
-
-  struct
-  {
-    std::string add      = "add_bool";
-    std::string update   = "update_bool";
-    std::string feedback = "feedback_bool";
-  } bool_srvs;
-
-  struct
-  {
-    std::string add      = "add_list";
-    std::string update   = "update_list";
-    std::string feedback = "feedback_list";
-  } list_srvs;
-
-  struct
-  {
-    std::string add      = "add_check";
-    std::string update   = "update_check";
-    std::string feedback = "feedback_check";
-  } check_srvs;
-
-  struct
-  {
-    std::string add      = "add_trigger";
-    std::string update   = "update_trigger";
-    std::string feedback = "feedback_trigger";
-  } trigger_srvs;
-
-  struct
-  {
-    std::string add      = "add_text";
-    std::string update   = "update_text";
-    std::string feedback = "feedback_text";
-  } text_srvs;
-
-  struct
-  {
-    std::string add      = "add_label";
-    std::string update   = "update_label";
-    std::string feedback = "feedback_label";
-  } label_srvs;
+  ServiceGroup double_srvs{"add_double", "update_double", "feedback_double"};
+  ServiceGroup int_srvs{"add_int", "update_int", "feedback_int"};
+  ServiceGroup bool_srvs{"add_bool", "update_bool", "feedback_bool"};
+  ServiceGroup list_srvs{"add_list", "update_list", "feedback_list"};
+  ServiceGroup check_srvs{"add_check", "update_check", "feedback_check"};
+  ServiceGroup trigger_srvs{"add_trigger", "update_trigger", "feedback_trigger"};
+  ServiceGroup text_srvs{"add_text", "update_text", "feedback_text"};
+  ServiceGroup label_srvs{"add_label", "update_label", "feedback_label"};
 
   unsigned int n_threads = 3;
   double wait_service_secs = 10.0;
@@ -196,6 +161,6 @@ struct
 
 } _ros_services;
 
-} // namespace
+} // namespace rt_gui
 
 #endif
