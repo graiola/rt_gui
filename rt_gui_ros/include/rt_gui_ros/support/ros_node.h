@@ -2,7 +2,6 @@
 #define RT_GUI_ROS_SUPPORT_ROS_NODE_H
 
 #include <ros/ros.h>
-
 #include <rt_gui_msgs/Bool.h>
 #include <rt_gui_msgs/Check.h>
 #include <rt_gui_msgs/Double.h>
@@ -12,10 +11,9 @@
 #include <rt_gui_msgs/Text.h>
 
 #include <memory>
-#include <atomic>
+#include <optional>
 #include <thread>
 #include <mutex>
-#include <tuple>
 
 namespace rt_gui
 {
@@ -23,50 +21,40 @@ namespace rt_gui
 class RosNode
 {
 public:
-  RosNode(const std::string& ros_node_name, const unsigned int& n_threads)
+  RosNode(const std::string& ros_node_name, unsigned int n_threads) noexcept(false)
   {
-    init(ros_node_name,n_threads);
+    init(ros_node_name, n_threads);
   }
 
-  RosNode()
-  {
-    init_ = false;
-  }
+  RosNode() = default;
 
-  void init(const std::string& ros_node_name, const unsigned int& n_threads)
+  void init(const std::string& ros_node_name, unsigned int n_threads) noexcept(false)
   {
+    static constexpr char arg[] = "__name:=";
+    if (ros_nh_ || spinner_)
+      reset();
+
     int argc = 1;
-    char* arg0 = strdup(ros_node_name.c_str());
-    char* argv[] = {arg0, nullptr};
-    ros::init(argc, argv, "rt_gui_ros_node", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
-    free(arg0);
+    std::vector<char*> argv{strdup(ros_node_name.c_str()), nullptr};  // Manage argv memory safely
+    ros::init(argc, argv.data(), "rt_gui_ros_node", ros::init_options::NoSigintHandler | ros::init_options::AnonymousName);
+    free(argv[0]); // Free after init to avoid memory leak
 
-    // Search for the substring in string
     std::string ros_node_name_fix = ros_node_name;
-    std::string arg = "__name:=";
-    size_t idx = ros_node_name_fix.find(arg);
-    if (idx != std::string::npos)
-        ros_node_name_fix.erase(idx, arg.length());
+    if (auto idx = ros_node_name_fix.find(arg); idx != std::string::npos)
+      ros_node_name_fix.erase(idx, sizeof(arg) - 1);
 
-    if(ros::master::check())
-    {
-      ros_nh_.reset(new ros::NodeHandle(ros_node_name_fix));
-    }
-    else
-    {
+    if (ros::master::check()) {
+      ros_nh_ = std::make_shared<ros::NodeHandle>(ros_node_name_fix);
+      spinner_ = std::make_unique<ros::AsyncSpinner>(n_threads);
+      spinner_->start();
+    } else {
       throw std::runtime_error("roscore not found... did you start the server?");
     }
-
-    spinner_.reset(new ros::AsyncSpinner(n_threads)); // Use n_threads to keep the ros magic alive
-    spinner_->start();
-
-    init_ = true;
   }
 
   ~RosNode()
   {
-    if(init_ == true)
-    {
+    if (ros_nh_ && spinner_) {
       ros_nh_->shutdown();
       spinner_->stop();
     }
@@ -74,47 +62,43 @@ public:
 
   ros::NodeHandle& getNode()
   {
-    if(init_ == true)
-      return *ros_nh_.get();
-    else
-      throw std::runtime_error("RosNode not initialized");
+    if (!ros_nh_) throw std::runtime_error("RosNode not initialized");
+    return *ros_nh_;
   }
 
-  std::shared_ptr<ros::NodeHandle> getNodePtr()
+  std::shared_ptr<ros::NodeHandle> getNodePtr() const
   {
-    if(init_ == true)
-      return ros_nh_;
-    else
-      throw std::runtime_error("RosNode not initialized");
+    if (!ros_nh_) throw std::runtime_error("RosNode not initialized");
+    return ros_nh_;
   }
 
   bool reset()
   {
-    if(init_ == true)
-    {
+    if (ros_nh_ && spinner_) {
       ros_nh_->shutdown();
       spinner_->stop();
-      init_ = false;
+      ros_nh_.reset();
+      spinner_.reset();
       return true;
     }
-    else
-    {
-      throw std::runtime_error("RosNode not initialized");
-      return false;
-    }
+    return false;
   }
 
-  bool initDone()
+  bool initDone() const
   {
-    return init_;
+    return ros_nh_ && spinner_;
   }
 
-protected:
-  bool init_;
+  RosNode(RosNode&& other) noexcept = default;
+  RosNode& operator=(RosNode&& other) noexcept = default;
+  RosNode(const RosNode&) = delete;
+  RosNode& operator=(const RosNode&) = delete;
+
+private:
   std::shared_ptr<ros::NodeHandle> ros_nh_;
   std::unique_ptr<ros::AsyncSpinner> spinner_;
 };
 
-} // namespace
+} // namespace rt_gui
 
 #endif

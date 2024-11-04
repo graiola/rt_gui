@@ -17,95 +17,95 @@
 #include <atomic>
 #include <thread>
 #include <mutex>
-#include <tuple>
+#include <stdexcept>
 
 namespace rt_gui
 {
 
 class RosNode
 {
-
 public:
-  RosNode(const std::string& ros_node_name, const unsigned int& n_threads)
+  explicit RosNode(const std::string& ros_node_name, unsigned int n_threads)
+    : init_(false)
   {
-    init(ros_node_name,n_threads);
+    init(ros_node_name, n_threads);
   }
 
-  RosNode()
+  RosNode() : init_(false) {}
+
+  ~RosNode()
   {
-    init_ = false;
+    shutdown();
   }
 
-  void init(const std::string& ros_node_name, const unsigned int& n_threads)
+  void init(const std::string& ros_node_name, unsigned int n_threads)
   {
+    if (init_) return;  // Skip re-initialization
+
     int argc = 1;
-    char* arg0 = strdup("");//strdup(ros_node_name.c_str());
+    char* arg0 = strdup("");
     char* argv[] = {arg0, nullptr};
-    rclcpp::init(argc, argv);
-    rclcpp::uninstall_signal_handlers();
+
+    if (!rclcpp::is_initialized()) {
+      rclcpp::init(argc, argv);
+      rclcpp::uninstall_signal_handlers();
+    }
     free(arg0);
 
-    ros_nh_.reset(new rclcpp::Node(ros_node_name));
+    ros_nh_ = std::make_shared<rclcpp::Node>(ros_node_name);
 
-    //spinner_.reset(new rclcpp::executors::MultiThreadedExecutor(n_threads));
-    spinner_.reset(new rclcpp::executors::MultiThreadedExecutor(rclcpp::ExecutorOptions(),n_threads));
+    spinner_ = std::make_unique<rclcpp::executors::MultiThreadedExecutor>(rclcpp::ExecutorOptions(), n_threads);
     spinner_->add_node(ros_nh_);
 
     init_ = true;
 
-    spinner_thread_.reset(new std::thread(std::bind(&rclcpp::executors::MultiThreadedExecutor::spin, spinner_.get())));
-    spinner_thread_->detach();
-  }
-
-  ~RosNode()
-  {
-    if(init_ == true)
-    {
-      spinner_thread_->join();
-      rclcpp::shutdown();
-    }
+    spinner_thread_ = std::make_unique<std::thread>(&rclcpp::executors::MultiThreadedExecutor::spin, spinner_.get());
   }
 
   rclcpp::Node& getNode()
   {
-    if(init_ == true)
-      return *ros_nh_.get();
-    else
-      throw std::runtime_error("RosNode not initialized");
+    if (!init_)
+      throw std::runtime_error("Error: RosNode not initialized.");
+    return *ros_nh_;
   }
 
   std::shared_ptr<rclcpp::Node> getNodePtr()
   {
-    if(init_ == true)
-      return ros_nh_;
-    else
-      throw std::runtime_error("RosNode not initialized");
+    if (!init_)
+      throw std::runtime_error("Error: RosNode not initialized.");
+    return ros_nh_;
   }
 
   void reset()
   {
-    if(init_ == true)
-    {
-      spinner_thread_->join();
-      rclcpp::shutdown();
-      init_ = false;
-    }
-    else
-      throw std::runtime_error("RosNode not initialized");
+    shutdown();
+    init_ = false;
   }
 
-  bool initDone()
+  bool initDone() const
   {
     return init_;
   }
 
-protected:
-  bool init_;
+private:
+  void shutdown()
+  {
+    if (init_) {
+      if (spinner_thread_ && spinner_thread_->joinable()) {
+        spinner_->cancel();
+        spinner_thread_->join();
+      }
+      rclcpp::shutdown();
+      init_ = false;
+    }
+  }
+
+  std::atomic<bool> init_;
   std::shared_ptr<rclcpp::Node> ros_nh_;
   std::unique_ptr<rclcpp::executors::MultiThreadedExecutor> spinner_;
-  std::shared_ptr<std::thread> spinner_thread_;
+  std::unique_ptr<std::thread> spinner_thread_;
 };
 
-} // namespace
+} // namespace rt_gui
 
-#endif
+#endif // RT_GUI_ROS2_SUPPORT_ROS_NODE_H
