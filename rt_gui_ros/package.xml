@@ -1,19 +1,27 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rt_gui_ros</name>
   <version>0.0.1</version>
-  <description>The ROS1 wrapper for the real time gui package</description>
+  <description>The ROS wrapper for the real time gui package</description>
 
   <maintainer email="gennaro.raiola@gmail.com">graiola</maintainer>
 
   <license>Apache-2.0</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
+  <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
+  <depend condition="$rospy_FOUND == True">rospy</depend>
+  <depend condition="$rclpy_FOUND == True">rclpy</depend>
   <depend>rt_gui_msgs</depend>
   <depend>rt_gui_core</depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
+    <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+  </export>
 
 </package>

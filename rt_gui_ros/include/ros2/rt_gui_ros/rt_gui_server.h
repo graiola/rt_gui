@@ -16,10 +16,10 @@
  * Author: Gennaro Raiola
  */
 
-#ifndef RT_GUI_ROS2_RT_GUI_SERVER_H
-#define RT_GUI_ROS2_RT_GUI_SERVER_H
+#ifndef RT_GUI_ROS_RT_GUI_SERVER_H
+#define RT_GUI_ROS_RT_GUI_SERVER_H
 
-#include <rt_gui_ros2/support/server.h>
+#include <rt_gui_ros/support/server.h>
 
 namespace rt_gui
 {

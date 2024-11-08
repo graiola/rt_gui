@@ -1,4 +1,4 @@
-#include <rt_gui_ros2/rt_gui_client.h>
+#include <rt_gui_ros/rt_gui_client.h>
 
 #include <unistd.h>
 

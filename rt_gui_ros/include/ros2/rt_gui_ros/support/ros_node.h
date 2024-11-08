@@ -1,5 +1,5 @@
-#ifndef RT_GUI_ROS2_SUPPORT_ROS_NODE_H
-#define RT_GUI_ROS2_SUPPORT_ROS_NODE_H
+#ifndef RT_GUI_ROS_SUPPORT_ROS_NODE_H
+#define RT_GUI_ROS_SUPPORT_ROS_NODE_H
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/utilities.hpp>
@@ -46,7 +46,7 @@ public:
     char* arg0 = strdup("");
     char* argv[] = {arg0, nullptr};
 
-    if (!rclcpp::is_initialized()) {
+    if (!rclcpp::ok()) {
       rclcpp::init(argc, argv);
       rclcpp::uninstall_signal_handlers();
     }
@@ -108,4 +108,4 @@ private:
 
 } // namespace rt_gui
 
-#endif // RT_GUI_ROS2_SUPPORT_ROS_NODE_H
+#endif // RT_GUI_ROS_SUPPORT_ROS_NODE_H

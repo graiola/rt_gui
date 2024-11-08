@@ -1,7 +1,7 @@
-#ifndef RT_GUI_ROS2_SUPPORT_SERVER_H
-#define RT_GUI_ROS2_SUPPORT_SERVER_H
+#ifndef RT_GUI_ROS_SUPPORT_SERVER_H
+#define RT_GUI_ROS_SUPPORT_SERVER_H
 
-#include <rt_gui_ros2/support/ros_node.h>
+#include <rt_gui_ros/support/ros_node.h>
 #include <rt_gui_core/support/common.h>
 #include <rt_gui_core/qt_utils/window.h>
 
@@ -27,8 +27,8 @@ public:
     update_srv_   = update_srv;
     feedback_srv_ = feedback_srv;
     node_         = node;
-    add_          = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + add_srv, std::bind(&WindowServerHandler::addWidget, this, _1, _2));
-    feedback_     = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + feedback_srv, std::bind(&WindowServerHandler::feedback, this, _1, _2));
+    add_          = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + add_srv, std::bind(&WindowServerHandler::addWidget, this, std::placeholders::_1, std::placeholders::_2));
+    feedback_     = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + feedback_srv, std::bind(&WindowServerHandler::feedback, this, std::placeholders::_1, std::placeholders::_2));
     window_       = window;
   }
 
@@ -292,7 +292,7 @@ public:
   {
 
     window_      = new Window(QString::fromStdString(server_name),parent);
-    remove_      = nh->create_service<rt_gui_msgs::srv::Void>("/" + server_name + "/" + _ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, _1, _2));
+    remove_      = nh->create_service<rt_gui_msgs::srv::Void>("/" + server_name + "/" + _ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, std::placeholders::_1, std::placeholders::_2));
 
     handlers_                 = Handlers();
     handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );

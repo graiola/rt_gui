@@ -24,13 +24,26 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
-find_package(Qt5Core ${MINIMUM_QT_VERSION} REQUIRED)
-
 find_package(catkin QUIET)
+find_package(ament_cmake QUIET)
+
+find_package(rt_gui_msgs REQUIRED)
+find_package(rt_gui_core REQUIRED)
+find_package(Qt5Core ${MINIMUM_QT_VERSION} REQUIRED)
+find_package(Qt5Widgets ${MINIMUM_QT_VERSION} REQUIRED)
 
 if (${catkin_FOUND})
 
-    find_package(catkin REQUIRED roscpp rospy rt_gui_msgs rt_gui_core)
+    set(ROS_VERSION "ros")
+    add_definitions(-DROS)
+    message(STATUS "Add ROS definition")
+
+    find_package(rospy REQUIRED)
+    find_package(roscpp REQUIRED)
+
+    set(ROS_LIB ${roscpp_LIBRARIES})
+
+    configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
 
     catkin_python_setup()
 
@@ -40,86 +53,102 @@ if (${catkin_FOUND})
       CATKIN_DEPENDS rt_gui_msgs rt_gui_core
     )
 
-    include_directories(
-        include
-        ${catkin_INCLUDE_DIRS}
+  elseif (${ament_cmake_FOUND})
+
+      set(ROS_VERSION "ros2")
+      add_definitions(-DROS2)
+      message(STATUS "Add ROS2 definition")
+
+      find_package(rclpy REQUIRED)
+      find_package(rclcpp REQUIRED)
+
+      set(ROS_LIB ${rclcpp_LIBRARIES})
+
+      configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
+
+      ament_python_install_package(bindings/${PROJECT_NAME})
+
+      ament_export_dependencies(
+        rt_gui_core
+        rt_gui_msgs
+      )
+      ament_export_include_directories(include)
+      ament_export_libraries(${PROJECT_NAME}_server)
+      ament_package()
+
+  endif()
+
+  include_directories(
+      include/${ROS_VERSION}
+      ${rt_gui_msgs_INCLUDE_DIRS}
+      ${rt_gui_core_INCLUDE_DIRS}
+      ${Qt5Core_INCLUDE_DIRS}
+      ${Qt5Widgets_INCLUDE_DIRS}
+  )
+
+## Compile server lib
+add_library(${PROJECT_NAME}_server SHARED
+    include/${ROS_VERSION}/${PROJECT_NAME}/support/ros_node.h
+    include/${ROS_VERSION}/${PROJECT_NAME}/support/server.h
+    include/${ROS_VERSION}/${PROJECT_NAME}/rt_gui_server.h
+    src/${ROS_VERSION}/support/server.cpp)
+target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} Qt5::Core Qt5::Widgets ${ROS_LIB})
+
+## Compile the server node
+add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
+target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
+
+## Compile the tests
+add_executable(test_server test/test_server.cpp)
+target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
+
+add_executable(test_client test/${ROS_VERSION}/test_client.cpp)
+target_link_libraries(test_client PRIVATE ${ROS_LIB} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
+add_executable(test_client_1 test/${ROS_VERSION}/test_client_1.cpp)
+target_link_libraries(test_client_1 PRIVATE ${ROS_LIB} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
+## Bindings
+find_package(pybind11 QUIET)
+message(STATUS "check for pybind11")
+if(${pybind11_FOUND})
+
+    message(STATUS "compiling python bindings")
+    # Server
+    pybind11_add_module(py_server bindings/${PROJECT_NAME}/py_server.cpp)
+    target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
+
+    # Client
+    pybind11_add_module(py_client bindings/${PROJECT_NAME}/py_client.cpp)
+    target_link_libraries(py_client PRIVATE ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+
+    install(TARGETS py_server py_client
+      DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
     )
-
-    ## Compile server lib
-    add_library(${PROJECT_NAME}_server SHARED
-        include/${PROJECT_NAME}/support/ros_node.h
-        include/${PROJECT_NAME}/support/server.h
-        include/${PROJECT_NAME}/rt_gui_server.h
-        src/support/server.cpp)
-    target_link_libraries(${PROJECT_NAME}_server PUBLIC ${catkin_LIBRARIES} Qt5::Core)
-
-    ## Compile the server node
-    add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
-    target_link_libraries(${PROJECT_NAME}_server_node PRIVATE ${PROJECT_NAME}_server)
-
-    ## Bindings
-    #find_package(PythonInterp REQUIRED) #find_package(Python ${PYBIND11_PYTHON_VERSION} COMPONENTS Development Interpreter REQUIRED)
-    find_package(pybind11_catkin QUIET)
-    message(STATUS "check for pybind11_catkin")
-    if(${pybind11_catkin_FOUND})
-        message(STATUS "compiling python bindings")
-        # Server
-        pybind_add_module(py_server bindings/${PROJECT_NAME}/py_server.cpp)
-        target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
-
-        # Client
-        pybind_add_module(py_client bindings/${PROJECT_NAME}/py_client.cpp)
-        target_link_libraries(py_client PRIVATE ${catkin_LIBRARIES})
-
-        set_target_properties(py_server PROPERTIES
-                PREFIX ""
-                LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
-                )
-
-        set_target_properties(py_client PROPERTIES
-                PREFIX ""
-                LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
-                )
-
-        install(TARGETS py_server
-                        py_client
-                        DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION})
-
-        # Tests
-        catkin_install_python(PROGRAMS bindings/${PROJECT_NAME}/test_server.py bindings/${PROJECT_NAME}/test_client.py
-                              DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-    else()
-        message(STATUS "pybind not found")
-    endif()
-
-    ## Compile test
-    if (CATKIN_ENABLE_TESTING)
-
-        add_executable(test_server include/${PROJECT_NAME}/rt_gui_server.h test/test_server.cpp)
-        target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
-
-        add_executable(test_client include/${PROJECT_NAME}/rt_gui_client.h test/test_client.cpp)
-        target_link_libraries(test_client PRIVATE ${catkin_LIBRARIES})
-
-        add_executable(test_client_1 include/${PROJECT_NAME}/rt_gui_client.h test/test_client_1.cpp)
-        target_link_libraries(test_client_1 PRIVATE ${catkin_LIBRARIES})
-
-    endif()
-
-    ## Install
-    install(TARGETS ${PROJECT_NAME}_server ${PROJECT_NAME}_server_node
-      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    )
-
-    install(DIRECTORY include/${PROJECT_NAME}/
-            DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
-
-    install(DIRECTORY launch/
-      DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-      PATTERN ".svn" EXCLUDE)
 
 else()
-  message("catkin not found, skipping ${PROJECT_NAME} package")
+    message(STATUS "pybind not found")
 endif()
+
+install(
+  DIRECTORY include/${ROS_VERSION}/${PROJECT_NAME}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+)
+
+install(TARGETS ${PROJECT_NAME}_server_node test_client test_client_1
+    DESTINATION lib/${PROJECT_NAME}
+    LIBRARY DESTINATION lib
+)
+
+install(TARGETS ${PROJECT_NAME}_server
+       EXPORT export_${PROJECT_NAME}_server
+       DESTINATION lib)
+
+install(PROGRAMS
+  bindings/${PROJECT_NAME}/test_client.py
+  bindings/${PROJECT_NAME}/test_server.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(DIRECTORY launch/
+ DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/launch)
