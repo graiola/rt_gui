@@ -212,7 +212,7 @@ public:
     }
   }
 
-  void init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
+  void init(ros::NodeHandle& nh, const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double& timeout = -1)
   {
     if(!ack_.joinable() && !requests_.joinable())
     {
@@ -224,18 +224,11 @@ public:
     }
   }
 
-  void init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, ros::Duration timeout = ros::Duration(-1))
+  void init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double& timeout = -1)
   {
     if(ros_node_==nullptr)
       ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
     init(ros_node_->getNode(),server_name,client_name,timeout);
-  }
-
-  void init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double& timeout)
-  {
-    if(ros_node_==nullptr)
-      ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
-    init(ros_node_->getNode(),server_name,client_name,ros::Duration(timeout));
   }
 
   bool isInitialized()
@@ -245,12 +238,12 @@ public:
 
 private:
 
-  void _init(ros::NodeHandle& nh, const std::string server_name, const std::string client_name, ros::Duration timeout)
+  void _init(ros::NodeHandle& nh, const std::string server_name, const std::string client_name, const double& timeout)
   {
     std::string remove_service_name = server_name + "/" + _ros_services.remove_service;
     ros::NodeHandle global_nh;
 
-    if(ros::service::waitForService(remove_service_name,timeout))
+    if(ros::service::waitForService(remove_service_name,ros::Duration(timeout)))
     {
       remove_         = global_nh.serviceClient<rt_gui_msgs::Void>(remove_service_name);
       bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
