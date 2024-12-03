@@ -1,7 +1,7 @@
 from setuptools import setup
 
 package_name = 'rt_gui_ros'
-submodules = "rt_gui_ros/bindings"
+submodules = "rt_gui_ros"
 
 setup(
     name=package_name,

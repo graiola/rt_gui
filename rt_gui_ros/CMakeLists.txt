@@ -66,7 +66,7 @@ if (${catkin_FOUND})
 
       configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
 
-      ament_python_install_package(bindings)
+      ament_python_install_package(${PROJECT_NAME})
 
       ament_export_dependencies(
         rt_gui_core
@@ -115,11 +115,11 @@ if(${pybind11_FOUND})
 
     message(STATUS "compiling python bindings")
     # Server
-    pybind11_add_module(py_server bindings/${PROJECT_NAME}/py_server.cpp)
+    pybind11_add_module(py_server ${PROJECT_NAME}/py_server.cpp)
     target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
 
     # Client
-    pybind11_add_module(py_client bindings/${PROJECT_NAME}/py_client.cpp)
+    pybind11_add_module(py_client ${PROJECT_NAME}/py_client.cpp)
     target_link_libraries(py_client PRIVATE ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
 
     install(TARGETS py_server py_client
@@ -145,8 +145,8 @@ install(TARGETS ${PROJECT_NAME}_server
        DESTINATION lib)
 
 install(PROGRAMS
-  bindings/${PROJECT_NAME}/test_client.py
-  bindings/${PROJECT_NAME}/test_server.py
+  ${PROJECT_NAME}/test_client.py
+  ${PROJECT_NAME}/test_server.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
