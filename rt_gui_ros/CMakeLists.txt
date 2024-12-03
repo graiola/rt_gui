@@ -66,7 +66,7 @@ if (${catkin_FOUND})
 
       configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
 
-      ament_python_install_package(bindings/${PROJECT_NAME})
+      ament_python_install_package(bindings)
 
       ament_export_dependencies(
         rt_gui_core
