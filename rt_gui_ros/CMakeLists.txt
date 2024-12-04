@@ -113,13 +113,15 @@ find_package(pybind11 QUIET)
 message(STATUS "check for pybind11")
 if(${pybind11_FOUND})
 
+    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
     message(STATUS "compiling python bindings")
     # Server
-    pybind11_add_module(py_server ${PROJECT_NAME}/py_server.cpp)
+    pybind11_add_module(py_server MODULE ${PROJECT_NAME}/py_server.cpp)
     target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
 
     # Client
-    pybind11_add_module(py_client ${PROJECT_NAME}/py_client.cpp)
+    pybind11_add_module(py_client MODULE ${PROJECT_NAME}/py_client.cpp)
     target_link_libraries(py_client PRIVATE ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
 
     install(TARGETS py_server py_client
