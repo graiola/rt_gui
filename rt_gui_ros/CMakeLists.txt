@@ -41,7 +41,8 @@ if (${catkin_FOUND})
     find_package(rospy REQUIRED)
     find_package(roscpp REQUIRED)
 
-    set(ROS_LIB ${roscpp_LIBRARIES})
+    set(ROS_LIBS ${roscpp_LIBRARIES})
+    set(ROS_HEADERS ${roscpp_INCLUDE_DIRS})
 
     configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
 
@@ -62,7 +63,8 @@ if (${catkin_FOUND})
       find_package(rclpy REQUIRED)
       find_package(rclcpp REQUIRED)
 
-      set(ROS_LIB ${rclcpp_LIBRARIES})
+      set(ROS_LIBS ${rclcpp_LIBRARIES})
+      set(ROS_HEADERS ${rclcpp_INCLUDE_DIRS})
 
       configure_file(setup.py.${ROS_VERSION} ${CMAKE_SOURCE_DIR}/setup.py)
 
@@ -92,7 +94,8 @@ add_library(${PROJECT_NAME}_server SHARED
     include/${ROS_VERSION}/${PROJECT_NAME}/support/server.h
     include/${ROS_VERSION}/${PROJECT_NAME}/rt_gui_server.h
     src/${ROS_VERSION}/support/server.cpp)
-target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} Qt5::Core Qt5::Widgets ${ROS_LIB})
+target_link_libraries(${PROJECT_NAME}_server PUBLIC ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} Qt5::Core Qt5::Widgets ${ROS_LIBS})
+target_include_directories(${PROJECT_NAME}_server PUBLIC ${ROS_HEADERS})
 
 ## Compile the server node
 add_executable(${PROJECT_NAME}_server_node src/server_node.cpp)
@@ -103,26 +106,30 @@ add_executable(test_server test/test_server.cpp)
 target_link_libraries(test_server PRIVATE ${PROJECT_NAME}_server)
 
 add_executable(test_client test/${ROS_VERSION}/test_client.cpp)
-target_link_libraries(test_client PRIVATE ${ROS_LIB} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+target_link_libraries(test_client PRIVATE ${ROS_LIBS} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+target_include_directories(test_client PUBLIC ${ROS_HEADERS})
 
 add_executable(test_client_1 test/${ROS_VERSION}/test_client_1.cpp)
-target_link_libraries(test_client_1 PRIVATE ${ROS_LIB} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+target_link_libraries(test_client_1 PRIVATE ${ROS_LIBS} ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+target_include_directories(test_client_1 PUBLIC ${ROS_HEADERS})
 
 ## Bindings
 find_package(pybind11 QUIET)
 message(STATUS "check for pybind11")
 if(${pybind11_FOUND})
 
-    find_package(Python COMPONENTS Interpreter Development REQUIRED)
+    find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 
     message(STATUS "compiling python bindings")
     # Server
     pybind11_add_module(py_server MODULE ${PROJECT_NAME}/py_server.cpp)
-    target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server)
+    target_link_libraries(py_server PRIVATE ${PROJECT_NAME}_server ${ROS_LIBS})
+    target_include_directories(py_server PUBLIC ${ROS_HEADERS})
 
     # Client
     pybind11_add_module(py_client MODULE ${PROJECT_NAME}/py_client.cpp)
-    target_link_libraries(py_client PRIVATE ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES})
+    target_link_libraries(py_client PRIVATE ${rt_gui_core_LIBRARIES} ${rt_gui_msgs_LIBRARIES} ${ROS_LIBS})
+    target_include_directories(py_client PUBLIC ${ROS_HEADERS})
 
     install(TARGETS py_server py_client
       DESTINATION "${PYTHON_INSTALL_DIR}/${PROJECT_NAME}"
