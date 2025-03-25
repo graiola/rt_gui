@@ -12,10 +12,4 @@
   <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
   <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
 
-  <depend>readline</depend>
-  <depend>pthread</depend>
-  <depend>Qt5Core</depend>
-  <depend>Qt5Widgets</depend>
-  <depend>Qwt</depend>
-
 </package>
