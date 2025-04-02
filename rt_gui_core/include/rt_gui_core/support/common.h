@@ -155,7 +155,7 @@ struct
   ServiceGroup label_srvs{"add_label", "update_label", "feedback_label"};
 
   unsigned int n_threads = 3;
-  double wait_service_secs = 10.0;
+  double wait_service_secs = 60.0;
   std::string remove_service = "remove_widget";
   std::string add_client = "add_client";
 
