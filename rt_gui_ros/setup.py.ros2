@@ -17,7 +17,7 @@ setup(
     maintainer='Gennaro Raiola',
     maintainer_email='gennaro.raiola@gmail.com',
     description='rt_gui_ros python bindings',
-    license='Licensed under the Apache License, Version 2.0',
+    license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
