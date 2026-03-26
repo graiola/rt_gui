@@ -8,6 +8,21 @@
 namespace rt_gui
 {
 
+inline std::string normalizeServerName(std::string server_name)
+{
+  while (!server_name.empty() && server_name.front() == '/')
+    server_name.erase(server_name.begin());
+  return server_name;
+}
+
+inline std::string makeAbsoluteServiceName(const std::string& server_name, const std::string& service_name)
+{
+  const auto normalized_server_name = normalizeServerName(server_name);
+  if (normalized_server_name.empty())
+    return "/" + service_name;
+  return "/" + normalized_server_name + "/" + service_name;
+}
+
 template<class srv_t, class data_t>
 class InterfaceHandler
 {
@@ -23,11 +38,11 @@ public:
     add_srv_       = add_srv;
     update_srv_    = update_srv;
     feedback_srv_  = feedback_srv;
-    server_name_   = server_name;
+    server_name_   = normalizeServerName(server_name);
     client_name_   = client_name;
     update_        = node.advertiseService(update_srv, &InterfaceHandler::update, this);
-    add_           = node.serviceClient<srv_t>("/"+server_name+"/"+add_srv);
-    feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
+    add_           = node.serviceClient<srv_t>(makeAbsoluteServiceName(server_name_, add_srv));
+    feedback_      = node.serviceClient<srv_t>(makeAbsoluteServiceName(server_name_, feedback_srv));
 
     stop_feedback_thread_ = false;
     if(feedback)
@@ -250,11 +265,11 @@ public:
     add_srv_       = add_srv;
     update_srv_    = update_srv;
     feedback_srv_  = feedback_srv;
-    server_name_   = server_name;
+    server_name_   = normalizeServerName(server_name);
     client_name_   = client_name;
     update_        = node.advertiseService(update_srv, &TriggerHandler::update, this);
-    add_           = node.serviceClient<rt_gui_msgs::Void>("/"+server_name+"/"+add_srv);
-    feedback_      = node.serviceClient<rt_gui_msgs::Void>("/"+server_name+"/"+feedback_srv);
+    add_           = node.serviceClient<rt_gui_msgs::Void>(makeAbsoluteServiceName(server_name_, add_srv));
+    feedback_      = node.serviceClient<rt_gui_msgs::Void>(makeAbsoluteServiceName(server_name_, feedback_srv));
   }
 
   bool add(const std::string& group_name, const std::string& data_name, fun_t fun)
@@ -318,11 +333,11 @@ public:
     add_srv_       = add_srv;
     update_srv_    = update_srv;
     feedback_srv_  = feedback_srv;
-    server_name_   = server_name;
+    server_name_   = normalizeServerName(server_name);
     client_name_   = client_name;
     update_        = node.advertiseService(update_srv, &VectorHandler::update, this);
-    add_           = node.serviceClient<srv_t>("/"+server_name+"/"+add_srv);
-    feedback_      = node.serviceClient<srv_t>("/"+server_name+"/"+feedback_srv);
+    add_           = node.serviceClient<srv_t>(makeAbsoluteServiceName(server_name_, add_srv));
+    feedback_      = node.serviceClient<srv_t>(makeAbsoluteServiceName(server_name_, feedback_srv));
   }
 
   bool add(const std::string& group_name, const std::string& data_name, const std::vector<std::string>& item_names, std::vector<data_t> item_data, fun_t fun, bool sync)
