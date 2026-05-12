@@ -25,11 +25,12 @@ public:
     add_srv_       = add_srv;
     update_srv_    = update_srv;
     feedback_srv_  = feedback_srv;
-    server_name_   = server_name;
-    client_name_   = client_name;
-    update_        = node->create_service<srv_t>("/"+client_name+"/"+update_srv, std::bind(&InterfaceHandler::update, this, std::placeholders::_1, std::placeholders::_2));
-    add_           = node->create_client<srv_t>("/"+server_name+"/"+add_srv);
-    feedback_      = node->create_client<srv_t>("/"+server_name+"/"+feedback_srv);
+    server_name_   = normalizeGraphNameToken(server_name);
+    client_name_   = normalizeGraphNameToken(client_name);
+    node_          = node;
+    update_        = node->create_service<srv_t>(makeAbsoluteGraphName(client_name_, update_srv_), std::bind(&InterfaceHandler::update, this, std::placeholders::_1, std::placeholders::_2));
+    add_           = node->create_client<srv_t>(makeAbsoluteGraphName(server_name_, add_srv_));
+    feedback_      = node->create_client<srv_t>(makeAbsoluteGraphName(server_name_, feedback_srv_));
     stop_feedback_thread_ = false;
     if(feedback)
       feedback_thread_ = std::make_shared<std::thread>(&InterfaceHandler::feedbackLoop,this);
@@ -260,12 +261,12 @@ public:
     add_srv_       = add_srv;
     update_srv_    = update_srv;
     feedback_srv_  = feedback_srv;
-    server_name_   = server_name;
-    client_name_   = client_name;
+    server_name_   = normalizeGraphNameToken(server_name);
+    client_name_   = normalizeGraphNameToken(client_name);
     node_          = node;
-    update_        = node_->create_service<rt_gui_msgs::srv::Void>("/"+client_name+"/"+update_srv_, std::bind(&TriggerHandler::update, this, std::placeholders::_1, std::placeholders::_2));
-    add_           = node_->create_client<rt_gui_msgs::srv::Void>("/"+server_name+"/"+add_srv);
-    feedback_      = node_->create_client<rt_gui_msgs::srv::Void>("/"+server_name+"/"+feedback_srv);
+    update_        = node_->create_service<rt_gui_msgs::srv::Void>(makeAbsoluteGraphName(client_name_, update_srv_), std::bind(&TriggerHandler::update, this, std::placeholders::_1, std::placeholders::_2));
+    add_           = node_->create_client<rt_gui_msgs::srv::Void>(makeAbsoluteGraphName(server_name_, add_srv_));
+    feedback_      = node_->create_client<rt_gui_msgs::srv::Void>(makeAbsoluteGraphName(server_name_, feedback_srv_));
   }
 
   bool add(const std::string& group_name, const std::string& data_name, fun_t fun)
@@ -351,18 +352,18 @@ public:
       add_srv_(add_srv),
       update_srv_(update_srv),
       feedback_srv_(feedback_srv),
-      server_name_(server_name),
-      client_name_(client_name),
+      server_name_(normalizeGraphNameToken(server_name)),
+      client_name_(normalizeGraphNameToken(client_name)),
       wait_service_secs_(wait_service_secs)
   {
     // Initialize the service server and clients
     update_ = node_->create_service<srv_t>(
-          update_srv_,
+          makeAbsoluteGraphName(client_name_, update_srv_),
           std::bind(&VectorHandler::update, this, std::placeholders::_1, std::placeholders::_2)
           );
 
-    add_ = node_->create_client<srv_t>("/" + server_name + "/" + add_srv_);
-    feedback_ = node_->create_client<srv_t>("/" + server_name + "/" + feedback_srv_);
+    add_ = node_->create_client<srv_t>(makeAbsoluteGraphName(server_name_, add_srv_));
+    feedback_ = node_->create_client<srv_t>(makeAbsoluteGraphName(server_name_, feedback_srv_));
   }
 
   bool add(const std::string& group_name, const std::string& data_name,

@@ -227,9 +227,11 @@ public:
 
   void init(const std::string server_name = RT_GUI_SERVER_NAME, const std::string client_name = RT_GUI_CLIENT_NAME, const double timeout = 30.0)
   {
+    const auto normalized_client_name = normalizeGraphNameToken(client_name);
+    const auto node_name = normalized_client_name.empty() ? std::string(RT_GUI_CLIENT_NAME) : normalized_client_name;
     if(ros_node_==nullptr)
-      ros_node_.reset(new RosNode(client_name,_ros_services.n_threads));
-    init(ros_node_->getNodePtr(),server_name,client_name,timeout);
+      ros_node_.reset(new RosNode(node_name,_ros_services.n_threads));
+    init(ros_node_->getNodePtr(),server_name,node_name,timeout);
   }
 
   bool isInitialized()
@@ -241,19 +243,21 @@ private:
 
   void _init(std::shared_ptr<rclcpp::Node> nh, const std::string server_name, const std::string client_name, const double timeout = 30.0)
   {
-    std::string remove_service_name = "/" + server_name + "/" + _ros_services.remove_service;
+    const auto normalized_server_name = normalizeGraphNameToken(server_name);
+    const auto normalized_client_name = normalizeGraphNameToken(client_name);
+    std::string remove_service_name = makeAbsoluteGraphName(normalized_server_name, _ros_services.remove_service);
 
     remove_ = nh->create_client<rt_gui_msgs::srv::Void>(remove_service_name);
 
     if(remove_->wait_for_service(std::chrono::duration<double>(timeout)))
     {
-      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,server_name,client_name);
-      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,server_name,client_name);
-      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,server_name,client_name);
-      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,_ros_services.double_srvs.feedback,server_name,client_name);
-      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,_ros_services.int_srvs.feedback,server_name,client_name);
-      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,_ros_services.text_srvs.feedback,server_name,client_name);
-      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,_ros_services.label_srvs.feedback,server_name,client_name);
+      bool_h_         = std::make_shared<BoolHandler>   (nh,_ros_services.bool_srvs.add,_ros_services.bool_srvs.update,_ros_services.bool_srvs.feedback,normalized_server_name,normalized_client_name);
+      list_h_         = std::make_shared<ListHandler>   (nh,_ros_services.list_srvs.add,_ros_services.list_srvs.update,_ros_services.list_srvs.feedback,normalized_server_name,normalized_client_name);
+      trigger_h_      = std::make_shared<TriggerHandler>(nh,_ros_services.trigger_srvs.add,_ros_services.trigger_srvs.update,_ros_services.trigger_srvs.feedback,normalized_server_name,normalized_client_name);
+      double_h_       = std::make_shared<DoubleHandler> (nh,_ros_services.double_srvs.add,_ros_services.double_srvs.update,_ros_services.double_srvs.feedback,normalized_server_name,normalized_client_name);
+      int_h_          = std::make_shared<IntHandler>    (nh,_ros_services.int_srvs.add,_ros_services.int_srvs.update,_ros_services.int_srvs.feedback,normalized_server_name,normalized_client_name);
+      text_h_         = std::make_shared<TextHandler>   (nh,_ros_services.text_srvs.add,_ros_services.text_srvs.update,_ros_services.text_srvs.feedback,normalized_server_name,normalized_client_name);
+      label_h_        = std::make_shared<LabelHandler>  (nh,_ros_services.label_srvs.add,_ros_services.label_srvs.update,_ros_services.label_srvs.feedback,normalized_server_name,normalized_client_name);
       init_           = true;
     }
     else

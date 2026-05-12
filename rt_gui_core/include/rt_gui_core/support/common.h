@@ -15,6 +15,33 @@ namespace rt_gui
 
 using key_t = std::pair<std::string, std::string>;
 
+inline std::string normalizeGraphNameToken(const std::string& token)
+{
+  const auto start = token.find_first_not_of('/');
+  if (start == std::string::npos) {
+    return "";
+  }
+
+  const auto end = token.find_last_not_of('/');
+  return token.substr(start, end - start + 1);
+}
+
+inline std::string makeAbsoluteGraphName(const std::string& first, const std::string& second)
+{
+  const auto normalized_first = normalizeGraphNameToken(first);
+  const auto normalized_second = normalizeGraphNameToken(second);
+
+  if (normalized_first.empty()) {
+    return "/" + normalized_second;
+  }
+
+  if (normalized_second.empty()) {
+    return "/" + normalized_first;
+  }
+
+  return "/" + normalized_first + "/" + normalized_second;
+}
+
 template <class data_t>
 class CallbackBuffer {
 

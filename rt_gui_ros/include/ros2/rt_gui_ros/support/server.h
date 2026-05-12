@@ -27,8 +27,8 @@ public:
     update_srv_   = update_srv;
     feedback_srv_ = feedback_srv;
     node_         = node;
-    add_          = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + add_srv, std::bind(&WindowServerHandler::addWidget, this, std::placeholders::_1, std::placeholders::_2));
-    feedback_     = node_->create_service<srv_t>("/" + std::string(node_->get_name()) + "/" + feedback_srv, std::bind(&WindowServerHandler::feedback, this, std::placeholders::_1, std::placeholders::_2));
+    add_          = node_->create_service<srv_t>(makeAbsoluteGraphName(node_->get_name(), add_srv_), std::bind(&WindowServerHandler::addWidget, this, std::placeholders::_1, std::placeholders::_2));
+    feedback_     = node_->create_service<srv_t>(makeAbsoluteGraphName(node_->get_name(), feedback_srv_), std::bind(&WindowServerHandler::feedback, this, std::placeholders::_1, std::placeholders::_2));
     window_       = window;
   }
 
@@ -41,7 +41,7 @@ public:
   bool update(typename srv_t::Request srv)
   {
 
-    std::string service = "/"+srv.client_name+"/"+update_srv_;
+    std::string service = makeAbsoluteGraphName(srv.client_name, update_srv_);
 
     typename rclcpp::Client<srv_t>::SharedPtr client = node_->create_client<srv_t>(service);
 
@@ -290,9 +290,10 @@ public:
 
   void init(std::shared_ptr<rclcpp::Node> nh, const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
+    const auto normalized_server_name = normalizeGraphNameToken(server_name);
 
-    window_      = new Window(QString::fromStdString(server_name),parent);
-    remove_      = nh->create_service<rt_gui_msgs::srv::Void>("/" + server_name + "/" + _ros_services.remove_service, std::bind(&RosServerNode::removeWidgetCb, this, std::placeholders::_1, std::placeholders::_2));
+    window_      = new Window(QString::fromStdString(normalized_server_name),parent);
+    remove_      = nh->create_service<rt_gui_msgs::srv::Void>(makeAbsoluteGraphName(normalized_server_name, _ros_services.remove_service), std::bind(&RosServerNode::removeWidgetCb, this, std::placeholders::_1, std::placeholders::_2));
 
     handlers_                 = Handlers();
     handlers_.double_h_       = std::make_shared<DoubleServerHandler> ( window_,nh,  _ros_services.double_srvs.add ,  _ros_services.double_srvs.update  ,  _ros_services.double_srvs.feedback  );
@@ -309,8 +310,10 @@ public:
 
   void init(const std::string server_name = RT_GUI_SERVER_NAME, QWidget* parent = nullptr)
   {
-    ros_node_.reset(new RosNode(server_name,_ros_services.n_threads));
-    init(ros_node_->getNodePtr(),server_name,parent);
+    const auto normalized_server_name = normalizeGraphNameToken(server_name);
+    const auto node_name = normalized_server_name.empty() ? std::string(RT_GUI_SERVER_NAME) : normalized_server_name;
+    ros_node_.reset(new RosNode(node_name,_ros_services.n_threads));
+    init(ros_node_->getNodePtr(),node_name,parent);
   }
 
   bool removeWidgetCb(rt_gui_msgs::srv::Void::Request::Ptr req, rt_gui_msgs::srv::Void::Response::Ptr res)
